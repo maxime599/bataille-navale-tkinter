@@ -16,10 +16,10 @@ class Plateau:
             for j in range(10):
                 ligne.append(0)
             self.plateau.append(ligne)
-        self.plateau[2][3] = 2
         return self.plateau
 
     def afficher_plateau(self):
+        #Fonction qui affiche dans la console le plateau
         print("  0 1 2 3 4 5 6 7 8 9")
         for numero_ligne, ligne_plateau in enumerate(self.plateau):
             ligne_print = str(numero_ligne) + ' '
@@ -34,6 +34,9 @@ class Plateau:
                     ligne_print += '☒ '
             print(ligne_print + str(numero_ligne))
         print("  0 1 2 3 4 5 6 7 8 9")
+
+    def modifier_case(self, coordonees_x, coordonees_y, valeur):
+        self.plateau[coordonees_x][coordonees_y] = valeur
    
 plateau = Plateau()
 plateau.creation_plateau()
