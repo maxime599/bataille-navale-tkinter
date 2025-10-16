@@ -5,6 +5,8 @@ class Plateau:
     2 = case avec bateau
     3 = case touché avec bateau
     """
+    # x=ligne
+    # y=colonne
     def __init__(self):
         self.plateau = []
 
@@ -38,6 +40,24 @@ class Plateau:
     def modifier_case(self, coordonees_x, coordonees_y, valeur):
         self.plateau[coordonees_x][coordonees_y] = valeur
    
+    # retourne True si est un bateau est présent
+    def cible_case(self, coordonees_x, coordonees_y):
+        if self.plateau[coordonees_x][coordonees_y]==2:
+            return True
+        else:
+            return False
+
+    # retourne True si c'est possible de cibler la case  
+    def is_possible_cible(self, coordonees_x, coordonees_y):
+        if coordonees_x>9 or coordonees_x<0 or coordonees_y>9 or coordonees_y<0:
+            return False
+        else:
+            if self.plateau[coordonees_x][coordonees_y]==1 or self.plateau[coordonees_x][coordonees_y]==3:
+                return False
+            else :
+                return True
+
+
 plateau = Plateau()
 plateau.creation_plateau()
 plateau.afficher_plateau()
