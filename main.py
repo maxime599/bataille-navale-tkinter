@@ -6,9 +6,10 @@ class Plateau:
     3 = case touché avec bateau
     x=ligne
     y=colonne"""
-    def __init__(self):
+    def __init__(self, type):
         self.plateau = []
         self.liste_bateau_restant = []
+        self.type = type  #"allier" ou "adversaire"
 
     def creation_plateau(self):
         #Fonction qui créer le plateau vide, en 10x10, rempli de 0
@@ -72,13 +73,14 @@ class Plateau:
             for i in range(coordonees_y, coordonees_y+taille):
                 if i >= 10  :   
                     return False
-                if self.plateau[i][coordonees_y] != 0:
+                if self.plateau[coordonees_x][i] != 0:
                     return False
         elif orientation == 1:
             for i in range(coordonees_x, coordonees_x+taille):
                 if i >= 10:
                     return False
-                if self.plateau[coordonees_x][i] != 0:
+                if self.plateau[i][coordonees_y] != 0:
+                
                     return False
         else:
             return False
@@ -86,15 +88,15 @@ class Plateau:
 
         self.liste_bateau_restant.append([taille,[]])
         #modifie la matrice plateau avec les bonnes valeurs
-        if orientation == 0:
+        if orientation == 1:
             for i in range(coordonees_x, coordonees_x+taille):
-                plateau.modifier_case(i, coordonees_y, 2)
+                self.modifier_case(i, coordonees_y, 2)
                 self.liste_bateau_restant[-1][1].append([i, coordonees_y])
                 
 
-        elif orientation == 1:
+        elif orientation == 0:
             for i in range(coordonees_y, coordonees_y+taille):
-                plateau.modifier_case(coordonees_x, i, 2)
+                self.modifier_case(coordonees_x, i, 2)
                 self.liste_bateau_restant[-1][1].append([coordonees_x, i])
 
         return True
@@ -106,16 +108,34 @@ class Plateau:
                 if coordonees_case_bateau == [coordonees_x, coordonees_y]:
                     self.liste_bateau_restant[index_bateau][1].remove(coordonees_case_bateau)
                     return (bateau[0], len(bateau[1]))
+    
+    def nb_bateau_restant(self):
+        output = 0
+        for  index_bateau, bateau in enumerate(self.liste_bateau_restant):
+            if len(bateau[1]) != 0:
+                output += 1
+        return output
 
 
+"""
+plateau_joueur1_allier = Plateau("allier")
+plateau_joueur1_adversaire = Plateau("adversaire")
+plateau_joueur2_allier = Plateau("allier")
+plateau_joueur2_adversaire = Plateau("adversaire")
 
-plateau = Plateau()
+
+while 1:
+"""
+
+plateau = Plateau("allier")
 plateau.creation_plateau()
 plateau.afficher_plateau()
 
-plateau.ajouter_bateau(7, 2, 1, 2)
+plateau.ajouter_bateau(7, 2, 0, 5)
+plateau.ajouter_bateau(4,4, 1, 3)
 plateau.afficher_plateau()
 print(plateau.liste_bateau_restant)
 
 print(plateau.nb_vie_bateau(7 , 2))
 print(plateau.liste_bateau_restant)
+print(plateau.nb_bateau_restant())
