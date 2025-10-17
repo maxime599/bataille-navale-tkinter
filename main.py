@@ -6,6 +6,7 @@ class Plateau:
     3 = case touché avec bateau
     x=ligne
     y=colonne"""
+    
     def __init__(self, type):
         self.plateau = []
         self.liste_bateau_restant = []
@@ -110,32 +111,9 @@ class Plateau:
                     return (bateau[0], len(bateau[1]))
     
     def nb_bateau_restant(self):
+        #renvoie le nombre de bateau de bateau encore en vie
         output = 0
         for  index_bateau, bateau in enumerate(self.liste_bateau_restant):
             if len(bateau[1]) != 0:
                 output += 1
         return output
-
-
-"""
-plateau_joueur1_allier = Plateau("allier")
-plateau_joueur1_adversaire = Plateau("adversaire")
-plateau_joueur2_allier = Plateau("allier")
-plateau_joueur2_adversaire = Plateau("adversaire")
-
-
-while 1:
-"""
-
-plateau = Plateau("allier")
-plateau.creation_plateau()
-plateau.afficher_plateau()
-
-plateau.ajouter_bateau(7, 2, 0, 5)
-plateau.ajouter_bateau(4,4, 1, 3)
-plateau.afficher_plateau()
-print(plateau.liste_bateau_restant)
-
-print(plateau.nb_vie_bateau(7 , 2))
-print(plateau.liste_bateau_restant)
-print(plateau.nb_bateau_restant())
