@@ -6,7 +6,7 @@ class Plateau:
     3 = case touché avec bateau
     x=ligne
     y=colonne"""
-    
+
     def __init__(self, type):
         self.plateau = []
         self.liste_bateau_restant = []
@@ -102,7 +102,8 @@ class Plateau:
 
         return True
 
-    def nb_vie_bateau(self, coordonees_x, coordonees_y):
+    def enlever_case_bateau(self, coordonees_x, coordonees_y):
+        #remove dans la liste des bateaux la case corespondante
         #renvoie la taille initial du bateau et la taille après le ciblage 
         for index_bateau, bateau in enumerate(self.liste_bateau_restant):
             for coordonees_case_bateau in bateau[1]:
@@ -117,3 +118,16 @@ class Plateau:
             if len(bateau[1]) != 0:
                 output += 1
         return output
+
+
+plateau_joueur1_allier = Plateau("allier")
+plateau_joueur1_adversaire = Plateau("adversaire")
+plateau_joueur2_allier = Plateau("allier")
+plateau_joueur2_adversaire = Plateau("adversaire")
+tour = 1
+
+dico_bateaux_a_poser = {}
+for i in range(1,6):  
+    dico_bateaux_a_poser[i] = int(input(f"Combien de bateaux de taille {i} voulez vous ajouter ? "))
+
+#il faut créer une liste à partir du dico pour avoir la liste de toutes les tailles
