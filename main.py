@@ -100,6 +100,7 @@ class Plateau:
         return True
 
     def nb_vie_bateau(self, coordonees_x, coordonees_y):
+        #renvoie la taille initial du bateau et la taille après le ciblage 
         for index_bateau, bateau in enumerate(self.liste_bateau_restant):
             for coordonees_case_bateau in bateau[1]:
                 if coordonees_case_bateau == [coordonees_x, coordonees_y]:
