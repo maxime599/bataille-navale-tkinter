@@ -162,26 +162,69 @@ for joueur in [1,2]:
                 bonne_position_bateau = plateau_joueur2.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation, taille)
    
                 plateau_joueur2.afficher_plateau()
-"""
+
+fin_du_jeux = False
 tour = 1
-while 1:
+while  not fin_du_jeux:
+    # affiche les plateaux
     print("\n","Ton propre plateau qui sert à viser l'adversaire")
     if tour == 1:
-        plateau_joueur1.afficher_plateau()
+        plateau_joueur2.afficher_plateau(True, False)
         print("\n" , "Ton plateau avec tes bateaux")
-        plateau_joueur1_allier.afficher_plateau()
+        plateau_joueur1.afficher_plateau(True, True)
 
-        bonne_position_cible = False
-        while not bonne_position_cible:
-            coordonner_case_x = input("Dans quel numero de ligne veux tu cibler ?")
-            coordonner_case_y = input("Dans quel numero de colonne veux tu cibler ?")
-            bonne_position_cible = plateau_joueur2_allier.is_possible_cible(coordonner_case_x, coordonner_case_y)
+    if tour == 2:
+        plateau_joueur1.afficher_plateau(True, False)
+        print("\n" , "Ton plateau avec tes bateaux")
+        plateau_joueur2.afficher_plateau(True, True)
+    
+    print(f"C'est au tour du joueur {tour} de jouer")
 
-        if plateau_joueur2_allier.cible_case == True:
-            plateau_joueur2_allier.enlever_case_bateau(coordonner_case_x, coordonner_case_y)
-            plateau_joueur2_allier.modifier_case(coordonner_case_x, coordonner_case_y, 3)
-            plateau_joueur1_adversaire.modifier_case(coordonner_case_x, coordonner_case_y, 3)
+    # demande la case à ciblé
+    bonne_position_cible = False
+    while not bonne_position_cible:
+        coordonner_case_x = input("Dans quel numero de ligne veux tu cibler ?")
+        coordonner_case_y = input("Dans quel numero de colonne veux tu cibler ?")
+        if tour == 1:
+            bonne_position_cible = plateau_joueur2.is_possible_cible(coordonner_case_x, coordonner_case_y)
         else:
-            plateau_joueur2_allier.modifier_case(coordonner_case_x, coordonner_case_y, 1)
-            plateau_joueur1_adversaire.modifier_case(coordonner_case_x, coordonner_case_y, 1)
-"""
+            bonne_position_cible = plateau_joueur1.is_possible_cible(coordonner_case_x, coordonner_case_y)
+
+    # cible une case et gestion bateaux plus fin de game
+    if tour == 1:
+        if plateau_joueur2.cible_case() == True: # si bateau présent
+            taille_bateau_restant = plateau_joueur2.enlever_case_bateau(coordonner_case_x, coordonner_case_y)
+            plateau_joueur2.modifier_case(coordonner_case_x, coordonner_case_y, 3)
+            if taille_bateau_restant[1] != 0: # s'il reste des parties non découvertes du bateau trouvé
+                print(f"Le bateau de taille {taille_bateau_restant[0]} a été touché il lui reste {taille_bateau_restant[1]} vie(s)")
+            else: # si tout le bateau a été découvert
+                nb_bateaux_restant = plateau_joueur2.nb_bateau_restant()
+                print(f"Le bateau de taille {taille_bateau_restant[0]} a été coulé")
+                if nb_bateaux_restant != 0: # s'il reste des bateaux
+                    print(f"Il reste {nb_bateaux_restant} bateau(x) en vie")
+                else: # s'il n'y a plus de bateau restant
+                    print("Partie terminée, le joueur 1 a gagné")
+                    fin_du_jeux = True
+        else: # une case vide
+            plateau_joueur2.modifier_case(coordonner_case_x, coordonner_case_y, 1)
+            print("La case ne contient pas de bateaux")
+            tour = 2
+
+    if tour == 2:
+        if plateau_joueur1.cible_case() == True: # si bateau présent
+            taille_bateau_restant = plateau_joueur1.enlever_case_bateau(coordonner_case_x, coordonner_case_y)
+            plateau_joueur1.modifier_case(coordonner_case_x, coordonner_case_y, 3)
+            if taille_bateau_restant[1] != 0: # s'il reste des parties non découvertes du bateau trouvé
+                print(f"Le bateau de taille {taille_bateau_restant[0]} a été touché il lui reste {taille_bateau_restant[1]} vie(s)")
+            else: # si tout le bateau a été découvert
+                nb_bateaux_restant = plateau_joueur1.nb_bateau_restant()
+                print(f"Le bateau de taille {taille_bateau_restant[0]} a été coulé")
+                if nb_bateaux_restant != 0: # s'il reste des bateaux
+                    print(f"Il reste {nb_bateaux_restant} bateau(x) en vie")
+                else: # s'il n'y a plus de bateau restant
+                    print("Partie terminée, le joueur 1 a gagné")
+                    fin_du_jeux = True
+        else: # une case vide
+            plateau_joueur1.modifier_case(coordonner_case_x, coordonner_case_y, 1)
+            print("La case ne contient pas de bateaux")
+            tour = 1
