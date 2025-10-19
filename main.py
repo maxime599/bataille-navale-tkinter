@@ -115,7 +115,8 @@ class Plateau:
                 if coordonees_case_bateau == [coordonees_x, coordonees_y]:
                     self.liste_bateau_restant[index_bateau][1].remove(coordonees_case_bateau)
                     return (bateau[0], len(bateau[1]))
-    
+        return (0,0)
+
     def nb_bateau_restant(self):
         #renvoie le nombre de bateau de bateau encore en vie
         output = 0
@@ -143,7 +144,7 @@ for clef in dico_bateaux_a_poser:
 
 
 #Bloucle qui demande au deux joueurs de donner la position de leurs bateau à poser sur leur plateau respéctif, tout en 
-for joueur in [1,2]:
+"""for joueur in [1,2]:
     for indice, taille in enumerate(liste_bateaux_a_poser):
         if joueur == 1:
             plateau_joueur1.afficher_plateau(True, True)
@@ -161,9 +162,12 @@ for joueur in [1,2]:
                 bonne_position_bateau = plateau_joueur2.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation, taille)
    
                 plateau_joueur2.afficher_plateau(True, True)
-
+"""
+plateau_joueur1.ajouter_bateau(0,0,0,2)
+plateau_joueur2.ajouter_bateau(0,0,0,2)
 tour = 1
 fin_du_jeux = False
+coordonner_case_x, coordonner_case_y = 0,0
 while  not fin_du_jeux:
     # affiche les plateaux
     print("\n","Ton propre plateau qui sert à viser l'adversaire")
@@ -182,8 +186,8 @@ while  not fin_du_jeux:
     # demande la case à ciblé
     bonne_position_cible = False
     while not bonne_position_cible:
-        coordonner_case_x = input("Dans quel numero de ligne veux tu cibler ?")
-        coordonner_case_y = input("Dans quel numero de colonne veux tu cibler ?")
+        coordonner_case_x = int(input("Dans quel numero de ligne veux tu cibler ?"))
+        coordonner_case_y = int(input("Dans quel numero de colonne veux tu cibler ?"))
         if tour == 1:
             bonne_position_cible = plateau_joueur2.is_possible_cible(coordonner_case_x, coordonner_case_y)
         else:
@@ -191,7 +195,7 @@ while  not fin_du_jeux:
 
     # cible une case et gestion bateaux plus fin de game
     if tour == 1:
-        if plateau_joueur2.cible_case() == True: # si bateau présent
+        if plateau_joueur2.cible_case(coordonner_case_x, coordonner_case_y) == True: # si bateau présent
             taille_bateau_restant = plateau_joueur2.enlever_case_bateau(coordonner_case_x, coordonner_case_y)
             plateau_joueur2.modifier_case(coordonner_case_x, coordonner_case_y, 3)
             if taille_bateau_restant[1] != 0: # s'il reste des parties non découvertes du bateau trouvé
@@ -210,7 +214,7 @@ while  not fin_du_jeux:
             tour = 2
 
     if tour == 2:
-        if plateau_joueur1.cible_case() == True: # si bateau présent
+        if plateau_joueur1.cible_case(coordonner_case_x, coordonner_case_y) == True: # si bateau présent
             taille_bateau_restant = plateau_joueur1.enlever_case_bateau(coordonner_case_x, coordonner_case_y)
             plateau_joueur1.modifier_case(coordonner_case_x, coordonner_case_y, 3)
             if taille_bateau_restant[1] != 0: # s'il reste des parties non découvertes du bateau trouvé
