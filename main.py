@@ -21,7 +21,7 @@ class Plateau:
             self.plateau.append(ligne)
         return self.plateau
 
-    def afficher_plateau(self):
+    def afficher_plateau(self, afficher_1, afficher_2):
         #Fonction qui affiche dans la console le plateau
         print("  0 1 2 3 4 5 6 7 8 9")
         for numero_ligne, ligne_plateau in enumerate(self.plateau):
@@ -30,9 +30,15 @@ class Plateau:
                 if case==0:
                     ligne_print += '· '
                 elif case == 1:
-                    ligne_print += 'X '
+                    if afficher_1:
+                        ligne_print += 'X '
+                    else:
+                        ligne_print += '· '
                 elif case == 2:
-                    ligne_print += '□ '
+                    if afficher_2:
+                        ligne_print += '□ '
+                    else:
+                        ligne_print += '· '
                 elif case == 3:
                     ligne_print += '☒ '
             print(ligne_print + str(numero_ligne))
@@ -154,6 +160,7 @@ for joueur in [1,2]:
                 plateau_joueur1.afficher_plateau()
             else:
                 bonne_position_bateau = plateau_joueur2.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation, taille)
+   
                 plateau_joueur2.afficher_plateau()
 """
 tour = 1
@@ -178,4 +185,3 @@ while 1:
             plateau_joueur2_allier.modifier_case(coordonner_case_x, coordonner_case_y, 1)
             plateau_joueur1_adversaire.modifier_case(coordonner_case_x, coordonner_case_y, 1)
 """
-
