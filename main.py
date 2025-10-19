@@ -145,11 +145,12 @@ for clef in dico_bateaux_a_poser:
 
 #Bloucle qui demande au deux joueurs de donner la position de leurs bateau à poser sur leur plateau respéctif, tout en 
 for joueur in [1,2]:
+    if joueur == 1:
+        plateau_joueur1.afficher_plateau(True, True)
+    else:
+        plateau_joueur2.afficher_plateau(True, True)
     for indice, taille in enumerate(liste_bateaux_a_poser):
-        if joueur == 1:
-            plateau_joueur1.afficher_plateau(True, True)
-        else:
-            plateau_joueur2.afficher_plateau(True, True)
+
         bonne_position_bateau = False  
         while not bonne_position_bateau:
             coordonnee_case_x = int(input(f"Dans quel numéro de ligne veut tu placer le coin de ton bateau n° {indice+1} de taille {taille} ? : "))
@@ -211,7 +212,7 @@ while  not fin_du_jeux:
             print("La case ne contient pas de bateaux")
             tour = 2
 
-    if tour == 2:
+    elif tour == 2:
         if plateau_joueur1.cible_case(coordonner_case_x, coordonner_case_y) == True: # si bateau présent
             taille_bateau_restant = plateau_joueur1.enlever_case_bateau(coordonner_case_x, coordonner_case_y)
             plateau_joueur1.modifier_case(coordonner_case_x, coordonner_case_y, 3)
