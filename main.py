@@ -144,7 +144,7 @@ for clef in dico_bateaux_a_poser:
 
 
 #Bloucle qui demande au deux joueurs de donner la position de leurs bateau à poser sur leur plateau respéctif, tout en 
-"""for joueur in [1,2]:
+for joueur in [1,2]:
     for indice, taille in enumerate(liste_bateaux_a_poser):
         if joueur == 1:
             plateau_joueur1.afficher_plateau(True, True)
@@ -162,9 +162,7 @@ for clef in dico_bateaux_a_poser:
                 bonne_position_bateau = plateau_joueur2.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation, taille)
    
                 plateau_joueur2.afficher_plateau(True, True)
-"""
-plateau_joueur1.ajouter_bateau(0,0,0,2)
-plateau_joueur2.ajouter_bateau(0,0,0,2)
+
 tour = 1
 fin_du_jeux = False
 coordonner_case_x, coordonner_case_y = 0,0
