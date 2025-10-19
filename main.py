@@ -7,10 +7,9 @@ class Plateau:
     x=ligne
     y=colonne"""
 
-    def __init__(self, type):
+    def __init__(self):
         self.plateau = []
         self.liste_bateau_restant = []
-        self.type = type  #"allier" ou "adversaire"
 
     def creation_plateau(self):
         #Fonction qui créer le plateau vide, en 10x10, rempli de 0
@@ -114,32 +113,54 @@ class Plateau:
     def nb_bateau_restant(self):
         #renvoie le nombre de bateau de bateau encore en vie
         output = 0
-        for  index_bateau, bateau in enumerate(self.liste_bateau_restant):
+        for bateau in self.liste_bateau_restant:
             if len(bateau[1]) != 0:
                 output += 1
         return output
 
 
-plateau_joueur1_allier = Plateau("allier")
-plateau_joueur1_adversaire = Plateau("adversaire")
-plateau_joueur2_allier = Plateau("allier")
-plateau_joueur2_adversaire = Plateau("adversaire")
-plateau_joueur1_allier.creation_plateau()
-plateau_joueur1_adversaire.creation_plateau()
-plateau_joueur2_allier.creation_plateau()
-plateau_joueur2_adversaire.creation_plateau()
+plateau_joueur1 = Plateau()
+plateau_joueur2 = Plateau()
 
-"""
+plateau_joueur1.creation_plateau()
+plateau_joueur2.creation_plateau()
+
+tour = 1
+
+#Demande le nombre de bateaux de taille 1 à 6 à poser dans le plateau
 dico_bateaux_a_poser = {}
 for i in range(1,6):  
-    dico_bateaux_a_poser[i] = int(input(f"Combien de bateaux de taille {i} voulez vous ajouter ? "))"""
+    dico_bateaux_a_poser[i] = int(input(f"Combien de bateaux de taille {i} voulez vous ajouter ? "))
+liste_bateaux_a_poser = []
+for clef in dico_bateaux_a_poser:
+    for i in range(dico_bateaux_a_poser[clef]):
+        liste_bateaux_a_poser.append(clef)
 
 
+#Bloucle qui demande au deux joueurs de donner la position de leurs bateau à poser sur leur plateau respéctif, tout en 
+for joueur in [1,2]:
+    for indice, taille in enumerate(liste_bateaux_a_poser):
+        if joueur == 1:
+            plateau_joueur1.afficher_plateau()
+        else:
+            plateau_joueur2.afficher_plateau()
+        bonne_position_bateau = False  
+        while not bonne_position_bateau:
+            coordonnee_case_x = int(input(f"Dans quel numéro de ligne veut tu placer le coin de ton bateau n° {indice+1} de taille {taille} ? : "))
+            coordonnee_case_y = int(input(f"Dans quel numéro de colonne veut tu placer le coin de ton bateau n° {indice+1} de taille {taille} ? : "))
+            orientation = int(input("Dans quel orientation ? (0 = droite, 1 = bas)"))
+            if joueur == 1:
+                bonne_position_bateau = plateau_joueur1.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation, taille)
+                plateau_joueur1.afficher_plateau()
+            else:
+                bonne_position_bateau = plateau_joueur2.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation, taille)
+                plateau_joueur2.afficher_plateau()
+"""
 tour = 1
 while 1:
     print("\n","Ton propre plateau qui sert à viser l'adversaire")
     if tour == 1:
-        plateau_joueur1_adversaire.afficher_plateau()
+        plateau_joueur1.afficher_plateau()
         print("\n" , "Ton plateau avec tes bateaux")
         plateau_joueur1_allier.afficher_plateau()
 
@@ -156,5 +177,5 @@ while 1:
         else:
             plateau_joueur2_allier.modifier_case(coordonner_case_x, coordonner_case_y, 1)
             plateau_joueur1_adversaire.modifier_case(coordonner_case_x, coordonner_case_y, 1)
-
+"""
 
