@@ -124,10 +124,37 @@ plateau_joueur1_allier = Plateau("allier")
 plateau_joueur1_adversaire = Plateau("adversaire")
 plateau_joueur2_allier = Plateau("allier")
 plateau_joueur2_adversaire = Plateau("adversaire")
-tour = 1
+plateau_joueur1_allier.creation_plateau()
+plateau_joueur1_adversaire.creation_plateau()
+plateau_joueur2_allier.creation_plateau()
+plateau_joueur2_adversaire.creation_plateau()
 
+"""
 dico_bateaux_a_poser = {}
 for i in range(1,6):  
-    dico_bateaux_a_poser[i] = int(input(f"Combien de bateaux de taille {i} voulez vous ajouter ? "))
+    dico_bateaux_a_poser[i] = int(input(f"Combien de bateaux de taille {i} voulez vous ajouter ? "))"""
 
-#il faut créer une liste à partir du dico pour avoir la liste de toutes les tailles
+
+tour = 1
+while 1:
+    print("\n","Ton propre plateau qui sert à viser l'adversaire")
+    if tour == 1:
+        plateau_joueur1_adversaire.afficher_plateau()
+        print("\n" , "Ton plateau avec tes bateaux")
+        plateau_joueur1_allier.afficher_plateau()
+
+        bonne_position_cible = False
+        while not bonne_position_cible:
+            coordonner_case_x = input("Dans quel numero de ligne veux tu cibler ?")
+            coordonner_case_y = input("Dans quel numero de colonne veux tu cibler ?")
+            bonne_position_cible = plateau_joueur2_allier.is_possible_cible(coordonner_case_x, coordonner_case_y)
+
+        if plateau_joueur2_allier.cible_case == True:
+            plateau_joueur2_allier.enlever_case_bateau(coordonner_case_x, coordonner_case_y)
+            plateau_joueur2_allier.modifier_case(coordonner_case_x, coordonner_case_y, 3)
+            plateau_joueur1_adversaire.modifier_case(coordonner_case_x, coordonner_case_y, 3)
+        else:
+            plateau_joueur2_allier.modifier_case(coordonner_case_x, coordonner_case_y, 1)
+            plateau_joueur1_adversaire.modifier_case(coordonner_case_x, coordonner_case_y, 1)
+
+
