@@ -147,9 +147,9 @@ for clef in dico_bateaux_a_poser:
 for joueur in [1,2]:
     for indice, taille in enumerate(liste_bateaux_a_poser):
         if joueur == 1:
-            plateau_joueur1.afficher_plateau()
+            plateau_joueur1.afficher_plateau(True, True)
         else:
-            plateau_joueur2.afficher_plateau()
+            plateau_joueur2.afficher_plateau(True, True)
         bonne_position_bateau = False  
         while not bonne_position_bateau:
             coordonnee_case_x = int(input(f"Dans quel numéro de ligne veut tu placer le coin de ton bateau n° {indice+1} de taille {taille} ? : "))
@@ -157,11 +157,11 @@ for joueur in [1,2]:
             orientation = int(input("Dans quel orientation ? (0 = droite, 1 = bas)"))
             if joueur == 1:
                 bonne_position_bateau = plateau_joueur1.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation, taille)
-                plateau_joueur1.afficher_plateau()
+                plateau_joueur1.afficher_plateau(True, True)
             else:
                 bonne_position_bateau = plateau_joueur2.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation, taille)
    
-                plateau_joueur2.afficher_plateau()
+                plateau_joueur2.afficher_plateau(True, True)
 """
 tour = 1
 while 1:
