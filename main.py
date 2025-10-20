@@ -2,11 +2,11 @@ from tkinter import *
 from time import *
 class Plateau:
     """
-    0 = vide
-    1 = case ciblé sans bateaus
-    2 = case avec bateau
-    3 = case touché avec bateau
-    x=ligne
+    0 = vide                       blanc
+    1 = case ciblé sans bateaus    viollet
+    2 = case avec bateau           noir
+    3 = case touché avec bateau    vert
+    x=ligne 
     y=colonne"""
 
     def __init__(self):
@@ -141,16 +141,31 @@ class IU:
         
         self.images = []
 
-    def afficher_plateau(self, plateau):
-        sleep(2)
+    def afficher_plateau(self, plateau, afficher_1, afficher_2, position_canva):
         for index_ligne, ligne in enumerate(plateau):
             for index_colonne, colonne in enumerate(ligne):
                 if colonne == 0:
-                    print('ici')
-                    image = PhotoImage(file='images/vert.png', master=self.fenetre)
-                    self.images.append(image)  # On garde une référence !
-                    self.canva_gauche.create_image(index_ligne*45+index_ligne*3+1, index_colonne*45+index_colonne*3+1, image=image, anchor=NW)
+                    image = PhotoImage(file='images/blanc.png', master=self.fenetre)
+                    
+                elif colonne == 1:
+                    if afficher_1:
+                        image = PhotoImage(file='images/viollet.png', master=self.fenetre)
+                    else:
+                        image = PhotoImage(file='images/blanc.png', master=self.fenetre)
 
+                elif colonne == 2:
+                    if afficher_2:
+                        image = PhotoImage(file='images/noir.png', master=self.fenetre)
+                    else:
+                        image = PhotoImage(file='images/blanc.png', master=self.fenetre)
+                else:
+                    image = PhotoImage(file='images/vert.png', master=self.fenetre)
+
+                self.images.append(image)  # On garde une référence !
+                if position_canva == 'gauche':
+                    self.canva_gauche.create_image(index_colonne*45+index_colonne*3+1, index_ligne*45+index_ligne*3+1, image=image, anchor=NW)
+                else:
+                    self.canva_droite.create_image(index_colonne*45+index_colonne*3+1, index_ligne*45+index_ligne*3+1, image=image, anchor=NW)
 
 plateau_joueur1 = Plateau()
 plateau_joueur2 = Plateau()
@@ -158,8 +173,12 @@ plateau_joueur2 = Plateau()
 plateau_joueur1.creation_plateau()
 plateau_joueur2.creation_plateau()
 
-fenetre = IU("fenetre 1")
-fenetre.afficher_plateau(plateau_joueur1.plateau)
+fenetre1 = IU("fenetre 1")
+fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'gauche')
+fenetre1.afficher_plateau(plateau_joueur2.plateau, True, True, 'droite')
+fenetre2 = IU("fenetre 2")
+fenetre2.afficher_plateau(plateau_joueur1.plateau, True, True, 'gauche')
+fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droite')
 
 
 #Demande le nombre de bateaux de taille 1 à 6 à poser dans le plateau
@@ -176,8 +195,10 @@ for clef in dico_bateaux_a_poser:
 for joueur in [1,2]:
     if joueur == 1:
         plateau_joueur1.afficher_plateau(True, True)
+        fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'droit')
     else:
         plateau_joueur2.afficher_plateau(True, True)
+        fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droit')
     for indice, taille in enumerate(liste_bateaux_a_poser):
 
         bonne_position_bateau = False  
@@ -188,10 +209,13 @@ for joueur in [1,2]:
             if joueur == 1:
                 bonne_position_bateau = plateau_joueur1.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation, taille)
                 plateau_joueur1.afficher_plateau(True, True)
+                fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'droit')
             else:
                 bonne_position_bateau = plateau_joueur2.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation, taille)
    
                 plateau_joueur2.afficher_plateau(True, True)
+                fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droit')
+
 
 tour = 1
 fin_du_jeux = False
@@ -208,7 +232,14 @@ while  not fin_du_jeux:
         plateau_joueur1.afficher_plateau(True, False)
         print("\n" , "Ton plateau avec tes bateaux")
         plateau_joueur2.afficher_plateau(True, True)
+        
     
+    fenetre1.afficher_plateau(plateau_joueur2.plateau, True, False, 'gauche')
+    fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'droite')
+    fenetre2.afficher_plateau(plateau_joueur1.plateau, True, False, 'gauche')
+    fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droite')
+
+
     print(f"C'est au tour du joueur {tour} de jouer")
 
     # demande la case à ciblé
