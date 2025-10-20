@@ -221,6 +221,11 @@ def on_motion(event, fenetre, plateau, orientation, taille, position_canva):
     x_case, y_case = fenetre.click_to_case(event.x, event.y)
     fenetre.afficher_previsualisation(plateau, x_case, y_case, orientation, taille, position_canva)
 
+def on_wheel(event, fenetre, plateau, orientation, taille, position_canva):
+    orientation[0] = 1 - orientation[0]  # alterne entre 0 et 1
+    x_case, y_case = fenetre.click_to_case(event.x, event.y)
+    fenetre.afficher_previsualisation(plateau, x_case, y_case, orientation[0], taille, position_canva)
+
 plateau_joueur1 = Plateau()
 plateau_joueur2 = Plateau()
 
@@ -262,14 +267,16 @@ for joueur in [1,2]:
 
             #orientation = int(input("Dans quel orientation ? (0 = droite, 1 = bas)"))
 
-            orientation = 0
+            orientation = [0]
 
 
 
             if joueur == 1:
-                fenetre1.canva_droite.bind("<Motion>", lambda event: on_motion(event, fenetre1, plateau_joueur1.plateau, orientation, taille, 'droite'))
+                fenetre1.canva_droite.bind("<Motion>", lambda event: on_motion(event, fenetre1, plateau_joueur1.plateau, orientation[0], taille, 'droite'))
+                fenetre1.canva_droite.bind("<MouseWheel>", lambda event: on_wheel(event, fenetre1, plateau_joueur1.plateau, orientation, taille, 'droite'))
             else:
-                fenetre2.canva_droite.bind("<Motion>", lambda event: on_motion(event, fenetre2, plateau_joueur2.plateau, orientation, taille, 'droite'))
+                fenetre2.canva_droite.bind("<Motion>", lambda event: on_motion(event, fenetre2, plateau_joueur2.plateau, orientation[0], taille, 'droite'))
+                fenetre2.canva_droite.bind("<MouseWheel>", lambda event: on_wheel(event, fenetre2, plateau_joueur2.plateau, orientation, taille, 'droite'))
 
             if joueur == 1:
                 coordonnee_case = fenetre1.attendre_click_case()
@@ -277,18 +284,19 @@ for joueur in [1,2]:
                 coordonnee_case = fenetre2.attendre_click_case()
 
             fenetre1.canva_droite.unbind("<Motion>")
+            fenetre1.canva_droite.unbind("<MouseWheel>")
             fenetre2.canva_droite.unbind("<Motion>")
+            fenetre2.canva_droite.unbind("<MouseWheel>")
 
             coordonnee_case_x = coordonnee_case[0]
             coordonnee_case_y = coordonnee_case[1]
 
             if joueur == 1:
-                bonne_position_bateau = plateau_joueur1.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation, taille)
+                bonne_position_bateau = plateau_joueur1.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation[0], taille)
                 plateau_joueur1.afficher_plateau(True, True)
                 fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'droite')
             else:
-                bonne_position_bateau = plateau_joueur2.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation, taille)
-   
+                bonne_position_bateau = plateau_joueur2.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation[0], taille)   
                 plateau_joueur2.afficher_plateau(True, True)
                 fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droite')
 
