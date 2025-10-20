@@ -5,10 +5,11 @@ root_created = False
 
 class Plateau:
     """
-    0 = vide                       blanc
-    1 = case ciblé sans bateaus    viollet
-    2 = case avec bateau           noir
-    3 = case touché avec bateau    vert
+    0 = vide                            blanc
+    1 = case ciblé sans bateaus         viollet
+    2 = case avec bateau                noir
+    3 = case touché avec bateau         vert
+    4 = case avec bateau prévisualisé   gris
     x=ligne 
     y=colonne"""
 
@@ -153,28 +154,31 @@ class IU:
 
         self.taille_case = 45
 
-    def afficher_plateau(self, plateau, afficher_1, afficher_2, position_canva):
+        self.img_blanc = PhotoImage(file='images/blanc.png', master=self.fenetre)
+        self.img_viollet = PhotoImage(file='images/viollet.png', master=self.fenetre)
+        self.img_noir = PhotoImage(file='images/noir.png', master=self.fenetre)
+        self.img_vert = PhotoImage(file='images/vert.png', master=self.fenetre)
+        self.img_gris = PhotoImage(file='images/gris.png', master=self.fenetre)
 
+    def afficher_plateau(self, plateau, afficher_1, afficher_2, position_canva):
+        self.images = []
+        if position_canva == 'gauche':
+            self.canva_gauche.delete("all")
+        else:
+            self.canva_droite.delete("all")
         for index_ligne, ligne in enumerate(plateau):
             for index_colonne, colonne in enumerate(ligne):
                 if colonne == 0:
-                    image = PhotoImage(file='images/blanc.png', master=self.fenetre)
-                    
+                    image = self.img_blanc
                 elif colonne == 1:
-                    if afficher_1:
-                        image = PhotoImage(file='images/viollet.png', master=self.fenetre)
-                    else:
-                        image = PhotoImage(file='images/blanc.png', master=self.fenetre)
-
+                    image = self.img_viollet if afficher_1 else self.img_blanc
                 elif colonne == 2:
-                    if afficher_2:
-                        image = PhotoImage(file='images/noir.png', master=self.fenetre)
-                    else:
-                        image = PhotoImage(file='images/blanc.png', master=self.fenetre)
-                else:
-                    image = PhotoImage(file='images/vert.png', master=self.fenetre)
-
-                self.images.append(image)  # On garde une référence !
+                    image = self.img_noir if afficher_2 else self.img_blanc
+                elif colonne == 3:
+                    image = self.img_vert
+                else:  # colonne == 4
+                    image = self.img_gris
+                self.images.append(image)
                 if position_canva == 'gauche':
                     self.canva_gauche.create_image(index_colonne*self.taille_case+index_colonne*3+1, index_ligne*self.taille_case+index_ligne*3+1, image=image, anchor=NW)
                 else:
@@ -184,11 +188,11 @@ class IU:
         return (int(coordonnee_click_y/(self.taille_case+3)), int(coordonnee_click_x/(self.taille_case+3)))
 
     def attendre_click_case(self):
-            self.click_coord = (0,0)
-            self._clicked.set(False)
-            self.fenetre.bind("<Button-1>", self.on_click)
-            self.fenetre.wait_variable(self._clicked) 
-            return self.click_coord  # rejoueurne un tuple (x_case, y_case)
+        self.click_coord = (0,0)
+        self._clicked.set(False)
+        self.fenetre.bind("<Button-1>", self.on_click)
+        self.fenetre.wait_variable(self._clicked) 
+        return self.click_coord  # retourne un tuple (x_case, y_case)
     
     def on_click(self, event):
         x_pixel = event.x
@@ -198,6 +202,24 @@ class IU:
         self.fenetre.unbind("<Button-1>")
         self._clicked.set(True)
 
+
+    def afficher_previsualisation(self, plateau, x, y, orientation, taille, position_canva):
+        plateau_preview = [row[:] for row in plateau]
+        # Place le bateau en gris (valeur 4) si possible
+        if orientation == 0:
+            for i in range(taille):
+                if 0 <= y + i < 10:
+                    plateau_preview[x][y + i] = 4
+        else:
+            for i in range(taille):
+                if 0 <= x + i < 10:
+                    plateau_preview[x + i][y] = 4
+        self.afficher_plateau(plateau_preview, True, True, position_canva)
+
+
+def on_motion(event, fenetre, plateau, orientation, taille, position_canva):
+    x_case, y_case = fenetre.click_to_case(event.x, event.y)
+    fenetre.afficher_previsualisation(plateau, x_case, y_case, orientation, taille, position_canva)
 
 plateau_joueur1 = Plateau()
 plateau_joueur2 = Plateau()
@@ -239,12 +261,23 @@ for joueur in [1,2]:
             #coordonnee_case_y = int(input(f"Dans quel numéro de colonne veut tu placer le coin de ton bateau n° {indice+1} de taille {taille} ? : "))
 
             #orientation = int(input("Dans quel orientation ? (0 = droite, 1 = bas)"))
+
             orientation = 0
+
+
+
+            if joueur == 1:
+                fenetre1.canva_droite.bind("<Motion>", lambda event: on_motion(event, fenetre1, plateau_joueur1.plateau, orientation, taille, 'droite'))
+            else:
+                fenetre2.canva_droite.bind("<Motion>", lambda event: on_motion(event, fenetre2, plateau_joueur2.plateau, orientation, taille, 'droite'))
 
             if joueur == 1:
                 coordonnee_case = fenetre1.attendre_click_case()
             else:
                 coordonnee_case = fenetre2.attendre_click_case()
+
+            fenetre1.canva_droite.unbind("<Motion>")
+            fenetre2.canva_droite.unbind("<Motion>")
 
             coordonnee_case_x = coordonnee_case[0]
             coordonnee_case_y = coordonnee_case[1]
@@ -252,12 +285,12 @@ for joueur in [1,2]:
             if joueur == 1:
                 bonne_position_bateau = plateau_joueur1.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation, taille)
                 plateau_joueur1.afficher_plateau(True, True)
-                fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'droit')
+                fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'droite')
             else:
                 bonne_position_bateau = plateau_joueur2.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation, taille)
    
                 plateau_joueur2.afficher_plateau(True, True)
-                fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droit')
+                fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droite')
 
 
 joueur = 1
@@ -278,9 +311,9 @@ while  not fin_du_jeux:
         
     
     fenetre1.afficher_plateau(plateau_joueur2.plateau, True, False, 'gauche')
-    fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'droit')
+    fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'droite')
     fenetre2.afficher_plateau(plateau_joueur1.plateau, True, False, 'gauche')
-    fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droit')
+    fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droite')
 
 
     print(f"C'est au joueur du joueur {joueur} de jouer")
@@ -342,9 +375,9 @@ while  not fin_du_jeux:
             plateau_joueur1.modifier_case(coordonnee_case_x, coordonnee_case_y, 1)
             print("La case ne contient pas de bateaux")
             joueur = 1
-            
+
 fenetre1.afficher_plateau(plateau_joueur2.plateau, True, False, 'gauche')
-fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'droit')
+fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'droite')
 fenetre2.afficher_plateau(plateau_joueur1.plateau, True, False, 'gauche')
-fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droit')
-mainloop() 
+fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droite')
+mainloop()
