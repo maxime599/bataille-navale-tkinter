@@ -196,32 +196,27 @@ class IU:
 
         self._clicked = BooleanVar()
 
-        for i in range (1,11):
-            self.chiffre_plateau = Label(self.fenetre, text=str(i), font=("Courier", 30))
-            if i == 10:
-                padx = 0
-            else:
-                padx = 8
-            self.chiffre_plateau.grid(row=0, column=i-1, padx=(padx,0), pady=(15, 0))
+        canvas_num_gauche = Canvas(self.fenetre, width=476, height=40, background='#f0f0f0')
+        canvas_num_gauche.grid(row=0, column=0, columnspan=10, pady=(15, 0), padx=10)
 
-        alphabet=["A","B","C","D","E","F","G","H","I","J"]
-        for i,k in enumerate(alphabet):
-            self.chiffre_plateau = Label(self.fenetre, text=str(k), font=("Courier", 30))
-            if i == 9:
-                pady = 10
-            else:
-                pady = 0
-            self.chiffre_plateau.grid(row=i+1, column=10, padx=5, pady=(0,pady))
+        for i in range(1, 11):
+            x_pos = (i - 0.5) * 47.6
+            canvas_num_gauche.create_text(x_pos, 20, text=str(i), font=("Courier", 30), anchor='center')
 
-        for i in range (1,11):
-            self.chiffre_plateau = Label(self.fenetre, text=str(i), font=("Courier", 30))
-            if i == 10:
-                padx = 0
-            else:
-                padx = 8
-            self.chiffre_plateau.grid(row=0, column=i+10, padx=(padx,0), pady=(15, 0))
+        canvas_lettres = Canvas(self.fenetre, width=40, height=476, background='#f0f0f0')
+        canvas_lettres.grid(row=1, column=10, rowspan=10, padx=5)
 
-        
+        alphabet = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
+        for i, k in enumerate(alphabet):
+            y_pos = (i + 0.5) * 47.6
+            canvas_lettres.create_text(20, y_pos, text=k, font=("Courier", 30), anchor='center')
+
+        canvas_num_droite = Canvas(self.fenetre, width=476, height=40, background='#f0f0f0')
+        canvas_num_droite.grid(row=0, column=11, columnspan=10, pady=(15, 0), padx=10)
+
+        for i in range(1, 11):
+            x_pos = (i - 0.5) * 47.6
+            canvas_num_droite.create_text(x_pos, 20, text=str(i), font=("Courier", 30), anchor='center')     
         
         self.canva_gauche = Canvas(self.fenetre, width=476, height=476, background='red')
         self.canva_gauche.grid(row=1, column=0, columnspan=10, rowspan=10, padx=10, pady=(0, 5) )
@@ -235,7 +230,6 @@ class IU:
         self.phrase.grid(row=11, column=11, columnspan=10)
         
         self.images = []
-
         self.taille_case = 45
 
         self.img_blanc = PhotoImage(file='images/blanc.png', master=self.fenetre)
