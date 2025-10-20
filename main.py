@@ -226,6 +226,48 @@ def on_wheel(event, fenetre, plateau, orientation, taille, position_canva):
     x_case, y_case = fenetre.click_to_case(event.x, event.y)
     fenetre.afficher_previsualisation(plateau, x_case, y_case, orientation[0], taille, position_canva)
 
+
+def recuperer_taille_bateaux():
+    return {1 : int(form_nb_bateaux_1.get()), 2 : int(form_nb_bateaux_2.get()), 3 : int(form_nb_bateaux_3.get()), 4 : int(form_nb_bateaux_4.get()), 5 : int(form_nb_bateaux_5.get()), }
+
+def valider_et_quitter():
+    global dico_bateaux_a_poser
+    dico_bateaux_a_poser = recuperer_taille_bateaux()
+    fenetre_nb_bateau.destroy()
+
+
+dico_bateaux_a_poser = {}
+fenetre_nb_bateau = Tk()
+for i in range(5):
+    label_bateaux_1 = Label(fenetre_nb_bateau, text=f'Nombre de bateau de taille {i+1}')
+    label_bateaux_1.grid(row = i, column = 0, padx = 3, pady = 3)
+
+
+form_nb_bateaux_1 = Entry(fenetre_nb_bateau, textvariable=StringVar())
+form_nb_bateaux_1.grid(row = 0, column = 1, padx = 3, pady = 3)
+form_nb_bateaux_2 = Entry(fenetre_nb_bateau, textvariable=StringVar())
+form_nb_bateaux_2.grid(row = 1, column = 1, padx = 3, pady = 3)
+form_nb_bateaux_3 = Entry(fenetre_nb_bateau, textvariable=StringVar())
+form_nb_bateaux_3.grid(row = 2, column = 1, padx = 3, pady = 3)
+form_nb_bateaux_4 = Entry(fenetre_nb_bateau, textvariable=StringVar())
+form_nb_bateaux_4.grid(row = 3, column = 1, padx = 3, pady = 3)
+form_nb_bateaux_5 = Entry(fenetre_nb_bateau, textvariable=StringVar())
+form_nb_bateaux_5.grid(row = 4, column = 1, padx = 3, pady = 3)
+
+bouton_valider = Button(fenetre_nb_bateau, text='Valider', command=valider_et_quitter)
+bouton_valider.grid(row = 6, column = 0, padx = 3, pady = 3)
+mainloop()
+
+#Demande le nombre de bateaux de taille 1 à 6 à poser dans le plateau
+"""dico_bateaux_a_poser = {}
+for i in range(1,6):  
+    dico_bateaux_a_poser[i] = int(input(f"Combien de bateaux de taille {i} voulez vous ajouter ? "))"""
+liste_bateaux_a_poser = []
+for clef in dico_bateaux_a_poser:
+    for i in range(dico_bateaux_a_poser[clef]):
+        liste_bateaux_a_poser.append(clef)
+
+
 plateau_joueur1 = Plateau()
 plateau_joueur2 = Plateau()
 
@@ -240,14 +282,7 @@ fenetre2.afficher_plateau(plateau_joueur1.plateau, True, True, 'gauche')
 fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droit')
 
 
-#Demande le nombre de bateaux de taille 1 à 6 à poser dans le plateau
-dico_bateaux_a_poser = {}
-for i in range(1,6):  
-    dico_bateaux_a_poser[i] = int(input(f"Combien de bateaux de taille {i} voulez vous ajouter ? "))
-liste_bateaux_a_poser = []
-for clef in dico_bateaux_a_poser:
-    for i in range(dico_bateaux_a_poser[clef]):
-        liste_bateaux_a_poser.append(clef)
+
 
 
 #Bloucle qui demande au deux joueurs de donner la position de leurs bateau à poser sur leur plateau respéctif, tout en 
