@@ -73,7 +73,7 @@ class Plateau:
                 return True
 
 
-    def ajouter_bateau(self, coordonees_x, coordonees_y, orientation, taille): #orientation = 0 -> droite, 1 -> bas
+    def ajouter_bateau(self, coordonees_x, coordonees_y, orientation, taille, can_touch): #orientation = 0 -> droite, 1 -> bas
         #Ajoute renvoir True ou False si l'ajout est possible, et si oui l'ajoute
         
         #Renvoie False si le bateau est en dehors de l'écran ou si il y a déja un bateau sur le terrain
@@ -82,18 +82,70 @@ class Plateau:
             return False 
 
         if orientation == 0:
+            if not can_touch:
+                #on regarde si les trois cases à droite et à gauche du bateau sont déja pleines ou non
+                for i in range(-1, 2):
+                    try:
+                        if self.plateau[coordonees_x+i][coordonees_y-1] != 0:
+                            return False
+                    except:
+                        pass
+                    
+                    try:
+                        if self.plateau[coordonees_x+i][coordonees_y+taille] != 0:
+                            return False
+                    except:
+                        pass
+
             for i in range(coordonees_y, coordonees_y+taille):
                 if i >= 10  :   
                     return False
                 if self.plateau[coordonees_x][i] != 0:
                     return False
+                if not can_touch:
+                    try:
+                        if self.plateau[coordonees_x-1][i] != 0:
+                            return False
+                    except:
+                        pass
+                    
+                    try:
+                        if self.plateau[coordonees_x+1][i] != 0:
+                            return False
+                    except:
+                        pass
+
         elif orientation == 1:
+            #on regarde si les trois cases en haut et en bas du bateau sont déja pleines ou non
+            for i in range(-1, 2):
+                    try:
+                        if self.plateau[coordonees_x-1][coordonees_y+i] != 0:
+                            return False
+                    except:
+                        pass
+                    
+                    try:
+                        if self.plateau[coordonees_x+taille][coordonees_y+i] != 0:
+                            return False
+                    except:
+                        pass
             for i in range(coordonees_x, coordonees_x+taille):
                 if i >= 10:
                     return False
                 if self.plateau[i][coordonees_y] != 0:
-                
                     return False
+                if not can_touch:
+                    try:
+                        if self.plateau[i][coordonees_y-1] != 0:
+                            return False
+                    except:
+                        pass
+                    
+                    try:
+                        if self.plateau[i][coordonees_y+1] != 0:
+                            return False
+                    except:
+                        pass
         else:
             return False
         
@@ -236,6 +288,8 @@ def valider_et_quitter():
     fenetre_nb_bateau.destroy()
 
 
+option_can_touch = False
+
 dico_bateaux_a_poser = {}
 fenetre_nb_bateau = Tk()
 for i in range(5):
@@ -327,11 +381,11 @@ for joueur in [1,2]:
             coordonnee_case_y = coordonnee_case[1]
 
             if joueur == 1:
-                bonne_position_bateau = plateau_joueur1.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation[0], taille)
+                bonne_position_bateau = plateau_joueur1.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation[0], taille, option_can_touch)
                 plateau_joueur1.afficher_plateau(True, True)
                 fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'droite')
             else:
-                bonne_position_bateau = plateau_joueur2.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation[0], taille)   
+                bonne_position_bateau = plateau_joueur2.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation[0], taille, option_can_touch)   
                 plateau_joueur2.afficher_plateau(True, True)
                 fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droite')
 
