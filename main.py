@@ -224,10 +224,15 @@ class IU:
         
         
         self.canva_gauche = Canvas(self.fenetre, width=476, height=476, background='red')
-        self.canva_gauche.grid(row=1, column=0, columnspan=10, rowspan=10, padx=10, pady=(0, 15) )
+        self.canva_gauche.grid(row=1, column=0, columnspan=10, rowspan=10, padx=10, pady=(0, 5) )
 
         self.canva_droite = Canvas(self.fenetre, width=476, height=476, background='green')
-        self.canva_droite.grid(row=1, column=11, columnspan=10, rowspan=10, padx=10, pady=(0, 15))
+        self.canva_droite.grid(row=1, column=11, columnspan=10, rowspan=10, padx=10, pady=(0, 5))
+
+        self.phrase = Label(self.fenetre, text="Sert à viser l'adversaire", font=("Courier", 12))
+        self.phrase.grid(row=11, column=0, columnspan=10)
+        self.phrase = Label(self.fenetre, text="Sert à voir vos bateaux touchés", font=("Courier", 12))
+        self.phrase.grid(row=11, column=11, columnspan=10)
         
         self.images = []
 
