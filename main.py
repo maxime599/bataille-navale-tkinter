@@ -133,11 +133,38 @@ class IU:
         self.fenetre = Tk()
         self.fenetre.title(nom)
 
-        self.canva_gauche = Canvas(self.fenetre, width=476, height=476, background='black')
-        self.canva_gauche.grid(row=0, column=0, columnspan=2, padx=10, pady=10)
+        for i in range (1,11):
+            self.chiffre_plateau = Label(self.fenetre, text=str(i), font=("Courier", 30))
+            if i == 10:
+                padx = 0
+            else:
+                padx = 8
+            self.chiffre_plateau.grid(row=0, column=i-1, padx=(padx,0), pady=(15, 0))
 
-        self.canva_droite = Canvas(self.fenetre, width=476, height=476, background='blue')
-        self.canva_droite.grid(row=0, column=2, columnspan=2, padx=10, pady=10)
+        alphabet=["A","B","C","D","E","F","G","H","I","J"]
+        for i,k in enumerate(alphabet):
+            self.chiffre_plateau = Label(self.fenetre, text=str(k), font=("Courier", 30))
+            if i == 9:
+                pady = 10
+            else:
+                pady = 0
+            self.chiffre_plateau.grid(row=i+1, column=10, padx=5, pady=(0,pady))
+
+        for i in range (1,11):
+            self.chiffre_plateau = Label(self.fenetre, text=str(i), font=("Courier", 30))
+            if i == 10:
+                padx = 0
+            else:
+                padx = 8
+            self.chiffre_plateau.grid(row=0, column=i+10, padx=(padx,0), pady=(15, 0))
+
+        
+        
+        self.canva_gauche = Canvas(self.fenetre, width=476, height=476, background='red')
+        self.canva_gauche.grid(row=1, column=0, columnspan=10, rowspan=10, padx=10, pady=(0, 15) )
+
+        self.canva_droite = Canvas(self.fenetre, width=476, height=476, background='green')
+        self.canva_droite.grid(row=1, column=11, columnspan=10, rowspan=10, padx=10, pady=(0, 15))
         
         self.images = []
 
@@ -161,7 +188,7 @@ class IU:
                 else:
                     image = PhotoImage(file='images/vert.png', master=self.fenetre)
 
-                self.images.append(image)  # On garde une référence !
+                self.images.append(image)
                 if position_canva == 'gauche':
                     self.canva_gauche.create_image(index_colonne*45+index_colonne*3+1, index_ligne*45+index_ligne*3+1, image=image, anchor=NW)
                 else:
@@ -173,12 +200,12 @@ plateau_joueur2 = Plateau()
 plateau_joueur1.creation_plateau()
 plateau_joueur2.creation_plateau()
 
-fenetre1 = IU("fenetre 1")
+fenetre1 = IU("joueur 1")
 fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'gauche')
 fenetre1.afficher_plateau(plateau_joueur2.plateau, True, True, 'droite')
-fenetre2 = IU("fenetre 2")
+"""fenetre2 = IU("Joueur 2")
 fenetre2.afficher_plateau(plateau_joueur1.plateau, True, True, 'gauche')
-fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droite')
+fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droite')"""
 
 
 #Demande le nombre de bateaux de taille 1 à 6 à poser dans le plateau
