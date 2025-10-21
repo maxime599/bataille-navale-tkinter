@@ -195,6 +195,7 @@ class IU:
         self.fenetre.title(nom)
 
         self._clicked = BooleanVar()
+        self.croix_id = None
 
         canvas_num_gauche = Canvas(self.fenetre, width=476, height=40, background='#f0f0f0')
         canvas_num_gauche.grid(row=0, column=0, columnspan=10, pady=(15, 0), padx=10)
@@ -218,7 +219,7 @@ class IU:
             x_pos = (i - 0.5) * 47.6
             canvas_num_droite.create_text(x_pos, 20, text=str(i), font=("Courier", 30), anchor='center')     
         
-        self.canva_gauche = Canvas(self.fenetre, width=476, height=476, background='red')
+        self.canva_gauche = Canvas(self.fenetre, width=476, height=476, background='#589ddc')
         self.canva_gauche.grid(row=1, column=0, columnspan=10, rowspan=10, padx=10, pady=(0, 5) )
 
         self.canva_droite = Canvas(self.fenetre, width=476, height=476, background='green')
@@ -232,11 +233,14 @@ class IU:
         self.images = []
         self.taille_case = 45
 
+        self.img_bleu = PhotoImage(file='images/bleu.png', master=self.fenetre)
         self.img_blanc = PhotoImage(file='images/blanc.png', master=self.fenetre)
         self.img_viollet = PhotoImage(file='images/viollet.png', master=self.fenetre)
         self.img_noir = PhotoImage(file='images/noir.png', master=self.fenetre)
         self.img_vert = PhotoImage(file='images/vert.png', master=self.fenetre)
         self.img_gris = PhotoImage(file='images/gris.png', master=self.fenetre)
+        self.img_croix = PhotoImage(file='images/croix.png', master=self.fenetre)
+        self.img_cible = PhotoImage(file='images/cible.png', master=self.fenetre)
 
     def afficher_plateau(self, plateau, afficher_1, afficher_2, position_canva):
         self.images = []
@@ -247,11 +251,11 @@ class IU:
         for index_ligne, ligne in enumerate(plateau):
             for index_colonne, colonne in enumerate(ligne):
                 if colonne == 0:
-                    image = self.img_blanc
+                    image = self.img_bleu
                 elif colonne == 1:
-                    image = self.img_viollet if afficher_1 else self.img_blanc
+                    image = self.img_viollet if afficher_1 else self.img_bleu
                 elif colonne == 2:
-                    image = self.img_noir if afficher_2 else self.img_blanc
+                    image = self.img_noir if afficher_2 else self.img_bleu
                 elif colonne == 3:
                     image = self.img_vert
                 else:  # colonne == 4
@@ -280,7 +284,6 @@ class IU:
         self.fenetre.unbind("<Button-1>")
         self._clicked.set(True)
 
-
     def afficher_previsualisation(self, plateau, x, y, orientation, taille, position_canva):
         plateau_preview = [row[:] for row in plateau]
         # Place le bateau en gris (valeur 4) si possible
@@ -293,7 +296,18 @@ class IU:
                 if 0 <= x + i < 10:
                     plateau_preview[x + i][y] = 4
         self.afficher_plateau(plateau_preview, True, True, position_canva)
+    
+    def afficher_croix(self, event):
+        # Supprime l'ancienne croix si elle existe
+        if self.croix_id is not None:
+            self.canva_gauche.delete(self.croix_id)
+        # Affiche la croix à la position de la souris
+        self.croix_id = self.canva_gauche.create_image(event.x, event.y, image=self.img_cible)
 
+    def cacher_croix(self, event):
+        if self.croix_id is not None:
+            self.canva_gauche.delete(self.croix_id)
+            self.croix_id = None
 
 def on_motion(event, fenetre, plateau, orientation, taille, position_canva):
     x_case, y_case = fenetre.click_to_case(event.x, event.y)
@@ -448,9 +462,21 @@ while  not fin_du_jeux:
         #coordonner_case_y = int(input("Dans quel numero de colonne veux tu cibler ?"))
 
         if joueur == 1:
+            fenetre1.canva_gauche.config(cursor="none")
+            fenetre1.canva_gauche.bind("<Motion>", fenetre1.afficher_croix)
+            fenetre1.canva_gauche.bind("<Leave>", fenetre1.cacher_croix)
             coordonnee_case = fenetre1.attendre_click_case()
+            fenetre1.canva_gauche.config(cursor="arrow")
+            fenetre1.canva_gauche.unbind("<Motion>")
+            fenetre1.canva_gauche.unbind("<Leave>")
         else:
+            fenetre2.canva_gauche.config(cursor="none")
+            fenetre2.canva_gauche.bind("<Motion>", fenetre2.afficher_croix)
+            fenetre2.canva_gauche.bind("<Leave>", fenetre2.cacher_croix)
             coordonnee_case = fenetre2.attendre_click_case()
+            fenetre2.canva_gauche.config(cursor="arrow")
+            fenetre2.canva_gauche.unbind("<Motion>")
+            fenetre2.canva_gauche.unbind("<Leave>")
             
         coordonnee_case_x = coordonnee_case[0]
         coordonnee_case_y = coordonnee_case[1]
