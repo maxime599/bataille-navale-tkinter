@@ -309,11 +309,11 @@ class IU:
             self.canva_gauche.delete(self.croix_id)
             self.croix_id = None
 
-def on_motion(event, fenetre, plateau, orientation, taille, position_canva):
+def on_mouvement(event, fenetre, plateau, orientation, taille, position_canva):
     x_case, y_case = fenetre.click_to_case(event.x, event.y)
     fenetre.afficher_previsualisation(plateau, x_case, y_case, orientation, taille, position_canva)
 
-def on_wheel(event, fenetre, plateau, orientation, taille, position_canva):
+def on_molette(event, fenetre, plateau, orientation, taille, position_canva):
     orientation[0] = 1 - orientation[0]  # alterne entre 0 et 1
     x_case, y_case = fenetre.click_to_case(event.x, event.y)
     fenetre.afficher_previsualisation(plateau, x_case, y_case, orientation[0], taille, position_canva)
@@ -426,11 +426,11 @@ for joueur in [1,2]:
 
 
             if joueur == 1:
-                fenetre1.canva_droite.bind("<Motion>", lambda event: on_motion(event, fenetre1, plateau_joueur1.plateau, orientation[0], taille, 'droite'))
-                fenetre1.canva_droite.bind("<MouseWheel>", lambda event: on_wheel(event, fenetre1, plateau_joueur1.plateau, orientation, taille, 'droite'))
+                fenetre1.canva_droite.bind("<Motion>", lambda event: on_mouvement(event, fenetre1, plateau_joueur1.plateau, orientation[0], taille, 'droite'))
+                fenetre1.canva_droite.bind("<MouseWheel>", lambda event: on_molette(event, fenetre1, plateau_joueur1.plateau, orientation, taille, 'droite'))
             else:
-                fenetre2.canva_droite.bind("<Motion>", lambda event: on_motion(event, fenetre2, plateau_joueur2.plateau, orientation[0], taille, 'droite'))
-                fenetre2.canva_droite.bind("<MouseWheel>", lambda event: on_wheel(event, fenetre2, plateau_joueur2.plateau, orientation, taille, 'droite'))
+                fenetre2.canva_droite.bind("<Motion>", lambda event: on_mouvement(event, fenetre2, plateau_joueur2.plateau, orientation[0], taille, 'droite'))
+                fenetre2.canva_droite.bind("<MouseWheel>", lambda event: on_molette(event, fenetre2, plateau_joueur2.plateau, orientation, taille, 'droite'))
 
             if joueur == 1:
                 coordonnee_case = fenetre1.attendre_click_case()
