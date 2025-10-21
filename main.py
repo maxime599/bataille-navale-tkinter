@@ -1,5 +1,6 @@
 from tkinter import *
 from time import *
+import copy
 
 root_created = False
 
@@ -357,15 +358,28 @@ plateau_joueur2.creation_plateau()
 fenetre1 = IU("joueur 1")
 fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'gauche')
 fenetre1.afficher_plateau(plateau_joueur2.plateau, True, True, 'droit')
-fenetre2 = IU("fenetre 2")
+fenetre2 = IU("Joueur 2")
 fenetre2.afficher_plateau(plateau_joueur1.plateau, True, True, 'gauche')
 fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droit')
 
+dico_bateaux_restant = copy.copy(dico_bateaux_a_poser)
 
+text_placement_bateau_fenetre_1 = Label(fenetre1.fenetre, text="C'est à vous de poser les bateaux", font=20)
+text_placement_bateau_fenetre_1.grid(row=1,column=22, padx=(0,10))
+text_placement_bateau_fenetre_2 = Label(fenetre2.fenetre, text="C'est à l'adversaire de poser ces bateaux", font=20)
+text_placement_bateau_fenetre_2.grid(row=1,column=22, padx=(0,10))
 
+text_nb_bateau_labels1 = []
+text_nb_bateau_labels2 = []
+for bateau in range(5):
+    text_nb_bateau_fenetre_1 = Label(fenetre1.fenetre, text=f"il vous reste {dico_bateaux_restant[bateau+1]} bateau(x) de taille {bateau+1} à poser", font=20)
+    text_nb_bateau_fenetre_1.grid(row=bateau+2 ,column=22, padx=(0,10))
+    text_nb_bateau_labels1.append(text_nb_bateau_fenetre_1)
+    text_nb_bateau_fenetre_2 = Label(fenetre2.fenetre, text=f"il vous reste {dico_bateaux_restant[bateau+1]} bateau(x) de taille {bateau+1} à poser", font=20)
+    text_nb_bateau_fenetre_2.grid(row=bateau+2 ,column=22, padx=(0,10))
+    text_nb_bateau_labels2.append(text_nb_bateau_fenetre_2)
 
-
-#Bloucle qui demande au deux joueurs de donner la position de leurs bateau à poser sur leur plateau respéctif, tout en 
+#Bloucle qui demande au deux joueurs de donner la position de leurs bateau à poser sur leur plateau
 for joueur in [1,2]:
     if joueur == 1:
         plateau_joueur1.afficher_plateau(True, True)
@@ -383,8 +397,6 @@ for joueur in [1,2]:
             #orientation = int(input("Dans quel orientation ? (0 = droite, 1 = bas)"))
 
             orientation = [0]
-
-
 
             if joueur == 1:
                 fenetre1.canva_droite.bind("<Motion>", lambda event: on_motion(event, fenetre1, plateau_joueur1.plateau, orientation[0], taille, 'droite'))
@@ -408,13 +420,32 @@ for joueur in [1,2]:
 
             if joueur == 1:
                 bonne_position_bateau = plateau_joueur1.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation[0], taille, option_can_touch)
+                if bonne_position_bateau == True:
+                    dico_bateaux_restant[taille] -= 1
+                for bateau in range(5):
+                    text_nb_bateau_labels1[bateau].configure(text=f"il vous reste {dico_bateaux_restant[bateau+1]} bateau(x) de taille {bateau+1} à poser")
                 plateau_joueur1.afficher_plateau(True, True)
                 fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'droite')
+                num_joueur = 2
             else:
                 bonne_position_bateau = plateau_joueur2.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation[0], taille, option_can_touch)   
                 plateau_joueur2.afficher_plateau(True, True)
                 fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droite')
+                if bonne_position_bateau == True:
+                    dico_bateaux_restant[taille] -= 1
+                for bateau in range(5):
+                    text_nb_bateau_labels2[bateau].configure(text=f"il vous reste {dico_bateaux_restant[bateau+1]} bateau(x) de taille {bateau+1} à poser")
 
+    dico_bateaux_restant = copy.copy(dico_bateaux_a_poser)
+    text_placement_bateau_fenetre_1.configure(text="C'est à l'adversaire de poser ces bateaux")
+    text_placement_bateau_fenetre_2.configure(text="C'est à vous de poser les bateaux")
+
+text_placement_bateau_fenetre_1.destroy()
+text_placement_bateau_fenetre_2.destroy()
+for lbl in text_nb_bateau_labels1:
+    lbl.destroy()
+for lbl in text_nb_bateau_labels2:
+    lbl.destroy()
 
 joueur = 1
 fin_du_jeux = False
