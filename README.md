@@ -107,7 +107,7 @@ Placez vos bateaux et tentez de couler ceux de votre adversaire 💥
 
 ## 💡 À propos du projet
 
-Projet réalisé par des élèves de **Première Générale – Spécialité NSI**.  
+Projet réalisé par des élèves de **Terminale Générale – Spécialité NSI**.  
 L’objectif : apprendre à structurer un projet complet en Python, tout en explorant le développement d’interfaces graphiques et la gestion de versions avec **Git**.
 
 > 🧭 Nous continuons à améliorer le jeu chaque semaine.  
