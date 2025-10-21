@@ -186,17 +186,23 @@ class Plateau:
 
 class IU:
     def __init__(self, nom):
+
+        #Permet de créer un fenêtre principal et un fenêtre secondaire pour éviter les bug de gestion de la souris
         global root_created
         if not root_created:
             self.fenetre = Tk()
             root_created = True
         else:
             self.fenetre = Toplevel()
+            
         self.fenetre.title(nom)
 
         self._clicked = BooleanVar()
         self.croix_id = None
 
+
+
+        #Ajout des textes sur la fenêtre
         canvas_num_gauche = Canvas(self.fenetre, width=476, height=40, background='#f0f0f0')
         canvas_num_gauche.grid(row=0, column=0, columnspan=10, pady=(15, 0), padx=10)
 
@@ -230,9 +236,10 @@ class IU:
         self.phrase = Label(self.fenetre, text="Sert à voir vos bateaux touchés", font=("Courier", 12))
         self.phrase.grid(row=11, column=11, columnspan=10)
         
+        
+        #Gestion des différentes images
         self.images = []
         self.taille_case = 45
-
         self.img_bleu = PhotoImage(file='images/bleu.png', master=self.fenetre)
         self.img_blanc = PhotoImage(file='images/blanc.png', master=self.fenetre)
         self.img_viollet = PhotoImage(file='images/viollet.png', master=self.fenetre)
@@ -243,6 +250,7 @@ class IU:
         self.img_cible = PhotoImage(file='images/cible.png', master=self.fenetre)
 
     def afficher_plateau(self, plateau, afficher_1, afficher_2, position_canva):
+        #Permet d'afficher le plateau sur le bon canva 
         self.images = []
         if position_canva == 'gauche':
             self.canva_gauche.delete("all")
@@ -267,9 +275,12 @@ class IU:
                     self.canva_droite.create_image(index_colonne*self.taille_case+index_colonne*3+1, index_ligne*self.taille_case+index_ligne*3+1, image=image, anchor=NW)
 
     def click_to_case(self, coordonnee_click_x, coordonnee_click_y):
+        #Retourne les coordonnées de la case cliquée
         return (int(coordonnee_click_y/(self.taille_case+3)), int(coordonnee_click_x/(self.taille_case+3)))
 
     def attendre_click_case(self):
+        #Attend qu'un clic de souris soit effectué sur la fenêtre, puis retourne les coordonnées de la case cliquée.      
+        
         self.click_coord = (0,0)
         self._clicked.set(False)
         self.fenetre.bind("<Button-1>", self.on_click)
@@ -277,6 +288,7 @@ class IU:
         return self.click_coord  # retourne un tuple (x_case, y_case)
     
     def on_click(self, event):
+        #Fonction qui récupère les coordonnées du click de la souris
         x_pixel = event.x
         y_pixel = event.y
 
@@ -285,6 +297,8 @@ class IU:
         self._clicked.set(True)
 
     def afficher_previsualisation(self, plateau, x, y, orientation, taille, position_canva):
+        #Affiche une prévisualisation du bateau  
+
         plateau_preview = [row[:] for row in plateau]
         # Place le bateau en gris (valeur 4) si possible
         if orientation == 0:
