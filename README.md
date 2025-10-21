@@ -69,8 +69,7 @@ Placez vos bateaux et tentez de couler ceux de votre adversaire 💥
 
 ### 🔊 Son & Ambiance
 - Voix off et effets sonores  
-- Musique d’ambiance  
-- Réglage du volume dans les paramètres  
+- Musique d’ambiance 
 
 ### 🧩 Gameplay
 - Placement aléatoire des bateaux  
@@ -87,11 +86,17 @@ Placez vos bateaux et tentez de couler ceux de votre adversaire 💥
   - 📜 Crédits  
 - Paramètres personnalisables :
   - Nombre de bateaux  
-  - Activation/désactivation du contact entre bateaux  
+  - Activation/désactivation du contact entre bateaux
+  - Réglage du volume 
 
 ### 🌐 Multijoueur & Profils
 - Connexion à distance pour jouer en ligne  
-- Profils joueurs & achievements  
+- Profils joueurs & achievements
+
+### 📊 Gestion de profil
+- Achievement/exp et quête  
+- musique personnalisable
+- historique des combats
 
 ---
 
@@ -108,7 +113,7 @@ Placez vos bateaux et tentez de couler ceux de votre adversaire 💥
 ## 💡 À propos du projet
 
 Projet réalisé par des élèves de **Terminale Générale – Spécialité NSI**.  
-L’objectif : apprendre à structurer un projet complet en Python, tout en explorant le développement d’interfaces graphiques et la gestion de versions avec **Git**.
+L’objectif : apprendre à structurer un projet complet en Python, tout en explorant le développement d’interfaces graphiques.
 
 > 🧭 Nous continuons à améliorer le jeu chaque semaine.  
 > N’hésitez pas à ⭐ le projet ou à proposer vos idées via les **Issues GitHub** !
