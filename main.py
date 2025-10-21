@@ -187,16 +187,23 @@ class Plateau:
 
 class IU:
     def __init__(self, nom):
+
+        #Permet de créer un fenêtre principal et un fenêtre secondaire pour éviter les bug de gestion de la souris
         global root_created
         if not root_created:
             self.fenetre = Tk()
             root_created = True
         else:
             self.fenetre = Toplevel()
+            
         self.fenetre.title(nom)
 
         self._clicked = BooleanVar()
+        self.croix_id = None
 
+
+
+        #Ajout des textes sur la fenêtre
         canvas_num_gauche = Canvas(self.fenetre, width=476, height=40, background='#f0f0f0')
         canvas_num_gauche.grid(row=0, column=0, columnspan=10, pady=(15, 0), padx=10)
 
@@ -219,7 +226,7 @@ class IU:
             x_pos = (i - 0.5) * 47.6
             canvas_num_droite.create_text(x_pos, 20, text=str(i), font=("Courier", 30), anchor='center')     
         
-        self.canva_gauche = Canvas(self.fenetre, width=476, height=476, background='red')
+        self.canva_gauche = Canvas(self.fenetre, width=476, height=476, background='#589ddc')
         self.canva_gauche.grid(row=1, column=0, columnspan=10, rowspan=10, padx=10, pady=(0, 5) )
 
         self.canva_droite = Canvas(self.fenetre, width=476, height=476, background='green')
@@ -230,16 +237,21 @@ class IU:
         self.phrase = Label(self.fenetre, text="Sert à voir vos bateaux touchés", font=("Courier", 12))
         self.phrase.grid(row=11, column=11, columnspan=10)
         
+        
+        #Gestion des différentes images
         self.images = []
         self.taille_case = 45
-
+        self.img_bleu = PhotoImage(file='images/bleu.png', master=self.fenetre)
         self.img_blanc = PhotoImage(file='images/blanc.png', master=self.fenetre)
         self.img_viollet = PhotoImage(file='images/viollet.png', master=self.fenetre)
         self.img_noir = PhotoImage(file='images/noir.png', master=self.fenetre)
         self.img_vert = PhotoImage(file='images/vert.png', master=self.fenetre)
         self.img_gris = PhotoImage(file='images/gris.png', master=self.fenetre)
+        self.img_croix = PhotoImage(file='images/croix.png', master=self.fenetre)
+        self.img_cible = PhotoImage(file='images/cible.png', master=self.fenetre)
 
     def afficher_plateau(self, plateau, afficher_1, afficher_2, position_canva):
+        #Permet d'afficher le plateau sur le bon canva 
         self.images = []
         if position_canva == 'gauche':
             self.canva_gauche.delete("all")
@@ -248,11 +260,11 @@ class IU:
         for index_ligne, ligne in enumerate(plateau):
             for index_colonne, colonne in enumerate(ligne):
                 if colonne == 0:
-                    image = self.img_blanc
+                    image = self.img_bleu
                 elif colonne == 1:
-                    image = self.img_viollet if afficher_1 else self.img_blanc
+                    image = self.img_viollet if afficher_1 else self.img_bleu
                 elif colonne == 2:
-                    image = self.img_noir if afficher_2 else self.img_blanc
+                    image = self.img_noir if afficher_2 else self.img_bleu
                 elif colonne == 3:
                     image = self.img_vert
                 else:  # colonne == 4
@@ -264,9 +276,12 @@ class IU:
                     self.canva_droite.create_image(index_colonne*self.taille_case+index_colonne*3+1, index_ligne*self.taille_case+index_ligne*3+1, image=image, anchor=NW)
 
     def click_to_case(self, coordonnee_click_x, coordonnee_click_y):
+        #Retourne les coordonnées de la case cliquée
         return (int(coordonnee_click_y/(self.taille_case+3)), int(coordonnee_click_x/(self.taille_case+3)))
 
     def attendre_click_case(self):
+        #Attend qu'un clic de souris soit effectué sur la fenêtre, puis retourne les coordonnées de la case cliquée.      
+        
         self.click_coord = (0,0)
         self._clicked.set(False)
         self.fenetre.bind("<Button-1>", self.on_click)
@@ -274,6 +289,7 @@ class IU:
         return self.click_coord  # retourne un tuple (x_case, y_case)
     
     def on_click(self, event):
+        #Fonction qui récupère les coordonnées du click de la souris
         x_pixel = event.x
         y_pixel = event.y
 
@@ -281,8 +297,9 @@ class IU:
         self.fenetre.unbind("<Button-1>")
         self._clicked.set(True)
 
-
     def afficher_previsualisation(self, plateau, x, y, orientation, taille, position_canva):
+        #Affiche une prévisualisation du bateau  
+
         plateau_preview = [row[:] for row in plateau]
         # Place le bateau en gris (valeur 4) si possible
         if orientation == 0:
@@ -294,20 +311,50 @@ class IU:
                 if 0 <= x + i < 10:
                     plateau_preview[x + i][y] = 4
         self.afficher_plateau(plateau_preview, True, True, position_canva)
+    
+    def afficher_croix(self, event):
+        # Supprime l'ancienne croix si elle existe
+        if self.croix_id is not None:
+            self.canva_gauche.delete(self.croix_id)
+        # Affiche la croix à la position de la souris
+        self.croix_id = self.canva_gauche.create_image(event.x, event.y, image=self.img_cible)
 
+    def cacher_croix(self, event):
+        if self.croix_id is not None:
+            self.canva_gauche.delete(self.croix_id)
+            self.croix_id = None
 
-def on_motion(event, fenetre, plateau, orientation, taille, position_canva):
+def on_mouvement(event, fenetre, plateau, orientation, taille, position_canva):
     x_case, y_case = fenetre.click_to_case(event.x, event.y)
     fenetre.afficher_previsualisation(plateau, x_case, y_case, orientation, taille, position_canva)
 
-def on_wheel(event, fenetre, plateau, orientation, taille, position_canva):
+def on_molette(event, fenetre, plateau, orientation, taille, position_canva):
     orientation[0] = 1 - orientation[0]  # alterne entre 0 et 1
     x_case, y_case = fenetre.click_to_case(event.x, event.y)
     fenetre.afficher_previsualisation(plateau, x_case, y_case, orientation[0], taille, position_canva)
 
 
 def recuperer_taille_bateaux():
-    return {1 : int(form_nb_bateaux_1.get()), 2 : int(form_nb_bateaux_2.get()), 3 : int(form_nb_bateaux_3.get()), 4 : int(form_nb_bateaux_4.get()), 5 : int(form_nb_bateaux_5.get()), }
+
+    #On test si les valeurs rentrées par l'utilisateur sont valides
+    try:
+        nb_bateaux_1 = int(form_nb_bateaux_1.get())
+        nb_bateaux_2 = int(form_nb_bateaux_2.get())
+        nb_bateaux_3 = int(form_nb_bateaux_3.get())
+        nb_bateaux_4 = int(form_nb_bateaux_4.get())
+        nb_bateaux_5 = int(form_nb_bateaux_5.get())
+    #inon on met des valeurs par défaut
+    except:
+        nb_bateaux_1 = 0
+        nb_bateaux_2 = 1
+        nb_bateaux_3 = 2
+        nb_bateaux_4 = 1
+        nb_bateaux_5 = 1
+
+
+    
+
+    return {1 : nb_bateaux_1, 2 : nb_bateaux_2, 3 : nb_bateaux_3, 4 : nb_bateaux_4, 5 : nb_bateaux_5}
 
 def valider_et_quitter():
     global dico_bateaux_a_poser
@@ -343,11 +390,17 @@ mainloop()
 """dico_bateaux_a_poser = {}
 for i in range(1,6):  
     dico_bateaux_a_poser[i] = int(input(f"Combien de bateaux de taille {i} voulez vous ajouter ? "))"""
-liste_bateaux_a_poser = []
-for clef in dico_bateaux_a_poser:
-    for i in range(dico_bateaux_a_poser[clef]):
-        liste_bateaux_a_poser.append(clef)
 
+#On met des valeurs par défaut si le joueur ferme la fenêtre
+print(dico_bateaux_a_poser)
+if dico_bateaux_a_poser == {}:
+    liste_bateaux_a_poser = [2,3,3,4,5]
+else:
+    liste_bateaux_a_poser = []
+    for clef in dico_bateaux_a_poser:
+        for i in range(dico_bateaux_a_poser[clef]):
+            liste_bateaux_a_poser.append(clef)
+    print(liste_bateaux_a_poser)
 
 plateau_joueur1 = Plateau()
 plateau_joueur2 = Plateau()
@@ -399,11 +452,11 @@ for joueur in [1,2]:
             orientation = [0]
 
             if joueur == 1:
-                fenetre1.canva_droite.bind("<Motion>", lambda event: on_motion(event, fenetre1, plateau_joueur1.plateau, orientation[0], taille, 'droite'))
-                fenetre1.canva_droite.bind("<MouseWheel>", lambda event: on_wheel(event, fenetre1, plateau_joueur1.plateau, orientation, taille, 'droite'))
+                fenetre1.canva_droite.bind("<Motion>", lambda event: on_mouvement(event, fenetre1, plateau_joueur1.plateau, orientation[0], taille, 'droite'))
+                fenetre1.canva_droite.bind("<MouseWheel>", lambda event: on_molette(event, fenetre1, plateau_joueur1.plateau, orientation, taille, 'droite'))
             else:
-                fenetre2.canva_droite.bind("<Motion>", lambda event: on_motion(event, fenetre2, plateau_joueur2.plateau, orientation[0], taille, 'droite'))
-                fenetre2.canva_droite.bind("<MouseWheel>", lambda event: on_wheel(event, fenetre2, plateau_joueur2.plateau, orientation, taille, 'droite'))
+                fenetre2.canva_droite.bind("<Motion>", lambda event: on_mouvement(event, fenetre2, plateau_joueur2.plateau, orientation[0], taille, 'droite'))
+                fenetre2.canva_droite.bind("<MouseWheel>", lambda event: on_molette(event, fenetre2, plateau_joueur2.plateau, orientation, taille, 'droite'))
 
             if joueur == 1:
                 coordonnee_case = fenetre1.attendre_click_case()
@@ -479,9 +532,21 @@ while  not fin_du_jeux:
         #coordonner_case_y = int(input("Dans quel numero de colonne veux tu cibler ?"))
 
         if joueur == 1:
+            fenetre1.canva_gauche.config(cursor="none")
+            fenetre1.canva_gauche.bind("<Motion>", fenetre1.afficher_croix)
+            fenetre1.canva_gauche.bind("<Leave>", fenetre1.cacher_croix)
             coordonnee_case = fenetre1.attendre_click_case()
+            fenetre1.canva_gauche.config(cursor="arrow")
+            fenetre1.canva_gauche.unbind("<Motion>")
+            fenetre1.canva_gauche.unbind("<Leave>")
         else:
+            fenetre2.canva_gauche.config(cursor="none")
+            fenetre2.canva_gauche.bind("<Motion>", fenetre2.afficher_croix)
+            fenetre2.canva_gauche.bind("<Leave>", fenetre2.cacher_croix)
             coordonnee_case = fenetre2.attendre_click_case()
+            fenetre2.canva_gauche.config(cursor="arrow")
+            fenetre2.canva_gauche.unbind("<Motion>")
+            fenetre2.canva_gauche.unbind("<Leave>")
             
         coordonnee_case_x = coordonnee_case[0]
         coordonnee_case_y = coordonnee_case[1]
