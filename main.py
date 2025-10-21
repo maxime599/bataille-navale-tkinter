@@ -395,6 +395,7 @@ for i in range(1,6):
 print(dico_bateaux_a_poser)
 if dico_bateaux_a_poser == {}:
     liste_bateaux_a_poser = [2,3,3,4,5]
+    dico_bateaux_a_poser = {1:0,2:1,3:2,4:1,5:1}
 else:
     liste_bateaux_a_poser = []
     for clef in dico_bateaux_a_poser:
@@ -417,18 +418,18 @@ fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droit')
 
 dico_bateaux_restant = copy.copy(dico_bateaux_a_poser)
 
-text_placement_bateau_fenetre_1 = Label(fenetre1.fenetre, text="C'est à vous de poser les bateaux", font=20)
+text_placement_bateau_fenetre_1 = Label(fenetre1.fenetre, text="C'est à vous de poser les bateaux", font="20")
 text_placement_bateau_fenetre_1.grid(row=1,column=22, padx=(0,10))
-text_placement_bateau_fenetre_2 = Label(fenetre2.fenetre, text="C'est à l'adversaire de poser ces bateaux", font=20)
+text_placement_bateau_fenetre_2 = Label(fenetre2.fenetre, text="C'est à l'adversaire de poser ces bateaux", font="20")
 text_placement_bateau_fenetre_2.grid(row=1,column=22, padx=(0,10))
 
 text_nb_bateau_labels1 = []
 text_nb_bateau_labels2 = []
 for bateau in range(5):
-    text_nb_bateau_fenetre_1 = Label(fenetre1.fenetre, text=f"il vous reste {dico_bateaux_restant[bateau+1]} bateau(x) de taille {bateau+1} à poser", font=20)
+    text_nb_bateau_fenetre_1 = Label(fenetre1.fenetre, text=f"il vous reste {dico_bateaux_restant[bateau+1]} bateau(x) de taille {bateau+1} à poser", font="20")
     text_nb_bateau_fenetre_1.grid(row=bateau+2 ,column=22, padx=(0,10))
     text_nb_bateau_labels1.append(text_nb_bateau_fenetre_1)
-    text_nb_bateau_fenetre_2 = Label(fenetre2.fenetre, text=f"il vous reste {dico_bateaux_restant[bateau+1]} bateau(x) de taille {bateau+1} à poser", font=20)
+    text_nb_bateau_fenetre_2 = Label(fenetre2.fenetre, text=f"il vous reste {dico_bateaux_restant[bateau+1]} bateau(x) de taille {bateau+1} à poser", font="20")
     text_nb_bateau_fenetre_2.grid(row=bateau+2 ,column=22, padx=(0,10))
     text_nb_bateau_labels2.append(text_nb_bateau_fenetre_2)
 
