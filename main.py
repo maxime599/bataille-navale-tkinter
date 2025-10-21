@@ -320,7 +320,26 @@ def on_wheel(event, fenetre, plateau, orientation, taille, position_canva):
 
 
 def recuperer_taille_bateaux():
-    return {1 : int(form_nb_bateaux_1.get()), 2 : int(form_nb_bateaux_2.get()), 3 : int(form_nb_bateaux_3.get()), 4 : int(form_nb_bateaux_4.get()), 5 : int(form_nb_bateaux_5.get()), }
+
+    #On test si les valeurs rentrées par l'utilisateur sont valides
+    try:
+        nb_bateaux_1 = int(form_nb_bateaux_1.get())
+        nb_bateaux_2 = int(form_nb_bateaux_2.get())
+        nb_bateaux_3 = int(form_nb_bateaux_3.get())
+        nb_bateaux_4 = int(form_nb_bateaux_4.get())
+        nb_bateaux_5 = int(form_nb_bateaux_5.get())
+    #inon on met des valeurs par défaut
+    except:
+        nb_bateaux_1 = 0
+        nb_bateaux_2 = 1
+        nb_bateaux_3 = 2
+        nb_bateaux_4 = 1
+        nb_bateaux_5 = 1
+
+
+    
+
+    return {1 : nb_bateaux_1, 2 : nb_bateaux_2, 3 : nb_bateaux_3, 4 : nb_bateaux_4, 5 : nb_bateaux_5}
 
 def valider_et_quitter():
     global dico_bateaux_a_poser
@@ -356,11 +375,17 @@ mainloop()
 """dico_bateaux_a_poser = {}
 for i in range(1,6):  
     dico_bateaux_a_poser[i] = int(input(f"Combien de bateaux de taille {i} voulez vous ajouter ? "))"""
-liste_bateaux_a_poser = []
-for clef in dico_bateaux_a_poser:
-    for i in range(dico_bateaux_a_poser[clef]):
-        liste_bateaux_a_poser.append(clef)
 
+#On met des valeurs par défaut si le joueur ferme la fenêtre
+print(dico_bateaux_a_poser)
+if dico_bateaux_a_poser == {}:
+    liste_bateaux_a_poser = [2,3,3,4,5]
+else:
+    liste_bateaux_a_poser = []
+    for clef in dico_bateaux_a_poser:
+        for i in range(dico_bateaux_a_poser[clef]):
+            liste_bateaux_a_poser.append(clef)
+    print(liste_bateaux_a_poser)
 
 plateau_joueur1 = Plateau()
 plateau_joueur2 = Plateau()
