@@ -24,7 +24,7 @@ class Plateau:
         for i in range(10):
             ligne = []
             for j in range(10):
-                ligne.append(0)
+                ligne.append(Case(i, j, 0))
             self.plateau.append(ligne)
         return self.plateau
 
@@ -34,30 +34,30 @@ class Plateau:
         for numero_ligne, ligne_plateau in enumerate(self.plateau):
             ligne_print = str(numero_ligne) + ' '
             for case in ligne_plateau:
-                if case==0:
+                if case.type == 0:
                     ligne_print += '· '
-                elif case == 1:
+                elif case.type == 1:
                     if afficher_1:
                         ligne_print += 'X '
                     else:
                         ligne_print += '· '
-                elif case == 2:
+                elif case.type == 2:
                     if afficher_2:
                         ligne_print += '□ '
                     else:
                         ligne_print += '· '
-                elif case == 3:
+                elif case.type == 3:
                     ligne_print += '☒ '
             print(ligne_print + str(numero_ligne))
         print("  0 1 2 3 4 5 6 7 8 9")
 
-    def modifier_case(self, coordonees_x, coordonees_y, valeur):
-        self.plateau[coordonees_x][coordonees_y] = valeur
+    def modifier_case(self, coordonees_x, coordonees_y, valeur, taille_bateau = None, position_sur_bateau = None, orientation_bateau = None):
+        self.plateau[coordonees_x][coordonees_y] = Case(coordonees_x, coordonees_y, valeur, taille_bateau, position_sur_bateau, orientation_bateau)
    
     
     def cible_case(self, coordonees_x, coordonees_y):
         # retourne True si est un bateau est présent
-        if self.plateau[coordonees_x][coordonees_y]==2:
+        if self.plateau[coordonees_x][coordonees_y].type == 2:
             return True
         else:
             return False
@@ -68,7 +68,7 @@ class Plateau:
         if coordonees_x>9 or coordonees_x<0 or coordonees_y>9 or coordonees_y<0:
             return False
         else:
-            if self.plateau[coordonees_x][coordonees_y]==1 or self.plateau[coordonees_x][coordonees_y]==3:
+            if self.plateau[coordonees_x][coordonees_y].type == 1 or self.plateau[coordonees_x][coordonees_y].type == 3:
                 return False
             else :
                 return True
@@ -87,13 +87,13 @@ class Plateau:
                 #on regarde si les trois cases à droite et à gauche du bateau sont déja pleines ou non
                 for i in range(-1, 2):
                     try:
-                        if self.plateau[coordonees_x+i][coordonees_y-1] != 0:
+                        if self.plateau[coordonees_x+i][coordonees_y-1].type != 0:
                             return False
                     except:
                         pass
                     
                     try:
-                        if self.plateau[coordonees_x+i][coordonees_y+taille] != 0:
+                        if self.plateau[coordonees_x+i][coordonees_y+taille].type != 0:
                             return False
                     except:
                         pass
@@ -101,17 +101,17 @@ class Plateau:
             for i in range(coordonees_y, coordonees_y+taille):
                 if i >= 10  :   
                     return False
-                if self.plateau[coordonees_x][i] != 0:
+                if self.plateau[coordonees_x][i].type != 0:
                     return False
                 if not can_touch:
                     try:
-                        if self.plateau[coordonees_x-1][i] != 0:
+                        if self.plateau[coordonees_x-1][i].type != 0:
                             return False
                     except:
                         pass
                     
                     try:
-                        if self.plateau[coordonees_x+1][i] != 0:
+                        if self.plateau[coordonees_x+1][i].type != 0:
                             return False
                     except:
                         pass
@@ -120,30 +120,30 @@ class Plateau:
             #on regarde si les trois cases en haut et en bas du bateau sont déja pleines ou non
             for i in range(-1, 2):
                     try:
-                        if self.plateau[coordonees_x-1][coordonees_y+i] != 0:
+                        if self.plateau[coordonees_x-1][coordonees_y+i].type != 0:
                             return False
                     except:
                         pass
                     
                     try:
-                        if self.plateau[coordonees_x+taille][coordonees_y+i] != 0:
+                        if self.plateau[coordonees_x+taille][coordonees_y+i].type != 0:
                             return False
                     except:
                         pass
             for i in range(coordonees_x, coordonees_x+taille):
                 if i >= 10:
                     return False
-                if self.plateau[i][coordonees_y] != 0:
+                if self.plateau[i][coordonees_y].type != 0:
                     return False
                 if not can_touch:
                     try:
-                        if self.plateau[i][coordonees_y-1] != 0:
+                        if self.plateau[i][coordonees_y-1].type != 0:
                             return False
                     except:
                         pass
                     
                     try:
-                        if self.plateau[i][coordonees_y+1] != 0:
+                        if self.plateau[i][coordonees_y+1].type != 0:
                             return False
                     except:
                         pass
@@ -154,14 +154,14 @@ class Plateau:
         self.liste_bateau_restant.append([taille,[]])
         #modifie la matrice plateau avec les bonnes valeurs
         if orientation == 1:
-            for i in range(coordonees_x, coordonees_x+taille):
-                self.modifier_case(i, coordonees_y, 2)
+            for index, i in enumerate(range(coordonees_x, coordonees_x+taille)):
+                self.modifier_case(i, coordonees_y, 2, taille, index, orientation)
                 self.liste_bateau_restant[-1][1].append([i, coordonees_y])
                 
 
         elif orientation == 0:
-            for i in range(coordonees_y, coordonees_y+taille):
-                self.modifier_case(coordonees_x, i, 2)
+            for index, i in enumerate(range(coordonees_y, coordonees_y+taille)):
+                self.modifier_case(coordonees_x, i, 2, taille, index, orientation)
                 self.liste_bateau_restant[-1][1].append([coordonees_x, i])
 
         return True
@@ -259,15 +259,15 @@ class IU:
             self.canva_droite.delete("all")
         for index_ligne, ligne in enumerate(plateau):
             for index_colonne, colonne in enumerate(ligne):
-                if colonne == 0:
+                if colonne.type == 0:
                     image = self.img_bleu
-                elif colonne == 1:
+                elif colonne.type == 1:
                     image = self.img_viollet if afficher_1 else self.img_bleu
-                elif colonne == 2:
+                elif colonne.type == 2:
                     image = self.img_noir if afficher_2 else self.img_bleu
-                elif colonne == 3:
+                elif colonne.type == 3:
                     image = self.img_vert
-                else:  # colonne == 4
+                else:  # colonne.type == 4
                     image = self.img_gris
                 self.images.append(image)
                 if position_canva == 'gauche':
@@ -298,18 +298,17 @@ class IU:
         self._clicked.set(True)
 
     def afficher_previsualisation(self, plateau, x, y, orientation, taille, position_canva):
-        #Affiche une prévisualisation du bateau  
-
-        plateau_preview = [row[:] for row in plateau]
+        # Copie profonde du plateau
+        plateau_preview = [[copy.copy(case) for case in row] for row in plateau]
         # Place le bateau en gris (valeur 4) si possible
         if orientation == 0:
             for i in range(taille):
                 if 0 <= y + i < 10:
-                    plateau_preview[x][y + i] = 4
+                    plateau_preview[x][y + i].type = 4
         else:
             for i in range(taille):
                 if 0 <= x + i < 10:
-                    plateau_preview[x + i][y] = 4
+                    plateau_preview[x + i][y].type = 4
         self.afficher_plateau(plateau_preview, True, True, position_canva)
     
     def afficher_croix(self, event):
@@ -323,6 +322,25 @@ class IU:
         if self.croix_id is not None:
             self.canva_gauche.delete(self.croix_id)
             self.croix_id = None
+
+
+class Case:
+    def __init__(self,coordonnee_x, coordonnee_y, type, taille_bateau = None, position_sur_bateau = None, orientation_bateau = None):
+        self.coordonnee_x = coordonnee_x
+        self.coordonnee_y = coordonnee_y
+        self.type = type
+        self.taille_bateau = taille_bateau
+        self.position_sur_bateau = position_sur_bateau
+        self.orientation_bateau = orientation_bateau
+
+        if self.type == 3 or self.type == 4:
+            self.is_beateau = True
+        else:
+            self.is_beateau = False
+
+
+        
+
 
 def on_mouvement(event, fenetre, plateau, orientation, taille, position_canva):
     x_case, y_case = fenetre.click_to_case(event.x, event.y)
