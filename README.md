@@ -64,7 +64,7 @@ Placez vos bateaux et tentez de couler ceux de votre adversaire 💥
 
 ### 🖼️ Interface & Graphismes
 - Images de bateaux à la place des carrés colorés ✅
-- Couleur différente pour les bateaux coulés  
+- Couleur différente pour les bateaux coulés ✅
 - Animation d’explosion lors des tirs réussis  
 
 ### 🔊 Son & Ambiance
@@ -76,7 +76,7 @@ Placez vos bateaux et tentez de couler ceux de votre adversaire 💥
 - Visualisation des zones interdites (`can_touch=False`)  
 - Liste des bateaux restants (joueur + adversaire) avec icônes  
 - Clic droit pour retirer un bateau  
-- Prévisualisation du tir (croix suivant la souris pendant le tour)  
+- Prévisualisation du tir (croix suivant la souris pendant le tour) ✅
 - Option pour masquer le plateau adverse  
 
 ### 🕹️ Menu & Options
