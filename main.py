@@ -1,6 +1,7 @@
 from tkinter import *
-from time import *
 import copy
+from PIL import Image, ImageTk
+
 
 root_created = False
 
@@ -11,12 +12,14 @@ class Plateau:
     2 = case avec bateau                noir
     3 = case touché avec bateau         vert
     4 = case avec bateau prévisualisé   gris
+    5 = bateau coulé
     x=ligne 
     y=colonne"""
 
     def __init__(self):
         self.plateau = []
         self.liste_bateau_restant = []
+        self.liste_bateau_total = []
 
     def creation_plateau(self):
         #Fonction qui créer le plateau vide, en 10x10, rempli de 0
@@ -52,12 +55,21 @@ class Plateau:
         print("  0 1 2 3 4 5 6 7 8 9")
 
     def modifier_case(self, coordonees_x, coordonees_y, valeur, taille_bateau = None, position_sur_bateau = None, orientation_bateau = None):
-        self.plateau[coordonees_x][coordonees_y] = Case(coordonees_x, coordonees_y, valeur, taille_bateau, position_sur_bateau, orientation_bateau)
-   
+        self.plateau[coordonees_x][coordonees_y].coordonees_x = coordonees_x
+        self.plateau[coordonees_x][coordonees_y].coordonees_y = coordonees_y
+        self.plateau[coordonees_x][coordonees_y].type = valeur
+        
+        if taille_bateau != None:
+            self.plateau[coordonees_x][coordonees_y].taille_bateau = taille_bateau
+        if position_sur_bateau != None:
+            self.plateau[coordonees_x][coordonees_y].position_sur_bateau = position_sur_bateau
+        if orientation_bateau != None:
+            self.plateau[coordonees_x][coordonees_y].orientation_bateau = orientation_bateau
+           
     
     def cible_case(self, coordonees_x, coordonees_y):
         # retourne True si est un bateau est présent
-        if self.plateau[coordonees_x][coordonees_y].type == 2:
+        if self.plateau[coordonees_x][coordonees_y].type == 2 or self.plateau[coordonees_x][coordonees_y].type == 5:
             return True
         else:
             return False
@@ -68,7 +80,7 @@ class Plateau:
         if coordonees_x>9 or coordonees_x<0 or coordonees_y>9 or coordonees_y<0:
             return False
         else:
-            if self.plateau[coordonees_x][coordonees_y].type == 1 or self.plateau[coordonees_x][coordonees_y].type == 3:
+            if self.plateau[coordonees_x][coordonees_y].type == 1 or self.plateau[coordonees_x][coordonees_y].type == 3 or self.plateau[coordonees_x][coordonees_y].type == 5:
                 return False
             else :
                 return True
@@ -242,38 +254,91 @@ class IU:
         self.images = []
         self.taille_case = 45
         self.img_bleu = PhotoImage(file='images/bleu.png', master=self.fenetre)
-        self.img_blanc = PhotoImage(file='images/blanc.png', master=self.fenetre)
-        self.img_viollet = PhotoImage(file='images/viollet.png', master=self.fenetre)
-        self.img_noir = PhotoImage(file='images/noir.png', master=self.fenetre)
-        self.img_vert = PhotoImage(file='images/vert.png', master=self.fenetre)
+        
         self.img_gris = PhotoImage(file='images/gris.png', master=self.fenetre)
         self.img_croix = PhotoImage(file='images/croix.png', master=self.fenetre)
         self.img_cible = PhotoImage(file='images/cible.png', master=self.fenetre)
+        self.img_touche = PhotoImage(file='images/touché.png', master=self.fenetre)
+
+        self.img_bateau_1 = PhotoImage(file='Images/Bateaux/1.png', master=self.fenetre)
+        self.img_bateau_2 = PhotoImage(file='Images/Bateaux/2.png', master=self.fenetre)
+        self.img_bateau_3 = PhotoImage(file='Images/Bateaux/3.png', master=self.fenetre)
+        self.img_bateau_4 = PhotoImage(file='Images/Bateaux/4.png', master=self.fenetre)
+        self.img_bateau_5 = PhotoImage(file='Images/Bateaux/5.png', master=self.fenetre)
+
+        self.liste_img_bateaux = [self.img_bateau_1, self.img_bateau_2, self.img_bateau_3, self.img_bateau_4, self.img_bateau_5]
 
     def afficher_plateau(self, plateau, afficher_1, afficher_2, position_canva):
-        #Permet d'afficher le plateau sur le bon canva 
-        self.images = []
+        
+        #permet de créer ces deux listes seulement une fois, la première fois que afficher_plateau() est appelée.
+        if not hasattr(self, 'images_gauche'):
+            self.images_gauche = []
+        if not hasattr(self, 'images_droite'):
+            self.images_droite = []
+
         if position_canva == 'gauche':
             self.canva_gauche.delete("all")
+            # on réinitialise uniquement la liste gauche
+            self.images_gauche = []
         else:
             self.canva_droite.delete("all")
+            # on réinitialise uniquement la liste droite
+            self.images_droite = []
+
         for index_ligne, ligne in enumerate(plateau):
             for index_colonne, colonne in enumerate(ligne):
+                x = index_colonne * self.taille_case + index_colonne * 3 + 1
+                y = index_ligne * self.taille_case + index_ligne * 3 + 1
+
+
+                # Affiche toujours l'image bleue en fond
+                if position_canva == 'gauche':
+                    self.canva_gauche.create_image(x, y, image=self.img_bleu, anchor=NW)
+                else:
+                    self.canva_droite.create_image(x, y, image=self.img_bleu, anchor=NW)
                 if colonne.type == 0:
                     image = self.img_bleu
                 elif colonne.type == 1:
-                    image = self.img_viollet if afficher_1 else self.img_bleu
-                elif colonne.type == 2:
-                    image = self.img_noir if afficher_2 else self.img_bleu
+                    image = self.img_cible if afficher_1 else self.img_bleu
+                elif (not afficher_2) and (colonne.type == 2):
+                    image = self.img_bleu
+
+                elif (colonne.type == 2 and afficher_2) or (colonne.type == 3 and position_canva != 'gauche') or colonne.type == 5:
+                    img_original_pil = Image.open(f'Images/Bateaux/{colonne.taille_bateau}.png')
+                    if colonne.type == 5:
+                        img_original_pil = img_original_pil.convert("RGBA")
+                    x1 = (colonne.position_sur_bateau)*45+(colonne.position_sur_bateau-1)*3
+                    x2 = x1 + 48  
+                    image_cropped = img_original_pil.crop((x1, 0, x2, 45))
+                    
+                    if colonne.orientation_bateau == 1:
+                        image_cropped = image_cropped = image_cropped.rotate(-90, expand=True)
+                    
+                    if colonne.type == 5:
+                        alpha = image_cropped.split()[-1]
+                        alpha = alpha.point(lambda p: p * 0.5)  # 0.5 = 50% transparent
+                        image_cropped.putalpha(alpha)
+
+                    image = ImageTk.PhotoImage(image_cropped, master=self.fenetre)
+                
+
                 elif colonne.type == 3:
-                    image = self.img_vert
+                    image = self.img_touche
+
+                
                 else:  # colonne.type == 4
                     image = self.img_gris
-                self.images.append(image)
+                
+
                 if position_canva == 'gauche':
-                    self.canva_gauche.create_image(index_colonne*self.taille_case+index_colonne*3+1, index_ligne*self.taille_case+index_ligne*3+1, image=image, anchor=NW)
+                    self.images_gauche.append(image)
+                    self.canva_gauche.create_image(x, y, image=image, anchor=NW)
                 else:
-                    self.canva_droite.create_image(index_colonne*self.taille_case+index_colonne*3+1, index_ligne*self.taille_case+index_ligne*3+1, image=image, anchor=NW)
+                    self.images_droite.append(image)
+                    self.canva_droite.create_image(x, y, image=image, anchor=NW)
+                    if colonne.type == 3:
+                        self.canva_droite.create_image(x, y, image=self.img_touche, anchor=NW)
+                
 
     def click_to_case(self, coordonnee_click_x, coordonnee_click_y):
         #Retourne les coordonnées de la case cliquée
@@ -512,6 +577,9 @@ for joueur in [1,2]:
     text_placement_bateau_fenetre_1.configure(text="C'est à l'adversaire de poser ces bateaux")
     text_placement_bateau_fenetre_2.configure(text="C'est à vous de poser les bateaux")
 
+plateau_joueur1.liste_bateau_total = copy.deepcopy(plateau_joueur1.liste_bateau_restant)
+plateau_joueur2.liste_bateau_total = copy.deepcopy(plateau_joueur2.liste_bateau_restant)
+
 text_placement_bateau_fenetre_1.destroy()
 text_placement_bateau_fenetre_2.destroy()
 for lbl in text_nb_bateau_labels1:
@@ -585,6 +653,20 @@ while  not fin_du_jeux:
             else: # si tout le bateau a été découvert
                 nb_bateaux_restant = plateau_joueur2.nb_bateau_restant()
                 print(f"Le bateau de taille {taille_bateau_restant[0]} a été coulé")
+
+                index_bateau_touche = 0
+                for index_bateau, bateau in enumerate(plateau_joueur2.liste_bateau_total):
+                    for case in bateau[1]:
+                        if case == [coordonnee_case_x, coordonnee_case_y]:
+                            index_bateau_touche = index_bateau
+                print(plateau_joueur2.liste_bateau_total[index_bateau_touche][1])
+                for case in plateau_joueur2.liste_bateau_total[index_bateau_touche][1]:
+                    
+                    plateau_joueur2.modifier_case(case[0], case[1], 5)
+                    #plateau_joueur2.plateau[case[0]][case[1]].type = 5
+                    
+                                
+
                 if nb_bateaux_restant != 0: # s'il reste des bateaux
                     print(f"Il reste {nb_bateaux_restant} bateau(x) en vie")
                 else: # s'il n'y a plus de bateau restant
@@ -604,6 +686,20 @@ while  not fin_du_jeux:
             else: # si tout le bateau a été découvert
                 nb_bateaux_restant = plateau_joueur1.nb_bateau_restant()
                 print(f"Le bateau de taille {taille_bateau_restant[0]} a été coulé")
+
+                
+                index_bateau_touche = 0
+                for index_bateau, bateau in enumerate(plateau_joueur1.liste_bateau_total):
+                    for case in bateau[1]:
+                        if case == [coordonnee_case_x, coordonnee_case_y]:
+                            index_bateau_touche = index_bateau
+
+                print(plateau_joueur1.liste_bateau_total[index_bateau_touche][1])
+                for case in plateau_joueur1.liste_bateau_total[index_bateau_touche][1]:
+                    plateau_joueur1.modifier_case(case[0], case[1], 5)
+                    
+
+
                 if nb_bateaux_restant != 0: # s'il reste des bateaux
                     print(f"Il reste {nb_bateaux_restant} bateau(x) en vie")
                 else: # s'il n'y a plus de bateau restant

@@ -63,7 +63,7 @@ Placez vos bateaux et tentez de couler ceux de votre adversaire 💥
 ## 🧠 Fonctionnalités à venir
 
 ### 🖼️ Interface & Graphismes
-- Images de bateaux à la place des carrés colorés  
+- Images de bateaux à la place des carrés colorés ✅
 - Couleur différente pour les bateaux coulés  
 - Animation d’explosion lors des tirs réussis  
 
