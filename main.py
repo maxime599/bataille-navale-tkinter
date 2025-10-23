@@ -86,7 +86,7 @@ class Plateau:
                 return True
 
 
-    def ajouter_bateau(self, coordonees_x, coordonees_y, orientation, taille, can_touch): #orientation = 0 -> droite, 1 -> bas
+    def ajouter_bateau(self, coordonees_x, coordonees_y, orientation, taille, can_touch, juste_test_possible = False): #orientation = 0 -> droite, 1 -> bas
         #Ajoute renvoir True ou False si l'ajout est possible, et si oui l'ajoute
         
         #Renvoie False si le bateau est en dehors de l'écran ou si il y a déja un bateau sur le terrain
@@ -162,21 +162,21 @@ class Plateau:
         else:
             return False
         
+        if juste_test_possible == False:
+            self.liste_bateau_restant.append([taille,[]])
+            #modifie la matrice plateau avec les bonnes valeurs
+            if orientation == 1:
+                for index, i in enumerate(range(coordonees_x, coordonees_x+taille)):
+                    self.modifier_case(i, coordonees_y, 2, taille, index, orientation)
+                    self.liste_bateau_restant[-1][1].append([i, coordonees_y])
+                    
 
-        self.liste_bateau_restant.append([taille,[]])
-        #modifie la matrice plateau avec les bonnes valeurs
-        if orientation == 1:
-            for index, i in enumerate(range(coordonees_x, coordonees_x+taille)):
-                self.modifier_case(i, coordonees_y, 2, taille, index, orientation)
-                self.liste_bateau_restant[-1][1].append([i, coordonees_y])
-                
+            elif orientation == 0:
+                for index, i in enumerate(range(coordonees_y, coordonees_y+taille)):
+                    self.modifier_case(coordonees_x, i, 2, taille, index, orientation)
+                    self.liste_bateau_restant[-1][1].append([coordonees_x, i])
 
-        elif orientation == 0:
-            for index, i in enumerate(range(coordonees_y, coordonees_y+taille)):
-                self.modifier_case(coordonees_x, i, 2, taille, index, orientation)
-                self.liste_bateau_restant[-1][1].append([coordonees_x, i])
-
-        return True
+            return True
 
     def enlever_case_bateau(self, coordonees_x, coordonees_y):
         #remove dans la liste des bateaux la case corespondante
@@ -362,31 +362,51 @@ class IU:
         self.fenetre.unbind("<Button-1>")
         self._clicked.set(True)
 
-    def afficher_previsualisation(self, plateau, x, y, orientation, taille, position_canva):
+    def afficher_previsualisation(self, plateau, x, y, orientation, taille, position_canva, can_touch):
+        
+        if plateau.ajouter_bateau(x, y, orientation, taille, can_touch, True) == False:
+            possible = False
+        else:
+            possible = True
+
         # Efface uniquement la prévisualisation précédente
         if position_canva == 'gauche':
             self.canva_gauche.delete("preview")
         else:
             self.canva_droite.delete("preview")
-        # Affiche les cases grises pour la prévisualisation
-        if orientation == 0:
-            for i in range(taille):
-                if 0 <= y + i < 10:
-                    px = (y + i) * self.taille_case + (y + i) * 3 + 1
-                    py = x * self.taille_case + x * 3 + 1
-                    if position_canva == 'gauche':
-                        self.canva_gauche.create_image(px, py, image=self.img_gris, anchor=NW, tags="preview")
-                    else:
-                        self.canva_droite.create_image(px, py, image=self.img_gris, anchor=NW, tags="preview")
-        else:
-            for i in range(taille):
-                if 0 <= x + i < 10:
-                    px = y * self.taille_case + y * 3 + 1
-                    py = (x + i) * self.taille_case + (x + i) * 3 + 1
-                    if position_canva == 'gauche':
-                        self.canva_gauche.create_image(px, py, image=self.img_gris, anchor=NW, tags="preview")
-                    else:
-                        self.canva_droite.create_image(px, py, image=self.img_gris, anchor=NW, tags="preview")
+
+        for i in range(taille):
+            if orientation == 0:
+                case_x, case_y = x, y + i
+            else:
+                case_x, case_y = x + i, y
+            if 0 <= case_x < 10 and 0 <= case_y < 10:
+                img_path = f'Images/Bateaux/{taille}.png'
+                img_pil = Image.open(img_path).convert("RGBA")
+                x1 = i * self.taille_case + i * 3
+                x2 = x1 + self.taille_case + 3
+                image_cropped = img_pil.crop((x1, 0, x2, self.taille_case))
+                if orientation == 1:
+                    image_cropped = image_cropped.rotate(-90, expand=True)
+                # Semi-transparence
+                alpha = image_cropped.split()[-1]
+                alpha = alpha.point(lambda p: p * 0.5)
+                image_cropped.putalpha(alpha)
+                # Si placement impossible, applique filtre rouge
+                if not possible:
+                    # Crée un overlay rouge semi-transparent
+                    rouge = Image.new("RGBA", image_cropped.size, (255, 0, 0, 120))
+                    image_cropped = Image.alpha_composite(image_cropped, rouge)
+                image = ImageTk.PhotoImage(image_cropped, master=self.fenetre)
+                if not hasattr(self, 'preview_images'):
+                    self.preview_images = []
+                self.preview_images.append(image)
+                px = case_y * self.taille_case + case_y * 3 + 1
+                py = case_x * self.taille_case + case_x * 3 + 1
+                if position_canva == 'gauche':
+                    self.canva_gauche.create_image(px, py, image=image, anchor=NW, tags="preview")
+                else:
+                    self.canva_droite.create_image(px, py, image=image, anchor=NW, tags="preview")
     
     def afficher_croix(self, event):
         # Supprime l'ancienne croix si elle existe
@@ -419,14 +439,14 @@ class Case:
         
 
 
-def on_mouvement(event, fenetre, plateau, orientation, taille, position_canva):
+def on_mouvement(event, fenetre, plateau, orientation, taille, position_canva, can_touch):
     x_case, y_case = fenetre.click_to_case(event.x, event.y)
-    fenetre.afficher_previsualisation(plateau, x_case, y_case, orientation, taille, position_canva)
+    fenetre.afficher_previsualisation(plateau, x_case, y_case, orientation, taille, position_canva, can_touch)
 
-def on_molette(event, fenetre, plateau, orientation, taille, position_canva):
+def on_molette(event, fenetre, plateau, orientation, taille, position_canva, can_touch):
     orientation[0] = 1 - orientation[0]  # alterne entre 0 et 1
     x_case, y_case = fenetre.click_to_case(event.x, event.y)
-    fenetre.afficher_previsualisation(plateau, x_case, y_case, orientation[0], taille, position_canva)
+    fenetre.afficher_previsualisation(plateau, x_case, y_case, orientation[0], taille, position_canva, can_touch)
 
 
 def recuperer_taille_bateaux():
@@ -548,11 +568,11 @@ for joueur in [1,2]:
             orientation = [0]
 
             if joueur == 1:
-                fenetre1.canva_droite.bind("<Motion>", lambda event: on_mouvement(event, fenetre1, plateau_joueur1.plateau, orientation[0], taille, 'droite'))
-                fenetre1.canva_droite.bind("<MouseWheel>", lambda event: on_molette(event, fenetre1, plateau_joueur1.plateau, orientation, taille, 'droite'))
+                fenetre1.canva_droite.bind("<Motion>", lambda event: on_mouvement(event, fenetre1, plateau_joueur1, orientation[0], taille, 'droite', option_can_touch))
+                fenetre1.canva_droite.bind("<MouseWheel>", lambda event: on_molette(event, fenetre1, plateau_joueur1, orientation, taille, 'droite', option_can_touch))
             else:
-                fenetre2.canva_droite.bind("<Motion>", lambda event: on_mouvement(event, fenetre2, plateau_joueur2.plateau, orientation[0], taille, 'droite'))
-                fenetre2.canva_droite.bind("<MouseWheel>", lambda event: on_molette(event, fenetre2, plateau_joueur2.plateau, orientation, taille, 'droite'))
+                fenetre2.canva_droite.bind("<Motion>", lambda event: on_mouvement(event, fenetre2, plateau_joueur2, orientation[0], taille, 'droite', option_can_touch))
+                fenetre2.canva_droite.bind("<MouseWheel>", lambda event: on_molette(event, fenetre2, plateau_joueur2, orientation, taille, 'droite', option_can_touch))
 
             if joueur == 1:
                 coordonnee_case = fenetre1.attendre_click_case()
