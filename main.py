@@ -363,18 +363,30 @@ class IU:
         self._clicked.set(True)
 
     def afficher_previsualisation(self, plateau, x, y, orientation, taille, position_canva):
-        # Copie profonde du plateau
-        plateau_preview = [[copy.copy(case) for case in row] for row in plateau]
-        # Place le bateau en gris (valeur 4) si possible
+        # Efface uniquement la prévisualisation précédente
+        if position_canva == 'gauche':
+            self.canva_gauche.delete("preview")
+        else:
+            self.canva_droite.delete("preview")
+        # Affiche les cases grises pour la prévisualisation
         if orientation == 0:
             for i in range(taille):
                 if 0 <= y + i < 10:
-                    plateau_preview[x][y + i].type = 4
+                    px = (y + i) * self.taille_case + (y + i) * 3 + 1
+                    py = x * self.taille_case + x * 3 + 1
+                    if position_canva == 'gauche':
+                        self.canva_gauche.create_image(px, py, image=self.img_gris, anchor=NW, tags="preview")
+                    else:
+                        self.canva_droite.create_image(px, py, image=self.img_gris, anchor=NW, tags="preview")
         else:
             for i in range(taille):
                 if 0 <= x + i < 10:
-                    plateau_preview[x + i][y].type = 4
-        self.afficher_plateau(plateau_preview, True, True, position_canva)
+                    px = y * self.taille_case + y * 3 + 1
+                    py = (x + i) * self.taille_case + (x + i) * 3 + 1
+                    if position_canva == 'gauche':
+                        self.canva_gauche.create_image(px, py, image=self.img_gris, anchor=NW, tags="preview")
+                    else:
+                        self.canva_droite.create_image(px, py, image=self.img_gris, anchor=NW, tags="preview")
     
     def afficher_croix(self, event):
         # Supprime l'ancienne croix si elle existe
