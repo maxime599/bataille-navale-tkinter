@@ -608,6 +608,8 @@ for joueur in [1,2]:
 
             if joueur == 1:
                 bonne_position_bateau = plateau_joueur1.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation[0], taille, option_can_touch)
+                plateau_joueur1.afficher_plateau(True, True)
+                fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'droite')
                 if bonne_position_bateau == True:
                     dico_bateaux_restant[taille] -= 1
                     index = taille - 1
