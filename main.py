@@ -20,6 +20,7 @@ class Plateau:
         self.plateau = []
         self.liste_bateau_restant = []
         self.liste_bateau_total = []
+        self.liste_bateaux_a_poser = []
 
     def creation_plateau(self):
         #Fonction qui créer le plateau vide, en 10x10, rempli de 0
@@ -448,6 +449,31 @@ def on_molette(event, fenetre, plateau, orientation, taille, position_canva, can
     x_case, y_case = fenetre.click_to_case(event.x, event.y)
     fenetre.afficher_previsualisation(plateau, x_case, y_case, orientation[0], taille, position_canva, can_touch)
 
+def on_clique_droit(event, plateau, fenetre, canva_placement, text_ids):
+
+    
+    x_case, y_case = fenetre.click_to_case(event.x, event.y)    #Converti les coordonnée de px en coordonnée de cases
+    if plateau.plateau[x_case][y_case].type == 2:   #On regarde si la case cliquée est bien un bateau
+        bateau_touche = [0,[0,0]]
+
+        #On parcourt la liste de bateau sur le plateau pour trouver les autres cases du bateau
+        for bateau in plateau.liste_bateau_restant: 
+            for case in bateau[1]:
+                if case == [x_case, y_case]:
+                    bateau_touche = bateau
+        taille_bateau = bateau_touche[0]
+
+        #On convertit les cases de bateaux en cases vides
+        for case_a_supprimer in bateau_touche[1]:
+            plateau.plateau[case_a_supprimer[0]][case_a_supprimer[1]].type = 0
+
+        fenetre.afficher_plateau(plateau.plateau, True, True, 'droit') #Mise à jour de l'affichage
+        plateau.liste_bateaux_a_poser.append(taille_bateau)            #Mise à jour de la liste des bateaux à poser
+
+        index = taille_bateau - 1
+        canva_placement.itemconfig(text_ids[index], text='× ' + str(plateau.liste_bateaux_a_poser.count(taille_bateau))) #Mise à jour de l'affichage du nombre restant de bateaux à poser
+        return taille_bateau
+    return None
 
 def recuperer_taille_bateaux():
 
@@ -501,22 +527,7 @@ bouton_valider = Button(fenetre_nb_bateau, text='Valider', command=valider_et_qu
 bouton_valider.grid(row = 6, column = 0, padx = 3, pady = 3)
 mainloop()
 
-#Demande le nombre de bateaux de taille 1 à 6 à poser dans le plateau
-"""dico_bateaux_a_poser = {}
-for i in range(1,6):  
-    dico_bateaux_a_poser[i] = int(input(f"Combien de bateaux de taille {i} voulez vous ajouter ? "))"""
 
-#On met des valeurs par défaut si le joueur ferme la fenêtre
-print(dico_bateaux_a_poser)
-if dico_bateaux_a_poser == {}:
-    liste_bateaux_a_poser = [2,3,3,4,5]
-    dico_bateaux_a_poser = {1:0,2:1,3:2,4:1,5:1}
-else:
-    liste_bateaux_a_poser = []
-    for clef in dico_bateaux_a_poser:
-        for i in range(dico_bateaux_a_poser[clef]):
-            liste_bateaux_a_poser.append(clef)
-    print(liste_bateaux_a_poser)
 
 plateau_joueur1 = Plateau()
 plateau_joueur2 = Plateau()
@@ -531,7 +542,26 @@ fenetre2 = IU("Joueur 2")
 fenetre2.afficher_plateau(plateau_joueur1.plateau, True, True, 'gauche')
 fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droit')
 
-dico_bateaux_restant = copy.copy(dico_bateaux_a_poser)
+#Demande le nombre de bateaux de taille 1 à 6 à poser dans le plateau
+"""dico_bateaux_a_poser = {}
+for i in range(1,6):  
+    dico_bateaux_a_poser[i] = int(input(f"Combien de bateaux de taille {i} voulez vous ajouter ? "))"""
+
+#On met des valeurs par défaut si le joueur ferme la fenêtre
+print(dico_bateaux_a_poser)
+if dico_bateaux_a_poser == {}:
+    plateau_joueur1.liste_bateaux_a_poser = [2,3,3,4,5]
+    plateau_joueur2.liste_bateaux_a_poser = [2,3,3,4,5]
+    dico_bateaux_a_poser = {1:0,2:1,3:2,4:1,5:1}
+else:
+    liste_bateaux_a_poser = []
+    for clef in dico_bateaux_a_poser:
+        for i in range(dico_bateaux_a_poser[clef]):
+            plateau_joueur1.liste_bateaux_a_poser.append(clef)
+            plateau_joueur2.liste_bateaux_a_poser.append(clef)
+    print(liste_bateaux_a_poser)
+
+
 
 text_placement_bateau_fenetre_1 = Label(fenetre1.fenetre, text="C'est à vous de poser les bateaux", font=("Courier", 15),wraplength=280,justify='center')
 text_placement_bateau_fenetre_1.grid(row=1,column=22, padx=(0,3))
@@ -562,22 +592,28 @@ for bateau in range(5):
         canva_placement_bateaux_fenetre1.create_image(img_x + 14*i, y+6, image=im_carre_bleu, anchor=NW)
         canva_placement_bateaux_fenetre2.create_image(img_x + 14*i, y+6, image=im_carre_bleu2, anchor=NW)
     text_x = img_x + 14 * (bateau + 1) + 12
-    tid1 = canva_placement_bateaux_fenetre1.create_text(text_x, y + 10, text='× ' + str(dico_bateaux_restant[bateau + 1]), fill="#2b3a42", font=("Helvetica", 12), anchor='w')
-    tid2 = canva_placement_bateaux_fenetre2.create_text(text_x, y + 10, text='× ' + str(dico_bateaux_restant[bateau + 1]), fill="#2b3a42", font=("Helvetica", 12), anchor='w')
+    tid1 = canva_placement_bateaux_fenetre1.create_text(text_x, y + 10, text='× ' + str(plateau_joueur1.liste_bateaux_a_poser.count(bateau + 1)), fill="#2b3a42", font=("Helvetica", 12), anchor='w')
+    tid2 = canva_placement_bateaux_fenetre2.create_text(text_x, y + 10, text='× ' + str(plateau_joueur2.liste_bateaux_a_poser.count(bateau + 1)), fill="#2b3a42", font=("Helvetica", 12), anchor='w')
     canva1_text_ids.append(tid1)
     canva2_text_ids.append(tid2)
 
-#Bloucle qui demande au deux joueurs de donner la position de leurs bateau à poser sur leur plateau
+#Boucle qui demande au deux joueurs de donner la position de leurs bateau à poser sur leur plateau
 for joueur in [1,2]:
     if joueur == 1:
         plateau_joueur1.afficher_plateau(True, True)
         fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'droit')
+        liste_bateaux_a_poser = plateau_joueur1.liste_bateaux_a_poser
     else:
         plateau_joueur2.afficher_plateau(True, True)
         fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droit')
-    for indice, taille in enumerate(liste_bateaux_a_poser):
+        liste_bateaux_a_poser = plateau_joueur2.liste_bateaux_a_poser
 
+
+    indice = 0
+    while indice < len(liste_bateaux_a_poser):
+        taille = liste_bateaux_a_poser[indice]
         bonne_position_bateau = False  
+        bateau_supprime = False
         while not bonne_position_bateau:
             #coordonnee_case_x = int(input(f"Dans quel numéro de ligne veut tu placer le coin de ton bateau n° {indice+1} de taille {taille} ? : "))
             #coordonnee_case_y = int(input(f"Dans quel numéro de colonne veut tu placer le coin de ton bateau n° {indice+1} de taille {taille} ? : "))
@@ -589,9 +625,12 @@ for joueur in [1,2]:
             if joueur == 1:
                 fenetre1.canva_droite.bind("<Motion>", lambda event: on_mouvement(event, fenetre1, plateau_joueur1, orientation[0], taille, 'droite', option_can_touch))
                 fenetre1.canva_droite.bind("<MouseWheel>", lambda event: on_molette(event, fenetre1, plateau_joueur1, orientation, taille, 'droite', option_can_touch))
+                fenetre1.canva_droite.bind("<Button-3>", lambda event: on_clique_droit(event, plateau_joueur1, fenetre1, canva_placement_bateaux_fenetre1, canva1_text_ids))
+
             else:
                 fenetre2.canva_droite.bind("<Motion>", lambda event: on_mouvement(event, fenetre2, plateau_joueur2, orientation[0], taille, 'droite', option_can_touch))
                 fenetre2.canva_droite.bind("<MouseWheel>", lambda event: on_molette(event, fenetre2, plateau_joueur2, orientation, taille, 'droite', option_can_touch))
+                fenetre2.canva_droite.bind("<Button-3>", lambda event: on_clique_droit(event, plateau_joueur2, fenetre2, canva_placement_bateaux_fenetre2, canva2_text_ids))
 
             if joueur == 1:
                 coordonnee_case = fenetre1.attendre_click_case()
@@ -600,8 +639,10 @@ for joueur in [1,2]:
 
             fenetre1.canva_droite.unbind("<Motion>")
             fenetre1.canva_droite.unbind("<MouseWheel>")
+            fenetre1.canva_droite.unbind("<Button-3>")
             fenetre2.canva_droite.unbind("<Motion>")
             fenetre2.canva_droite.unbind("<MouseWheel>")
+            fenetre2.canva_droite.unbind("<Button-3>")
 
             coordonnee_case_x = coordonnee_case[0]
             coordonnee_case_y = coordonnee_case[1]
@@ -611,19 +652,18 @@ for joueur in [1,2]:
                 plateau_joueur1.afficher_plateau(True, True)
                 fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'droite')
                 if bonne_position_bateau == True:
-                    dico_bateaux_restant[taille] -= 1
+                    liste_bateaux_a_poser.remove(taille)
                     index = taille - 1
-                    canva_placement_bateaux_fenetre1.itemconfig(canva1_text_ids[index], text='× ' + str(dico_bateaux_restant[taille]))
+                    canva_placement_bateaux_fenetre1.itemconfig(canva1_text_ids[index], text='× ' + str(liste_bateaux_a_poser.count(taille)))
                 num_joueur = 2
             else:
                 bonne_position_bateau = plateau_joueur2.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation[0], taille, option_can_touch)   
                 plateau_joueur2.afficher_plateau(True, True)
                 fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droite')
                 if bonne_position_bateau == True:
-                    dico_bateaux_restant[taille] -= 1
+                    liste_bateaux_a_poser.remove(taille)
                     index = taille - 1
-                    canva_placement_bateaux_fenetre2.itemconfig(canva2_text_ids[index], text='× ' + str(dico_bateaux_restant[taille]))
-    dico_bateaux_restant = copy.copy(dico_bateaux_a_poser)
+                    canva_placement_bateaux_fenetre2.itemconfig(canva2_text_ids[index], text='× ' + str(liste_bateaux_a_poser.count(taille)))
 
     text_placement_bateau_fenetre_1.configure(text="C'est à l'adversaire de poser ces bateaux")
     text_placement_bateau_fenetre_2.configure(text="C'est à vous de poser les bateaux")
@@ -712,7 +752,7 @@ while  not fin_du_jeux:
                 for case in plateau_joueur2.liste_bateau_total[index_bateau_touche][1]:
                     
                     plateau_joueur2.modifier_case(case[0], case[1], 5)
-                    #plateau_joueur2.plateau[case[0]][case[1]].type = 5
+                    
                     
                                 
 
