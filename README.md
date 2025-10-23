@@ -74,8 +74,8 @@ Placez vos bateaux et tentez de couler ceux de votre adversaire 💥
 ### 🧩 Gameplay
 - Placement aléatoire des bateaux  
 - Visualisation des zones interdites (`can_touch=False`)  
-- Liste des bateaux restants (joueur + adversaire) avec icônes  
-- Clic droit pour retirer un bateau  
+- Liste des bateaux restants (joueur + adversaire) avec icônes ✅
+- Clic droit pour retirer un bateau  ✅
 - Prévisualisation du tir (croix suivant la souris pendant le tour) ✅
 - Option pour masquer le plateau adverse  
 
@@ -85,7 +85,7 @@ Placez vos bateaux et tentez de couler ceux de votre adversaire 💥
   - ⚙️ Paramètres  
   - 📜 Crédits  
 - Paramètres personnalisables :
-  - Nombre de bateaux  
+  - Nombre de bateaux ✅
   - Activation/désactivation du contact entre bateaux
   - Réglage du volume 
 
