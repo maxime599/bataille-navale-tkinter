@@ -436,20 +436,39 @@ fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droit')
 
 dico_bateaux_restant = copy.copy(dico_bateaux_a_poser)
 
-text_placement_bateau_fenetre_1 = Label(fenetre1.fenetre, text="C'est à vous de poser les bateaux", font="20")
-text_placement_bateau_fenetre_1.grid(row=1,column=22, padx=(0,10))
-text_placement_bateau_fenetre_2 = Label(fenetre2.fenetre, text="C'est à l'adversaire de poser ces bateaux", font="20")
-text_placement_bateau_fenetre_2.grid(row=1,column=22, padx=(0,10))
+text_placement_bateau_fenetre_1 = Label(fenetre1.fenetre, text="C'est à vous de poser les bateaux", font=("Courier", 15),wraplength=280,justify='center')
+text_placement_bateau_fenetre_1.grid(row=1,column=22, padx=(0,3))
+text_placement_bateau_fenetre_2 = Label(fenetre2.fenetre, text="C'est à l'adversaire de poser ces bateaux",font=("Courier", 15),wraplength=280,justify='center')
+text_placement_bateau_fenetre_2.grid(row=1,column=22, padx=(0,3))
 
-text_nb_bateau_labels1 = []
-text_nb_bateau_labels2 = []
+canva_placement_bateaux_fenetre1 = Canvas(fenetre1.fenetre, width=260, height=220, background="#f8f9fb", highlightthickness=0)
+canva_placement_bateaux_fenetre1.grid(row=2, column=22, padx=6, pady=6)
+
+canva_placement_bateaux_fenetre1.create_rectangle(4, 4, 256, 216, outline="#cfcfcf", width=2, fill="#ffffff")
+canva_placement_bateaux_fenetre1.create_text(130, 18, text='Vos bateaux à poser', fill="#1f2f3f", font=("Helvetica", 14, "bold"))
+
+canva_placement_bateaux_fenetre2 = Canvas(fenetre2.fenetre, width=260, height=220, background="#f8f9fb", highlightthickness=0)
+canva_placement_bateaux_fenetre2.grid(row=2, column=22, padx=6, pady=6)
+canva_placement_bateaux_fenetre2.create_rectangle(4, 4, 256, 216, outline="#cfcfcf", width=2, fill="#ffffff")
+canva_placement_bateaux_fenetre2.create_text(130, 18, text='Vos bateaux à poser', fill="#1f2f3f", font=("Helvetica", 14, "bold"))
+
+im_carre_bleu = PhotoImage(file='images/carre_bateau_bleu.png', master=fenetre1.fenetre)
+im_carre_bleu2 = PhotoImage(file='images/carre_bateau_bleu.png', master=fenetre2.fenetre)
+
+
+canva1_text_ids = []
+canva2_text_ids = []
 for bateau in range(5):
-    text_nb_bateau_fenetre_1 = Label(fenetre1.fenetre, text=f"il vous reste {dico_bateaux_restant[bateau+1]} bateau(x) de taille {bateau+1} à poser", font="20")
-    text_nb_bateau_fenetre_1.grid(row=bateau+2 ,column=22, padx=(0,10))
-    text_nb_bateau_labels1.append(text_nb_bateau_fenetre_1)
-    text_nb_bateau_fenetre_2 = Label(fenetre2.fenetre, text=f"il vous reste {dico_bateaux_restant[bateau+1]} bateau(x) de taille {bateau+1} à poser", font="20")
-    text_nb_bateau_fenetre_2.grid(row=bateau+2 ,column=22, padx=(0,10))
-    text_nb_bateau_labels2.append(text_nb_bateau_fenetre_2)
+    y = 40 + 36 * bateau
+    img_x = 20
+    for i in range(0, bateau+1):
+        canva_placement_bateaux_fenetre1.create_image(img_x + 14*i, y+6, image=im_carre_bleu, anchor=NW)
+        canva_placement_bateaux_fenetre2.create_image(img_x + 14*i, y+6, image=im_carre_bleu2, anchor=NW)
+    text_x = img_x + 14 * (bateau + 1) + 12
+    tid1 = canva_placement_bateaux_fenetre1.create_text(text_x, y + 10, text='× ' + str(dico_bateaux_restant[bateau + 1]), fill="#2b3a42", font=("Helvetica", 12), anchor='w')
+    tid2 = canva_placement_bateaux_fenetre2.create_text(text_x, y + 10, text='× ' + str(dico_bateaux_restant[bateau + 1]), fill="#2b3a42", font=("Helvetica", 12), anchor='w')
+    canva1_text_ids.append(tid1)
+    canva2_text_ids.append(tid2)
 
 #Bloucle qui demande au deux joueurs de donner la position de leurs bateau à poser sur leur plateau
 for joueur in [1,2]:
@@ -494,10 +513,8 @@ for joueur in [1,2]:
                 bonne_position_bateau = plateau_joueur1.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation[0], taille, option_can_touch)
                 if bonne_position_bateau == True:
                     dico_bateaux_restant[taille] -= 1
-                for bateau in range(5):
-                    text_nb_bateau_labels1[bateau].configure(text=f"il vous reste {dico_bateaux_restant[bateau+1]} bateau(x) de taille {bateau+1} à poser")
-                plateau_joueur1.afficher_plateau(True, True)
-                fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'droite')
+                    index = taille - 1
+                    canva_placement_bateaux_fenetre1.itemconfig(canva1_text_ids[index], text='× ' + str(dico_bateaux_restant[taille]))
                 num_joueur = 2
             else:
                 bonne_position_bateau = plateau_joueur2.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation[0], taille, option_can_touch)   
@@ -505,19 +522,17 @@ for joueur in [1,2]:
                 fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droite')
                 if bonne_position_bateau == True:
                     dico_bateaux_restant[taille] -= 1
-                for bateau in range(5):
-                    text_nb_bateau_labels2[bateau].configure(text=f"il vous reste {dico_bateaux_restant[bateau+1]} bateau(x) de taille {bateau+1} à poser")
-
+                    index = taille - 1
+                    canva_placement_bateaux_fenetre2.itemconfig(canva2_text_ids[index], text='× ' + str(dico_bateaux_restant[taille]))
     dico_bateaux_restant = copy.copy(dico_bateaux_a_poser)
+
     text_placement_bateau_fenetre_1.configure(text="C'est à l'adversaire de poser ces bateaux")
     text_placement_bateau_fenetre_2.configure(text="C'est à vous de poser les bateaux")
 
 text_placement_bateau_fenetre_1.destroy()
 text_placement_bateau_fenetre_2.destroy()
-for lbl in text_nb_bateau_labels1:
-    lbl.destroy()
-for lbl in text_nb_bateau_labels2:
-    lbl.destroy()
+canva_placement_bateaux_fenetre1.destroy()
+canva_placement_bateaux_fenetre2.destroy()
 
 joueur = 1
 fin_du_jeux = False
@@ -548,7 +563,7 @@ while  not fin_du_jeux:
     bonne_position_cible = False
     while not bonne_position_cible:
         #coordonner_case_x = int(input("Dans quel numero de ligne veux tu cibler ?"))
-        #coordonner_case_y = int(input("Dans quel numero de colonne veux tu cibler ?"))
+        #coordonner_case_y = int(input("Dans quel numero de colonne veux tu cibler ? "))
 
         if joueur == 1:
             fenetre1.canva_gauche.config(cursor="none")
