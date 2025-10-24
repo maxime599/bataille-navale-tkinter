@@ -196,7 +196,25 @@ class Plateau:
             if len(bateau[1]) != 0:
                 output += 1
         return output
+    
+    def nb_bateau_restant_par_taille(self):
+        #renvoie le nombre de bateau de bateau encore en vie par taille
+        output = []
+        for taille in range(1,6):
+            output_nb = 0
+            for bateau in self.liste_bateau_restant:
+                if bateau[0] == taille:
+                    if len(bateau[1]) != 0:
+                        output_nb += 1
+            output.append(output_nb)
+        return output
 
+    def nb_bateau_restant_a_pose_par_taille(self):
+        output = []
+        for taille in range(1,6):
+            output_nb = self.liste_bateaux_a_poser.count(taille)
+            output.append(output_nb)
+        return output
 
 class IU:
     def __init__(self, nom):
@@ -421,6 +439,26 @@ class IU:
             self.canva_gauche.delete(self.croix_id)
             self.croix_id = None
 
+    def titre_information(self, parent, texte, row, column, taille):
+        self.grand_titre = Label(parent, text=texte, font=("Courier", taille),wraplength=280,justify='center')
+        self.grand_titre.grid(row=row,column=column, padx=(0,3))
+
+    def bloc_canva(self, parent, titre, text, text2, row, column, image):
+        self.bloc_canva_var = Canvas(parent, width=260, height=220, background="#f8f9fb")
+        self.bloc_canva_var.grid(row=row, column=column, padx=6, pady=6)
+        self.bloc_canva_var.create_rectangle(4, 4, 256, 216, outline="#cfcfcf", width=2, fill="#ffffff")
+        self.bloc_canva_var.create_text(130, 18, text=titre, fill="#1f2f3f", font=("Helvetica", 14, "bold"))
+        self.im_carre = PhotoImage(file=image, master=parent)
+
+        self.canva_text_ids = []
+        for bateau in range(5):
+            y = 40 + 36 * bateau
+            img_x = 20
+            for i in range(0, bateau+1):
+                self.bloc_canva_var.create_image(img_x + 14*i, y+6, image=self.im_carre, anchor=NW)
+            text_x = img_x + 14 * (bateau + 1) + 12
+            texte_apres_image = self.bloc_canva_var.create_text(text_x, y + 10, text=text + str(text2[bateau]), fill="#2b3a42", font=("Helvetica", 12), anchor='w')
+            self.canva_text_ids.append(texte_apres_image)
 
 class Case:
     def __init__(self,coordonnee_x, coordonnee_y, type, taille_bateau = None, position_sur_bateau = None, orientation_bateau = None):
@@ -435,9 +473,6 @@ class Case:
             self.is_beateau = True
         else:
             self.is_beateau = False
-
-
-        
 
 
 def on_mouvement(event, fenetre, plateau, orientation, taille, position_canva, can_touch):
@@ -493,8 +528,6 @@ def recuperer_taille_bateaux():
         nb_bateaux_5 = 1
 
 
-    
-
     return {1 : nb_bateaux_1, 2 : nb_bateaux_2, 3 : nb_bateaux_3, 4 : nb_bateaux_4, 5 : nb_bateaux_5}
 
 def valider_et_quitter():
@@ -507,6 +540,7 @@ option_can_touch = False
 
 dico_bateaux_a_poser = {}
 fenetre_nb_bateau = Tk()
+fenetre_nb_bateau.title("Nombre de bateaux de chaque taille")
 for i in range(5):
     label_bateaux_1 = Label(fenetre_nb_bateau, text=f'Nombre de bateau de taille {i+1}')
     label_bateaux_1.grid(row = i, column = 0, padx = 3, pady = 3)
@@ -531,7 +565,6 @@ mainloop()
 
 plateau_joueur1 = Plateau()
 plateau_joueur2 = Plateau()
-
 plateau_joueur1.creation_plateau()
 plateau_joueur2.creation_plateau()
 
@@ -562,42 +595,14 @@ else:
     print(liste_bateaux_a_poser)
 
 
+fenetre1.titre_information(fenetre1.fenetre,"C'est à vous de poser les bateaux",1,22,15)
+fenetre2.titre_information(fenetre2.fenetre,"C'est à l'adversaire de poser ces bateaux",1,22,15)
 
-text_placement_bateau_fenetre_1 = Label(fenetre1.fenetre, text="C'est à vous de poser les bateaux", font=("Courier", 15),wraplength=280,justify='center')
-text_placement_bateau_fenetre_1.grid(row=1,column=22, padx=(0,3))
-text_placement_bateau_fenetre_2 = Label(fenetre2.fenetre, text="C'est à l'adversaire de poser ces bateaux",font=("Courier", 15),wraplength=280,justify='center')
-text_placement_bateau_fenetre_2.grid(row=1,column=22, padx=(0,3))
-
-canva_placement_bateaux_fenetre1 = Canvas(fenetre1.fenetre, width=260, height=220, background="#f8f9fb", highlightthickness=0)
-canva_placement_bateaux_fenetre1.grid(row=2, column=22, padx=6, pady=6)
-
-canva_placement_bateaux_fenetre1.create_rectangle(4, 4, 256, 216, outline="#cfcfcf", width=2, fill="#ffffff")
-canva_placement_bateaux_fenetre1.create_text(130, 18, text='Vos bateaux à poser', fill="#1f2f3f", font=("Helvetica", 14, "bold"))
-
-canva_placement_bateaux_fenetre2 = Canvas(fenetre2.fenetre, width=260, height=220, background="#f8f9fb", highlightthickness=0)
-canva_placement_bateaux_fenetre2.grid(row=2, column=22, padx=6, pady=6)
-canva_placement_bateaux_fenetre2.create_rectangle(4, 4, 256, 216, outline="#cfcfcf", width=2, fill="#ffffff")
-canva_placement_bateaux_fenetre2.create_text(130, 18, text='Vos bateaux à poser', fill="#1f2f3f", font=("Helvetica", 14, "bold"))
-
-im_carre_bleu = PhotoImage(file='images/carre_bateau_bleu.png', master=fenetre1.fenetre)
-im_carre_bleu2 = PhotoImage(file='images/carre_bateau_bleu.png', master=fenetre2.fenetre)
+fenetre1.bloc_canva(fenetre1.fenetre, "Vos bateaux à poser", '× ', plateau_joueur1.nb_bateau_restant_a_pose_par_taille(), 2, 22, "Images/carre_bateau_bleu.png")
+fenetre2.bloc_canva(fenetre2.fenetre, "Vos bateaux à poser", '× ', plateau_joueur2.nb_bateau_restant_a_pose_par_taille(), 2, 22, "images/carre_bateau_bleu.png")
 
 
-canva1_text_ids = []
-canva2_text_ids = []
-for bateau in range(5):
-    y = 40 + 36 * bateau
-    img_x = 20
-    for i in range(0, bateau+1):
-        canva_placement_bateaux_fenetre1.create_image(img_x + 14*i, y+6, image=im_carre_bleu, anchor=NW)
-        canva_placement_bateaux_fenetre2.create_image(img_x + 14*i, y+6, image=im_carre_bleu2, anchor=NW)
-    text_x = img_x + 14 * (bateau + 1) + 12
-    tid1 = canva_placement_bateaux_fenetre1.create_text(text_x, y + 10, text='× ' + str(plateau_joueur1.liste_bateaux_a_poser.count(bateau + 1)), fill="#2b3a42", font=("Helvetica", 12), anchor='w')
-    tid2 = canva_placement_bateaux_fenetre2.create_text(text_x, y + 10, text='× ' + str(plateau_joueur2.liste_bateaux_a_poser.count(bateau + 1)), fill="#2b3a42", font=("Helvetica", 12), anchor='w')
-    canva1_text_ids.append(tid1)
-    canva2_text_ids.append(tid2)
-
-#Boucle qui demande au deux joueurs de donner la position de leurs bateau à poser sur leur plateau
+#Boucle qui demande aux deux joueurs de donner la position de leurs bateau à poser sur leur plateau
 for joueur in [1,2]:
     if joueur == 1:
         plateau_joueur1.afficher_plateau(True, True)
@@ -625,12 +630,12 @@ for joueur in [1,2]:
             if joueur == 1:
                 fenetre1.canva_droite.bind("<Motion>", lambda event: on_mouvement(event, fenetre1, plateau_joueur1, orientation[0], taille, 'droite', option_can_touch))
                 fenetre1.canva_droite.bind("<MouseWheel>", lambda event: on_molette(event, fenetre1, plateau_joueur1, orientation, taille, 'droite', option_can_touch))
-                fenetre1.canva_droite.bind("<Button-3>", lambda event: on_clique_droit(event, plateau_joueur1, fenetre1, canva_placement_bateaux_fenetre1, canva1_text_ids))
+                fenetre1.canva_droite.bind("<Button-3>", lambda event: on_clique_droit(event, plateau_joueur1, fenetre1, fenetre1.bloc_canva_var, fenetre1.canva_text_ids))
 
             else:
                 fenetre2.canva_droite.bind("<Motion>", lambda event: on_mouvement(event, fenetre2, plateau_joueur2, orientation[0], taille, 'droite', option_can_touch))
                 fenetre2.canva_droite.bind("<MouseWheel>", lambda event: on_molette(event, fenetre2, plateau_joueur2, orientation, taille, 'droite', option_can_touch))
-                fenetre2.canva_droite.bind("<Button-3>", lambda event: on_clique_droit(event, plateau_joueur2, fenetre2, canva_placement_bateaux_fenetre2, canva2_text_ids))
+                fenetre2.canva_droite.bind("<Button-3>", lambda event: on_clique_droit(event, plateau_joueur2, fenetre2, fenetre2.bloc_canva_var, fenetre2.canva_text_ids))
 
             if joueur == 1:
                 coordonnee_case = fenetre1.attendre_click_case()
@@ -654,7 +659,7 @@ for joueur in [1,2]:
                 if bonne_position_bateau == True:
                     liste_bateaux_a_poser.remove(taille)
                     index = taille - 1
-                    canva_placement_bateaux_fenetre1.itemconfig(canva1_text_ids[index], text='× ' + str(liste_bateaux_a_poser.count(taille)))
+                    fenetre1.bloc_canva_var.itemconfig(fenetre1.canva_text_ids[index], text='× ' + str(liste_bateaux_a_poser.count(taille)))
                 num_joueur = 2
             else:
                 bonne_position_bateau = plateau_joueur2.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation[0], taille, option_can_touch)   
@@ -663,18 +668,19 @@ for joueur in [1,2]:
                 if bonne_position_bateau == True:
                     liste_bateaux_a_poser.remove(taille)
                     index = taille - 1
-                    canva_placement_bateaux_fenetre2.itemconfig(canva2_text_ids[index], text='× ' + str(liste_bateaux_a_poser.count(taille)))
+                    fenetre2.bloc_canva_var.itemconfig(fenetre2.canva_text_ids[index], text='× ' + str(liste_bateaux_a_poser.count(taille)))
 
-    text_placement_bateau_fenetre_1.configure(text="C'est à l'adversaire de poser ces bateaux")
-    text_placement_bateau_fenetre_2.configure(text="C'est à vous de poser les bateaux")
+    fenetre1.grand_titre.configure(text="C'est à l'adversaire de poser ces bateaux")
+    fenetre2.grand_titre.configure(text="C'est à vous de poser les bateaux")
 
 plateau_joueur1.liste_bateau_total = copy.deepcopy(plateau_joueur1.liste_bateau_restant)
 plateau_joueur2.liste_bateau_total = copy.deepcopy(plateau_joueur2.liste_bateau_restant)
 
-text_placement_bateau_fenetre_1.destroy()
-text_placement_bateau_fenetre_2.destroy()
-canva_placement_bateaux_fenetre1.destroy()
-canva_placement_bateaux_fenetre2.destroy()
+fenetre1.grand_titre.destroy()
+fenetre2.grand_titre.destroy()
+fenetre1.bloc_canva_var.destroy()
+fenetre2.bloc_canva_var.destroy()
+
 
 joueur = 1
 fin_du_jeux = False
@@ -750,11 +756,8 @@ while  not fin_du_jeux:
                             index_bateau_touche = index_bateau
                 print(plateau_joueur2.liste_bateau_total[index_bateau_touche][1])
                 for case in plateau_joueur2.liste_bateau_total[index_bateau_touche][1]:
-                    
                     plateau_joueur2.modifier_case(case[0], case[1], 5)
-                    
-                    
-                                
+                                      
 
                 if nb_bateaux_restant != 0: # s'il reste des bateaux
                     print(f"Il reste {nb_bateaux_restant} bateau(x) en vie")
