@@ -528,7 +528,7 @@ def on_clique_droit(event, plateau, fenetre, canva_placement, text_ids):
         return taille_bateau
     return None
 
-def recuperer_taille_bateaux():
+def recuperer_taille_bateaux(form_nb_bateaux_1, form_nb_bateaux_2, form_nb_bateaux_3, form_nb_bateaux_4, form_nb_bateaux_5):
 
     #On test si les valeurs rentrées par l'utilisateur sont valides
     try:
@@ -548,36 +548,71 @@ def recuperer_taille_bateaux():
 
     return {1 : nb_bateaux_1, 2 : nb_bateaux_2, 3 : nb_bateaux_3, 4 : nb_bateaux_4, 5 : nb_bateaux_5}
 
-def valider_et_quitter():
+def valider_et_quitter(fenetre_nb_bateau, form_nb_bateaux_1, form_nb_bateaux_2, form_nb_bateaux_3, form_nb_bateaux_4, form_nb_bateaux_5):
     global dico_bateaux_a_poser
-    dico_bateaux_a_poser = recuperer_taille_bateaux()
+    dico_bateaux_a_poser = recuperer_taille_bateaux(form_nb_bateaux_1, form_nb_bateaux_2, form_nb_bateaux_3, form_nb_bateaux_4, form_nb_bateaux_5)
     fenetre_nb_bateau.destroy()
 
+def fenetres_nb_bateaux():
+    fenetre_nb_bateau = Tk()
+    fenetre_nb_bateau.title("Nombre de bateaux de chaque taille")
+    for i in range(5):
+        label_bateaux_1 = Label(fenetre_nb_bateau, text=f'Nombre de bateau de taille {i+1}')
+        label_bateaux_1.grid(row = i, column = 0, padx = 3, pady = 3)
+    form_nb_bateaux_1 = Entry(fenetre_nb_bateau, textvariable=StringVar())
+    form_nb_bateaux_1.grid(row = 0, column = 1, padx = 3, pady = 3)
+    form_nb_bateaux_2 = Entry(fenetre_nb_bateau, textvariable=StringVar())
+    form_nb_bateaux_2.grid(row = 1, column = 1, padx = 3, pady = 3)
+    form_nb_bateaux_3 = Entry(fenetre_nb_bateau, textvariable=StringVar())
+    form_nb_bateaux_3.grid(row = 2, column = 1, padx = 3, pady = 3)
+    form_nb_bateaux_4 = Entry(fenetre_nb_bateau, textvariable=StringVar())
+    form_nb_bateaux_4.grid(row = 3, column = 1, padx = 3, pady = 3)
+    form_nb_bateaux_5 = Entry(fenetre_nb_bateau, textvariable=StringVar())
+    form_nb_bateaux_5.grid(row = 4, column = 1, padx = 3, pady = 3)
+
+    bouton_valider = Button(fenetre_nb_bateau, text='Valider', command=lambda: valider_et_quitter(fenetre_nb_bateau, form_nb_bateaux_1, form_nb_bateaux_2, form_nb_bateaux_3, form_nb_bateaux_4, form_nb_bateaux_5))
+    bouton_valider.grid(row = 6, column = 0, padx = 3, pady = 3)
+    mainloop()
+
+def parametres():
+    fenetre_parametres = Tk()
+    fenetre_parametres.title("Parametres")
+
+    label_text_principal_parametres = Label(fenetre_parametres, text='Parametres', font = '30')
+    label_text_principal_parametres.grid(row = 0, column = 0, padx = 0, pady = 0)
+
+    bouton_jouer = Button(fenetre_parametres, text='Nombres de bateaux', command=lambda: fenetres_nb_bateaux())
+    bouton_jouer.grid(row = 1, column = 0, padx = 0, pady = 0)
+
+    bouton_quiter = Button(fenetre_parametres, text='Quiter', command=lambda: fenetre_parametres.destroy())
+    bouton_quiter.grid(row = 2, column = 0, padx = 0, pady = 0)
+
+    mainloop()
+    
+    
+
+def jouer(fenetre_menu):
+    fenetre_menu.destroy()
 
 option_can_touch = False
 
 dico_bateaux_a_poser = {}
-fenetre_nb_bateau = Tk()
-fenetre_nb_bateau.title("Nombre de bateaux de chaque taille")
-for i in range(5):
-    label_bateaux_1 = Label(fenetre_nb_bateau, text=f'Nombre de bateau de taille {i+1}')
-    label_bateaux_1.grid(row = i, column = 0, padx = 3, pady = 3)
 
 
-form_nb_bateaux_1 = Entry(fenetre_nb_bateau, textvariable=StringVar())
-form_nb_bateaux_1.grid(row = 0, column = 1, padx = 3, pady = 3)
-form_nb_bateaux_2 = Entry(fenetre_nb_bateau, textvariable=StringVar())
-form_nb_bateaux_2.grid(row = 1, column = 1, padx = 3, pady = 3)
-form_nb_bateaux_3 = Entry(fenetre_nb_bateau, textvariable=StringVar())
-form_nb_bateaux_3.grid(row = 2, column = 1, padx = 3, pady = 3)
-form_nb_bateaux_4 = Entry(fenetre_nb_bateau, textvariable=StringVar())
-form_nb_bateaux_4.grid(row = 3, column = 1, padx = 3, pady = 3)
-form_nb_bateaux_5 = Entry(fenetre_nb_bateau, textvariable=StringVar())
-form_nb_bateaux_5.grid(row = 4, column = 1, padx = 3, pady = 3)
+fenetre_menu = Tk()
+label_text_principal_menu = Label(fenetre_menu, text='Bataille naval', font = '30')
+label_text_principal_menu.grid(row = 0, column = 0, padx = 0, pady = 0)
 
-bouton_valider = Button(fenetre_nb_bateau, text='Valider', command=valider_et_quitter)
-bouton_valider.grid(row = 6, column = 0, padx = 3, pady = 3)
+bouton_jouer = Button(fenetre_menu, text='Jouer', command=lambda: jouer(fenetre_menu))
+bouton_jouer.grid(row = 1, column = 0, padx = 0, pady = 0)
+
+bouton_parametre = Button(fenetre_menu, text='Paramètres', command=parametres)
+bouton_parametre.grid(row = 2, column = 0, padx = 0, pady = 0)
+
+
 mainloop()
+
+
 
 
 
