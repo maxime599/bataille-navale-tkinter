@@ -455,7 +455,7 @@ class IU:
     def bloc_canva(self, parent, titre, text, text2, row, column, image):
         self.bloc_canva_var = Canvas(parent, width=260, height=220, background="#f8f9fb")
         self.bloc_canva_var.grid(row=row, column=column, padx=6, pady=6)
-        self.bloc_canva_var.create_rectangle(4, 4, 256, 216, outline="#cfcfcf", width=2, fill="#ffffff")
+        self.bloc_canva_var.create_rectangle(4, 4, 260, 220, outline="#cfcfcf", width=2, fill="#ffffff")
         self.bloc_canva_var.create_text(130, 18, text=titre, fill="#1f2f3f", font=("Helvetica", 14, "bold"))
         self.canva_ids.append(self.bloc_canva_var)
         texte_apres_image_liste= []
@@ -524,7 +524,7 @@ def on_clique_droit(event, plateau, fenetre, canva_placement, text_ids):
         plateau.liste_bateaux_a_poser.append(taille_bateau)            #Mise à jour de la liste des bateaux à poser
 
         index = taille_bateau - 1
-        canva_placement.itemconfig(text_ids[index], text='× ' + str(plateau.liste_bateaux_a_poser.count(taille_bateau))) #Mise à jour de l'affichage du nombre restant de bateaux à poser
+        canva_placement.itemconfig(text_ids[index], text='× ' + str(plateau.liste_bateaux_a_poser.count(taille_bateau)))
         return taille_bateau
     return None
 
@@ -537,7 +537,7 @@ def recuperer_taille_bateaux(form_nb_bateaux_1, form_nb_bateaux_2, form_nb_batea
         nb_bateaux_3 = int(form_nb_bateaux_3.get())
         nb_bateaux_4 = int(form_nb_bateaux_4.get())
         nb_bateaux_5 = int(form_nb_bateaux_5.get())
-    #inon on met des valeurs par défaut
+    #sinon on met des valeurs par défaut
     except:
         nb_bateaux_1 = 0
         nb_bateaux_2 = 1
@@ -836,6 +836,7 @@ while  not fin_du_jeux:
                     print(f"Il reste {nb_bateaux_restant} bateau(x) en vie")
                 else: # s'il n'y a plus de bateau restant
                     print("Partie terminée, le joueur 1 a gagné")
+                    joueur_perdu = 2
                     fin_du_jeux = True
         else: # une case vide
             plateau_joueur2.modifier_case(coordonnee_case_x, coordonnee_case_y, 1)
@@ -870,7 +871,8 @@ while  not fin_du_jeux:
                 if nb_bateaux_restant != 0: # s'il reste des bateaux
                     print(f"Il reste {nb_bateaux_restant} bateau(x) en vie")
                 else: # s'il n'y a plus de bateau restant
-                    print(f"Partie terminée, le joueur {joueur} a gagné")
+                    print(f"Partie terminée, le joueur 2 a gagné")
+                    joueur_perdu = 1
                     fin_du_jeux = True
         else: # une case vide
             plateau_joueur1.modifier_case(coordonnee_case_x, coordonnee_case_y, 1)
@@ -881,4 +883,21 @@ fenetre1.afficher_plateau(plateau_joueur2.plateau, True, False, 'gauche')
 fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'droite')
 fenetre2.afficher_plateau(plateau_joueur1.plateau, True, False, 'gauche')
 fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droite')
+vert = Image.new("RGBA", (480,480), (0, 255, 0, 120))
+rouge = Image.new("RGBA", (480,480), (255, 0, 0, 120))
+if joueur_perdu == 2:
+    tk_vert = ImageTk.PhotoImage(vert, master=fenetre1.fenetre)
+    tk_rouge = ImageTk.PhotoImage(rouge, master=fenetre1.fenetre)
+    fenetre2.canva_gauche.create_image(1,1,image=tk_rouge, anchor=NW)
+    fenetre1.canva_droite.create_image(1,1,image=tk_vert, anchor=NW)
+    fenetre2.canva_droite.create_image(1,1,image=tk_rouge, anchor=NW)
+    fenetre1.canva_gauche.create_image(1,1,image=tk_vert, anchor=NW)
+if joueur_perdu == 1:
+    tk_vert = ImageTk.PhotoImage(vert, master=fenetre1.fenetre)
+    tk_rouge = ImageTk.PhotoImage(rouge, master=fenetre1.fenetre)
+    fenetre2.canva_gauche.create_image(1,1,image=tk_vert, anchor=NW)
+    fenetre1.canva_droite.create_image(1,1,image=tk_rouge, anchor=NW)
+    fenetre2.canva_droite.create_image(1,1,image=tk_vert, anchor=NW)
+    fenetre1.canva_gauche.create_image(1,1,image=tk_rouge, anchor=NW)
+
 mainloop()
