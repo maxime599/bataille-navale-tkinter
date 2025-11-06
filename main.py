@@ -100,13 +100,13 @@ class Plateau:
                 #on regarde si les trois cases à droite et à gauche du bateau sont déja pleines ou non
                 for i in range(-1, 2):
                     try:
-                        if self.plateau[coordonees_x+i][coordonees_y-1].type != 0:
+                        if self.plateau[coordonees_x+i][coordonees_y-1].type != 0 and coordonees_x+i>=0 and coordonees_y-1>=0:
                             return False
                     except:
                         pass
                     
                     try:
-                        if self.plateau[coordonees_x+i][coordonees_y+taille].type != 0:
+                        if self.plateau[coordonees_x+i][coordonees_y+taille].type != 0 and coordonees_x+i>=0:
                             return False
                     except:
                         pass
@@ -114,17 +114,17 @@ class Plateau:
             for i in range(coordonees_y, coordonees_y+taille):
                 if i >= 10  :   
                     return False
-                if self.plateau[coordonees_x][i].type != 0:
+                if self.plateau[coordonees_x][i].type != 0 and i>=0:
                     return False
                 if not can_touch:
                     try:
-                        if self.plateau[coordonees_x-1][i].type != 0:
+                        if self.plateau[coordonees_x-1][i].type != 0 and coordonees_x-1>=0 and i>=0:
                             return False
                     except:
                         pass
                     
                     try:
-                        if self.plateau[coordonees_x+1][i].type != 0:
+                        if self.plateau[coordonees_x+1][i].type != 0 and i>=0:
                             return False
                     except:
                         pass
@@ -133,30 +133,30 @@ class Plateau:
             #on regarde si les trois cases en haut et en bas du bateau sont déja pleines ou non
             for i in range(-1, 2):
                     try:
-                        if self.plateau[coordonees_x-1][coordonees_y+i].type != 0:
+                        if self.plateau[coordonees_x-1][coordonees_y+i].type != 0  and coordonees_x-1>=0 and coordonees_y+i>=0:
                             return False
                     except:
                         pass
                     
                     try:
-                        if self.plateau[coordonees_x+taille][coordonees_y+i].type != 0:
+                        if self.plateau[coordonees_x+taille][coordonees_y+i].type != 0  and i>=0 and coordonees_y+i>=0:
                             return False
                     except:
                         pass
             for i in range(coordonees_x, coordonees_x+taille):
                 if i >= 10:
                     return False
-                if self.plateau[i][coordonees_y].type != 0:
+                if self.plateau[i][coordonees_y].type != 0  and i>=0:
                     return False
                 if not can_touch:
                     try:
-                        if self.plateau[i][coordonees_y-1].type != 0:
+                        if self.plateau[i][coordonees_y-1].type != 0 and coordonees_y-1>=0 and i>=0:
                             return False
                     except:
                         pass
                     
                     try:
-                        if self.plateau[i][coordonees_y+1].type != 0:
+                        if self.plateau[i][coordonees_y+1].type != 0 and i>=0:
                             return False
                     except:
                         pass
@@ -218,7 +218,7 @@ class Plateau:
         return output
 
 class IU:
-    def __init__(self, nom):
+    def __init__(self, nom, joueur):
 
         #Permet de créer un fenêtre principal et un fenêtre secondaire pour éviter les bug de gestion de la souris
         global root_created
@@ -232,8 +232,9 @@ class IU:
 
         self._clicked = BooleanVar()
         self.croix_id = None
-
-
+        self.canva_bind = 'droite' #definie quel canva il faut regarder pour le clique gauche
+        self.canva_cacher = False
+        self.joueur = joueur
 
         #Ajout des textes sur la fenêtre
         canvas_num_gauche = Canvas(self.fenetre, width=476, height=40, background='#f0f0f0')
@@ -376,7 +377,11 @@ class IU:
         
         self.click_coord = (0,0)
         self._clicked.set(False)
-        self.fenetre.bind("<Button-1>", self.on_click)
+        if self.canva_bind == 'droite':
+            self.canva_droite.bind("<Button-1>", self.on_click)
+        else:
+            self.canva_gauche.bind("<Button-1>", self.on_click)
+            self.canva_droite.bind("<Button-1>", lambda event: self.toogle_cache_noir_droite())
         self.fenetre.wait_variable(self._clicked) 
         return self.click_coord  # retourne un tuple (x_case, y_case)
     
@@ -386,7 +391,11 @@ class IU:
         y_pixel = event.y
 
         self.click_coord = self.click_to_case(x_pixel, y_pixel)
-        self.fenetre.unbind("<Button-1>")
+        if self.canva_bind == 'droite':
+            self.canva_droite.unbind("<Button-1>")
+        else:
+            self.canva_gauche.unbind("<Button-1>")
+            self.canva_droite.unbind("<Button-1>")
         self._clicked.set(True)
 
     def afficher_previsualisation(self, plateau, x, y, orientation, taille, position_canva, can_touch):
@@ -478,6 +487,21 @@ class IU:
         self.bloc_canva_var = []
         self.canva_text_ids = []
 
+    def toogle_cache_noir_droite(self):
+        # Ajoute un rectangle noir couvrant tout le canva de droite
+        if self.canva_cacher:
+            self.canva_droite.delete("cache_noir")
+            if self.joueur == 1:
+                self.afficher_plateau(plateau_joueur1.plateau, True, True, 'droite')
+            else:
+                self.afficher_plateau(plateau_joueur2.plateau, True, True, 'droite')
+            self.canva_cacher = False
+        else:
+            self.canva_cacher = True
+            self.canva_droite.create_rectangle(
+                0, 0, self.canva_droite.winfo_width(), self.canva_droite.winfo_height(),
+                fill="black", outline="", tags="cache_noir"
+            )
 class Case:
     def __init__(self,coordonnee_x, coordonnee_y, type, taille_bateau = None, position_sur_bateau = None, orientation_bateau = None):
         self.coordonnee_x = coordonnee_x
@@ -610,6 +634,7 @@ bouton_parametre = Button(fenetre_menu, text='Paramètres', command=parametres)
 bouton_parametre.grid(row = 2, column = 0, padx = 0, pady = 0)
 
 
+
 mainloop()
 
 
@@ -621,10 +646,10 @@ plateau_joueur2 = Plateau()
 plateau_joueur1.creation_plateau()
 plateau_joueur2.creation_plateau()
 
-fenetre1 = IU("joueur 1")
+fenetre1 = IU("joueur 1", 1)
 fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'gauche')
 fenetre1.afficher_plateau(plateau_joueur2.plateau, True, True, 'droit')
-fenetre2 = IU("Joueur 2")
+fenetre2 = IU("Joueur 2", 2)
 fenetre2.afficher_plateau(plateau_joueur1.plateau, True, True, 'gauche')
 fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droit')
 
@@ -658,6 +683,8 @@ fenetre2.bloc_canva(fenetre2.fenetre, "Vos bateaux à poser", '× ', plateau_jou
 
 
 #Boucle qui demande aux deux joueurs de donner la position de leurs bateau à poser sur leur plateau
+fenetre1.canva_bind = 'droite'
+fenetre2.canva_bind = 'droite'
 for joueur in [1,2]:
     if joueur == 1:
         #plateau_joueur1.afficher_plateau(True, True)
@@ -751,6 +778,8 @@ fenetre2.bloc_canva(fenetre2.fenetre, "Les bateaux adverse", '× ', plateau_joue
 joueur = 1
 fin_du_jeux = False
 coordonnee_case_x, coordonnee_case_y = 0,0
+fenetre1.canva_bind = 'gauche'
+fenetre2.canva_bind = 'gauche'
 while  not fin_du_jeux:
     # affiche les plateaux
     print("\n","Ton propre plateau qui sert à viser l'adversaire")
@@ -769,10 +798,13 @@ while  not fin_du_jeux:
         fenetre1.titres[0].configure(text="C'est à l'adversaire de jouer")
         fenetre2.titres[0].configure(text="C'est à vous de jouer")
 
+    
     fenetre1.afficher_plateau(plateau_joueur2.plateau, True, False, 'gauche')
-    fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'droite')
+    if not fenetre1.canva_cacher:
+        fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'droite')
     fenetre2.afficher_plateau(plateau_joueur1.plateau, True, False, 'gauche')
-    fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droite')
+    if not fenetre2.canva_cacher:
+        fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droite')
 
 
     print(f"C'est au joueur du joueur {joueur} de jouer")
