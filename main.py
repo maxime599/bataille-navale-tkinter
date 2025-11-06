@@ -100,13 +100,13 @@ class Plateau:
                 #on regarde si les trois cases à droite et à gauche du bateau sont déja pleines ou non
                 for i in range(-1, 2):
                     try:
-                        if self.plateau[coordonees_x+i][coordonees_y-1].type != 0:
+                        if self.plateau[coordonees_x+i][coordonees_y-1].type != 0 and coordonees_x+i>=0 and coordonees_y-1>=0:
                             return False
                     except:
                         pass
                     
                     try:
-                        if self.plateau[coordonees_x+i][coordonees_y+taille].type != 0:
+                        if self.plateau[coordonees_x+i][coordonees_y+taille].type != 0 and coordonees_x+i>=0:
                             return False
                     except:
                         pass
@@ -114,17 +114,17 @@ class Plateau:
             for i in range(coordonees_y, coordonees_y+taille):
                 if i >= 10  :   
                     return False
-                if self.plateau[coordonees_x][i].type != 0:
+                if self.plateau[coordonees_x][i].type != 0 and i>=0:
                     return False
                 if not can_touch:
                     try:
-                        if self.plateau[coordonees_x-1][i].type != 0:
+                        if self.plateau[coordonees_x-1][i].type != 0 and coordonees_x-1>=0 and i>=0:
                             return False
                     except:
                         pass
                     
                     try:
-                        if self.plateau[coordonees_x+1][i].type != 0:
+                        if self.plateau[coordonees_x+1][i].type != 0 and i>=0:
                             return False
                     except:
                         pass
@@ -133,30 +133,30 @@ class Plateau:
             #on regarde si les trois cases en haut et en bas du bateau sont déja pleines ou non
             for i in range(-1, 2):
                     try:
-                        if self.plateau[coordonees_x-1][coordonees_y+i].type != 0:
+                        if self.plateau[coordonees_x-1][coordonees_y+i].type != 0  and coordonees_x-1>=0 and coordonees_y+i>=0:
                             return False
                     except:
                         pass
                     
                     try:
-                        if self.plateau[coordonees_x+taille][coordonees_y+i].type != 0:
+                        if self.plateau[coordonees_x+taille][coordonees_y+i].type != 0  and i>=0 and coordonees_y+i>=0:
                             return False
                     except:
                         pass
             for i in range(coordonees_x, coordonees_x+taille):
                 if i >= 10:
                     return False
-                if self.plateau[i][coordonees_y].type != 0:
+                if self.plateau[i][coordonees_y].type != 0  and i>=0:
                     return False
                 if not can_touch:
                     try:
-                        if self.plateau[i][coordonees_y-1].type != 0:
+                        if self.plateau[i][coordonees_y-1].type != 0 and coordonees_y-1>=0 and i>=0:
                             return False
                     except:
                         pass
                     
                     try:
-                        if self.plateau[i][coordonees_y+1].type != 0:
+                        if self.plateau[i][coordonees_y+1].type != 0 and i>=0:
                             return False
                     except:
                         pass
@@ -632,6 +632,7 @@ bouton_jouer.grid(row = 1, column = 0, padx = 0, pady = 0)
 
 bouton_parametre = Button(fenetre_menu, text='Paramètres', command=parametres)
 bouton_parametre.grid(row = 2, column = 0, padx = 0, pady = 0)
+
 
 
 mainloop()
