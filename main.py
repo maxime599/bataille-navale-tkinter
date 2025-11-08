@@ -217,7 +217,7 @@ class Plateau:
             output.append(output_nb)
         return output
 
-class IU:
+class UI_game:
     def __init__(self, nom, joueur):
 
         #Permet de créer un fenêtre principal et un fenêtre secondaire pour éviter les bug de gestion de la souris
@@ -516,6 +516,78 @@ class Case:
         else:
             self.is_beateau = False
 
+class UI_menu:
+    def __init__(self):
+        self.dico_bateaux_a_poser = {}
+        self.fenetre_menu = Tk()
+        self.fenetre_menu.title("Bataille navale")
+        self.widgets = []
+        self.afficher_menu_principal()
+        self.fenetre_menu.mainloop()
+
+    def clear_widgets(self):
+        for widget in self.widgets:
+            widget.destroy()
+        self.widgets = []
+
+    def afficher_menu_principal(self):
+        self.clear_widgets()
+        label_text_principal_menu = Label(self.fenetre_menu, text='Bataille navale', font='30')
+        label_text_principal_menu.grid(row=0, column=0, padx=0, pady=0)
+        self.widgets.append(label_text_principal_menu)
+
+        bouton_jouer = Button(self.fenetre_menu, text='Jouer', command=self.jouer)
+        bouton_jouer.grid(row=1, column=0, padx=0, pady=0)
+        self.widgets.append(bouton_jouer)
+
+        bouton_parametre = Button(self.fenetre_menu, text='Paramètres', command=self.afficher_parametres)
+        bouton_parametre.grid(row=2, column=0, padx=0, pady=0)
+        self.widgets.append(bouton_parametre)
+
+    def afficher_parametres(self):
+        self.clear_widgets()
+        label_text_principal_parametres = Label(self.fenetre_menu, text='Paramètres', font='30')
+        label_text_principal_parametres.grid(row=0, column=0, padx=0, pady=0)
+        self.widgets.append(label_text_principal_parametres)
+
+        bouton_bateaux = Button(self.fenetre_menu, text='Nombres de bateaux', command=self.afficher_fenetre_nb_bateaux)
+        bouton_bateaux.grid(row=1, column=0, padx=0, pady=0)
+        self.widgets.append(bouton_bateaux)
+
+        bouton_retour = Button(self.fenetre_menu, text='Retour', command=self.afficher_menu_principal)
+        bouton_retour.grid(row=2, column=0, padx=0, pady=0)
+        self.widgets.append(bouton_retour)
+
+    def afficher_fenetre_nb_bateaux(self):
+        self.clear_widgets()
+        label = Label(self.fenetre_menu, text="Nombre de bateaux de chaque taille", font='20')
+        label.grid(row=0, column=0, columnspan=2, padx=3, pady=3)
+        self.widgets.append(label)
+
+        self.form_nb_bateaux = []
+        for i in range(5):
+            label_bateau = Label(self.fenetre_menu, text=f'Nombre de bateau de taille {i+1}')
+            label_bateau.grid(row=i+1, column=0, padx=3, pady=3)
+            self.widgets.append(label_bateau)
+            entry = Entry(self.fenetre_menu)
+            entry.grid(row=i+1, column=1, padx=3, pady=3)
+            self.widgets.append(entry)
+            self.form_nb_bateaux.append(entry)
+
+        bouton_valider = Button(self.fenetre_menu, text='Valider', command=self.valider_et_quitter)
+        bouton_valider.grid(row=7, column=0, padx=3, pady=3)
+        self.widgets.append(bouton_valider)
+
+        bouton_retour = Button(self.fenetre_menu, text='Retour', command=self.afficher_parametres)
+        bouton_retour.grid(row=7, column=1, padx=3, pady=3)
+        self.widgets.append(bouton_retour)
+
+    def valider_et_quitter(self):
+        self.dico_bateaux_a_poser = recuperer_taille_bateaux(self.form_nb_bateaux[0],self.form_nb_bateaux[1], self.form_nb_bateaux[2], self.form_nb_bateaux[3],self.form_nb_bateaux[4])
+        self.afficher_menu_principal()
+
+    def jouer(self):
+        self.fenetre_menu.destroy()
 
 def on_mouvement(event, fenetre, plateau, orientation, taille, position_canva, can_touch):
     x_case, y_case = fenetre.click_to_case(event.x, event.y)
@@ -572,72 +644,16 @@ def recuperer_taille_bateaux(form_nb_bateaux_1, form_nb_bateaux_2, form_nb_batea
 
     return {1 : nb_bateaux_1, 2 : nb_bateaux_2, 3 : nb_bateaux_3, 4 : nb_bateaux_4, 5 : nb_bateaux_5}
 
-def valider_et_quitter(fenetre_nb_bateau, form_nb_bateaux_1, form_nb_bateaux_2, form_nb_bateaux_3, form_nb_bateaux_4, form_nb_bateaux_5):
-    global dico_bateaux_a_poser
-    dico_bateaux_a_poser = recuperer_taille_bateaux(form_nb_bateaux_1, form_nb_bateaux_2, form_nb_bateaux_3, form_nb_bateaux_4, form_nb_bateaux_5)
-    fenetre_nb_bateau.destroy()
 
-def fenetres_nb_bateaux():
-    fenetre_nb_bateau = Tk()
-    fenetre_nb_bateau.title("Nombre de bateaux de chaque taille")
-    for i in range(5):
-        label_bateaux_1 = Label(fenetre_nb_bateau, text=f'Nombre de bateau de taille {i+1}')
-        label_bateaux_1.grid(row = i, column = 0, padx = 3, pady = 3)
-    form_nb_bateaux_1 = Entry(fenetre_nb_bateau, textvariable=StringVar())
-    form_nb_bateaux_1.grid(row = 0, column = 1, padx = 3, pady = 3)
-    form_nb_bateaux_2 = Entry(fenetre_nb_bateau, textvariable=StringVar())
-    form_nb_bateaux_2.grid(row = 1, column = 1, padx = 3, pady = 3)
-    form_nb_bateaux_3 = Entry(fenetre_nb_bateau, textvariable=StringVar())
-    form_nb_bateaux_3.grid(row = 2, column = 1, padx = 3, pady = 3)
-    form_nb_bateaux_4 = Entry(fenetre_nb_bateau, textvariable=StringVar())
-    form_nb_bateaux_4.grid(row = 3, column = 1, padx = 3, pady = 3)
-    form_nb_bateaux_5 = Entry(fenetre_nb_bateau, textvariable=StringVar())
-    form_nb_bateaux_5.grid(row = 4, column = 1, padx = 3, pady = 3)
-
-    bouton_valider = Button(fenetre_nb_bateau, text='Valider', command=lambda: valider_et_quitter(fenetre_nb_bateau, form_nb_bateaux_1, form_nb_bateaux_2, form_nb_bateaux_3, form_nb_bateaux_4, form_nb_bateaux_5))
-    bouton_valider.grid(row = 6, column = 0, padx = 3, pady = 3)
-    mainloop()
-
-def parametres():
-    fenetre_parametres = Tk()
-    fenetre_parametres.title("Parametres")
-
-    label_text_principal_parametres = Label(fenetre_parametres, text='Parametres', font = '30')
-    label_text_principal_parametres.grid(row = 0, column = 0, padx = 0, pady = 0)
-
-    bouton_jouer = Button(fenetre_parametres, text='Nombres de bateaux', command=lambda: fenetres_nb_bateaux())
-    bouton_jouer.grid(row = 1, column = 0, padx = 0, pady = 0)
-
-    bouton_quiter = Button(fenetre_parametres, text='Quiter', command=lambda: fenetre_parametres.destroy())
-    bouton_quiter.grid(row = 2, column = 0, padx = 0, pady = 0)
-
-    mainloop()
-    
-    
-
-def jouer(fenetre_menu):
-    fenetre_menu.destroy()
 
 option_can_touch = False
 
 dico_bateaux_a_poser = {}
 
 
-fenetre_menu = Tk()
-label_text_principal_menu = Label(fenetre_menu, text='Bataille naval', font = '30')
-label_text_principal_menu.grid(row = 0, column = 0, padx = 0, pady = 0)
 
-bouton_jouer = Button(fenetre_menu, text='Jouer', command=lambda: jouer(fenetre_menu))
-bouton_jouer.grid(row = 1, column = 0, padx = 0, pady = 0)
-
-bouton_parametre = Button(fenetre_menu, text='Paramètres', command=parametres)
-bouton_parametre.grid(row = 2, column = 0, padx = 0, pady = 0)
-
-
-
-mainloop()
-
-
+menu = UI_menu()
+dico_bateaux_a_poser = menu.dico_bateaux_a_poser
 
 
 
@@ -646,10 +662,10 @@ plateau_joueur2 = Plateau()
 plateau_joueur1.creation_plateau()
 plateau_joueur2.creation_plateau()
 
-fenetre1 = IU("joueur 1", 1)
+fenetre1 = UI_game("joueur 1", 1)
 fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'gauche')
 fenetre1.afficher_plateau(plateau_joueur2.plateau, True, True, 'droit')
-fenetre2 = IU("Joueur 2", 2)
+fenetre2 = UI_game("Joueur 2", 2)
 fenetre2.afficher_plateau(plateau_joueur1.plateau, True, True, 'gauche')
 fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droit')
 
@@ -762,8 +778,10 @@ plateau_joueur2.liste_bateau_total = copy.deepcopy(plateau_joueur2.liste_bateau_
 for i in range(2):
     fenetre1.titres[i].destroy()
     fenetre2.titres[i].destroy()
-fenetre1.bloc_canva_var.destroy()
-fenetre2.bloc_canva_var.destroy()
+for widget in fenetre1.canva_ids:
+    widget.destroy()
+for widget in fenetre2.canva_ids:
+    widget.destroy()
 fenetre1.vider_ids()
 fenetre2.vider_ids()
 
@@ -776,6 +794,7 @@ fenetre1.bloc_canva(fenetre1.fenetre, "Les bateaux adverse", '× ', plateau_joue
 fenetre2.bloc_canva(fenetre2.fenetre, "Les bateaux adverse", '× ', plateau_joueur2.nb_bateau_restant_par_taille(), 3, 22, "rouge")
 
 joueur = 1
+joueur_perdu = None
 fin_du_jeux = False
 coordonnee_case_x, coordonnee_case_y = 0,0
 fenetre1.canva_bind = 'gauche'
