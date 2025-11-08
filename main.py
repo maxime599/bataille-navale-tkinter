@@ -547,10 +547,10 @@ class UI_menu:
         bouton_parametre.grid(row=2, column=0, padx=0, pady=0)
         self.widgets.append(bouton_parametre)
 
-        # Nouveau bouton Crédits (sous Paramètres et Jouer)
+        """# Nouveau bouton Crédits (sous Paramètres et Jouer)
         bouton_credits = Button(self.fenetre_menu, text='Crédits', command=self.afficher_credits)
         bouton_credits.grid(row=3, column=0, padx=0, pady=0)
-        self.widgets.append(bouton_credits)
+        self.widgets.append(bouton_credits)"""
 
     def afficher_parametres(self):
         self.clear_widgets()
