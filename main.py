@@ -1,7 +1,9 @@
 from tkinter import *
+import tkinter.font as tkfont 
 import copy
 from PIL import Image, ImageTk
-
+import re
+from tkinter import ttk
 
 root_created = False
 
@@ -544,6 +546,11 @@ class UI_menu:
         bouton_parametre = Button(self.fenetre_menu, text='Paramètres', command=self.afficher_parametres)
         bouton_parametre.grid(row=2, column=0, padx=0, pady=0)
         self.widgets.append(bouton_parametre)
+
+        # Nouveau bouton Crédits (sous Paramètres et Jouer)
+        bouton_credits = Button(self.fenetre_menu, text='Crédits', command=self.afficher_credits)
+        bouton_credits.grid(row=3, column=0, padx=0, pady=0)
+        self.widgets.append(bouton_credits)
 
     def afficher_parametres(self):
         self.clear_widgets()
