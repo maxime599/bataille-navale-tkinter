@@ -81,12 +81,12 @@ Placez vos bateaux et tentez de couler ceux de votre adversaire 💥
 
 ### 🕹️ Menu & Options
 - Menu principal au lancement du jeu :
-  - 🎮 Jouer  
-  - ⚙️ Paramètres  
+  - 🎮 Jouer  ✅
+  - ⚙️ Paramètres  ✅
   - 📜 Crédits  
 - Paramètres personnalisables :
   - Nombre de bateaux ✅
-  - Activation/désactivation du contact entre bateaux
+  - Activation/désactivation du contact entre bateaux ✅
   - Réglage du volume 
 
 ### 🌐 Multijoueur & Profils
