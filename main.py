@@ -583,8 +583,27 @@ class UI_menu:
         self.widgets.append(bouton_retour)
 
     def valider_et_quitter(self):
-        self.dico_bateaux_a_poser = recuperer_taille_bateaux(self.form_nb_bateaux[0],self.form_nb_bateaux[1], self.form_nb_bateaux[2], self.form_nb_bateaux[3],self.form_nb_bateaux[4])
+        self.dico_bateaux_a_poser = self.recuperer_taille_bateaux()
         self.afficher_menu_principal()
+
+    def recuperer_taille_bateaux(self):
+        #On test si les valeurs rentrées par l'utilisateur sont valides
+        try:
+            nb_bateaux_1 = int(self.form_nb_bateaux[0].get())
+            nb_bateaux_2 = int(self.form_nb_bateaux[1].get())
+            nb_bateaux_3 = int(self.form_nb_bateaux[2].get())
+            nb_bateaux_4 = int(self.form_nb_bateaux[3].get())
+            nb_bateaux_5 = int(self.form_nb_bateaux[4].get())
+        #sinon on met des valeurs par défaut
+        except:
+            nb_bateaux_1 = 0
+            nb_bateaux_2 = 1
+            nb_bateaux_3 = 2
+            nb_bateaux_4 = 1
+            nb_bateaux_5 = 1
+
+
+        return {1 : nb_bateaux_1, 2 : nb_bateaux_2, 3 : nb_bateaux_3, 4 : nb_bateaux_4, 5 : nb_bateaux_5}
 
     def jouer(self):
         self.fenetre_menu.destroy()
@@ -624,25 +643,7 @@ def on_clique_droit(event, plateau, fenetre, canva_placement, text_ids):
         return taille_bateau
     return None
 
-def recuperer_taille_bateaux(form_nb_bateaux_1, form_nb_bateaux_2, form_nb_bateaux_3, form_nb_bateaux_4, form_nb_bateaux_5):
 
-    #On test si les valeurs rentrées par l'utilisateur sont valides
-    try:
-        nb_bateaux_1 = int(form_nb_bateaux_1.get())
-        nb_bateaux_2 = int(form_nb_bateaux_2.get())
-        nb_bateaux_3 = int(form_nb_bateaux_3.get())
-        nb_bateaux_4 = int(form_nb_bateaux_4.get())
-        nb_bateaux_5 = int(form_nb_bateaux_5.get())
-    #sinon on met des valeurs par défaut
-    except:
-        nb_bateaux_1 = 0
-        nb_bateaux_2 = 1
-        nb_bateaux_3 = 2
-        nb_bateaux_4 = 1
-        nb_bateaux_5 = 1
-
-
-    return {1 : nb_bateaux_1, 2 : nb_bateaux_2, 3 : nb_bateaux_3, 4 : nb_bateaux_4, 5 : nb_bateaux_5}
 
 
 
