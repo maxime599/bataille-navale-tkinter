@@ -520,6 +520,7 @@ class UI_menu:
     def __init__(self):
         self.dico_bateaux_a_poser = {}
         self.fenetre_menu = Tk()
+        self.can_touch = BooleanVar(value=False)
         self.fenetre_menu.title("Bataille navale")
         self.widgets = []
         self.afficher_menu_principal()
@@ -550,12 +551,17 @@ class UI_menu:
         label_text_principal_parametres.grid(row=0, column=0, padx=0, pady=0)
         self.widgets.append(label_text_principal_parametres)
 
+        check_can_touch = Checkbutton(self.fenetre_menu, text="Autoriser les bateaux à se toucher", variable=self.can_touch)
+        check_can_touch.grid(row=1, column=0, padx=0, pady=0)
+        self.widgets.append(check_can_touch)
+
+
         bouton_bateaux = Button(self.fenetre_menu, text='Nombres de bateaux', command=self.afficher_fenetre_nb_bateaux)
-        bouton_bateaux.grid(row=1, column=0, padx=0, pady=0)
+        bouton_bateaux.grid(row=2, column=0, padx=0, pady=0)
         self.widgets.append(bouton_bateaux)
 
         bouton_retour = Button(self.fenetre_menu, text='Retour', command=self.afficher_menu_principal)
-        bouton_retour.grid(row=2, column=0, padx=0, pady=0)
+        bouton_retour.grid(row=3, column=0, padx=0, pady=0)
         self.widgets.append(bouton_retour)
 
     def afficher_fenetre_nb_bateaux(self):
@@ -647,13 +653,14 @@ def on_clique_droit(event, plateau, fenetre, canva_placement, text_ids):
 
 
 
-option_can_touch = False
+
 
 dico_bateaux_a_poser = {}
 
 
 
 menu = UI_menu()
+option_can_touch = menu.can_touch
 dico_bateaux_a_poser = menu.dico_bateaux_a_poser
 
 
