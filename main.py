@@ -535,65 +535,86 @@ class UI_menu:
 
     def afficher_menu_principal(self):
         self.clear_widgets()
-        label_text_principal_menu = Label(self.fenetre_menu, text='Bataille navale', font='30')
-        label_text_principal_menu.grid(row=0, column=0, padx=0, pady=0)
+        couleur_fond = "#ffffff"
+        couleur_accent = "#42a5f5"
+        couleur_texte = "#01579b"
+        couleur_survol = "#90caf9"
+        self.fenetre_menu.configure(bg=couleur_fond)
+        label_text_principal_menu = Label(self.fenetre_menu, text='Bataille navale', font=('Helvetica', 32, 'bold'), bg=couleur_fond, fg="#0277bd", pady=40)
+        label_text_principal_menu.grid(row=0, column=0, padx=50, pady=(30, 20))
         self.widgets.append(label_text_principal_menu)
-
-        bouton_jouer = Button(self.fenetre_menu, text='Jouer', command=self.jouer)
-        bouton_jouer.grid(row=1, column=0, padx=0, pady=0)
+        bouton_jouer = Button(self.fenetre_menu, text='Jouer', command=self.jouer, font=('Helvetica', 14, 'bold'), bg=couleur_accent, fg="#ffffff", activebackground=couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_jouer.grid(row=1, column=0, padx=50, pady=15, sticky='ew')
+        bouton_jouer.bind("<Enter>", lambda e: e.widget.config(bg=couleur_survol))
+        bouton_jouer.bind("<Leave>", lambda e: e.widget.config(bg=couleur_accent))
         self.widgets.append(bouton_jouer)
-
-        bouton_parametre = Button(self.fenetre_menu, text='Paramètres', command=self.afficher_parametres)
-        bouton_parametre.grid(row=2, column=0, padx=0, pady=0)
+        bouton_parametre = Button(self.fenetre_menu, text='Paramètres', command=self.afficher_parametres, font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=couleur_texte, activebackground="#cfd8dc", activeforeground=couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_parametre.grid(row=2, column=0, padx=50, pady=15, sticky='ew')
+        bouton_parametre.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
+        bouton_parametre.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
         self.widgets.append(bouton_parametre)
+        self.fenetre_menu.grid_columnconfigure(0, weight=1)
 
-        """# Nouveau bouton Crédits (sous Paramètres et Jouer)
-        bouton_credits = Button(self.fenetre_menu, text='Crédits', command=self.afficher_credits)
+        """bouton_credits = Button(self.fenetre_menu, text='Crédits', command=self.afficher_credits)
         bouton_credits.grid(row=3, column=0, padx=0, pady=0)
         self.widgets.append(bouton_credits)"""
 
     def afficher_parametres(self):
         self.clear_widgets()
-        label_text_principal_parametres = Label(self.fenetre_menu, text='Paramètres', font='30')
-        label_text_principal_parametres.grid(row=0, column=0, padx=0, pady=0)
+        couleur_fond = "#ffffff"
+        couleur_accent = "#42a5f5"
+        couleur_texte = "#01579b"
+        couleur_survol = "#90caf9"
+        self.fenetre_menu.configure(bg=couleur_fond)
+        label_text_principal_parametres = Label(self.fenetre_menu, text='Paramètres', font=('Helvetica', 32, 'bold'), bg=couleur_fond, fg="#0277bd", pady=40)
+        label_text_principal_parametres.grid(row=0, column=0, padx=50, pady=(30, 20))
         self.widgets.append(label_text_principal_parametres)
-
-        check_can_touch = Checkbutton(self.fenetre_menu, text="Autoriser les bateaux à se toucher", variable=self.can_touch)
-        check_can_touch.grid(row=1, column=0, padx=0, pady=0)
+        check_can_touch = Checkbutton(self.fenetre_menu, text="Autoriser les bateaux à se toucher", variable=self.can_touch, font=('Helvetica', 12), bg=couleur_fond, fg=couleur_texte, selectcolor=couleur_fond, activebackground=couleur_fond, activeforeground=couleur_texte, cursor='hand2')
+        check_can_touch.grid(row=1, column=0, padx=50, pady=15)
         self.widgets.append(check_can_touch)
-
-
-        bouton_bateaux = Button(self.fenetre_menu, text='Nombres de bateaux', command=self.afficher_fenetre_nb_bateaux)
-        bouton_bateaux.grid(row=2, column=0, padx=0, pady=0)
+        bouton_bateaux = Button(self.fenetre_menu, text='Nombres de bateaux', command=self.afficher_fenetre_nb_bateaux, font=('Helvetica', 14, 'bold'), bg=couleur_accent, fg="#ffffff", activebackground=couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_bateaux.grid(row=2, column=0, padx=50, pady=15, sticky='ew')
+        bouton_bateaux.bind("<Enter>", lambda e: e.widget.config(bg=couleur_survol))
+        bouton_bateaux.bind("<Leave>", lambda e: e.widget.config(bg=couleur_accent))
         self.widgets.append(bouton_bateaux)
-
-        bouton_retour = Button(self.fenetre_menu, text='Retour', command=self.afficher_menu_principal)
-        bouton_retour.grid(row=3, column=0, padx=0, pady=0)
+        bouton_retour = Button(self.fenetre_menu, text='Retour', command=self.afficher_menu_principal, font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=couleur_texte, activebackground="#cfd8dc", activeforeground=couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_retour.grid(row=3, column=0, padx=50, pady=15, sticky='ew')
+        bouton_retour.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
+        bouton_retour.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
         self.widgets.append(bouton_retour)
+        self.fenetre_menu.grid_columnconfigure(0, weight=1)
 
     def afficher_fenetre_nb_bateaux(self):
         self.clear_widgets()
-        label = Label(self.fenetre_menu, text="Nombre de bateaux de chaque taille", font='20')
-        label.grid(row=0, column=0, columnspan=2, padx=3, pady=3)
+        couleur_fond = "#ffffff"
+        couleur_accent = "#42a5f5"
+        couleur_texte = "#01579b"
+        couleur_survol = "#90caf9"
+        self.fenetre_menu.configure(bg=couleur_fond)
+        label = Label(self.fenetre_menu, text="Nombre de bateaux de chaque taille", font=('Helvetica', 24, 'bold'), bg=couleur_fond, fg="#0277bd", pady=30)
+        label.grid(row=0, column=0, columnspan=2, padx=50, pady=(30, 20))
         self.widgets.append(label)
-
         self.form_nb_bateaux = []
         for i in range(5):
-            label_bateau = Label(self.fenetre_menu, text=f'Nombre de bateau de taille {i+1}')
-            label_bateau.grid(row=i+1, column=0, padx=3, pady=3)
+            label_bateau = Label(self.fenetre_menu, text=f'Nombre de bateau de taille {i+1}', font=('Helvetica', 12), bg=couleur_fond, fg=couleur_texte)
+            label_bateau.grid(row=i+1, column=0, padx=20, pady=10, sticky='e')
             self.widgets.append(label_bateau)
-            entry = Entry(self.fenetre_menu)
-            entry.grid(row=i+1, column=1, padx=3, pady=3)
+            entry = Entry(self.fenetre_menu, font=('Helvetica', 12), bg="#ffffff", fg=couleur_texte, relief='flat', bd=2, highlightthickness=1, highlightbackground=couleur_accent, highlightcolor=couleur_accent)
+            entry.grid(row=i+1, column=1, padx=20, pady=10, sticky='w')
             self.widgets.append(entry)
             self.form_nb_bateaux.append(entry)
-
-        bouton_valider = Button(self.fenetre_menu, text='Valider', command=self.valider_et_quitter)
-        bouton_valider.grid(row=7, column=0, padx=3, pady=3)
+        bouton_valider = Button(self.fenetre_menu, text='Valider', command=self.valider_et_quitter, font=('Helvetica', 14, 'bold'), bg=couleur_accent, fg="#ffffff", activebackground=couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_valider.grid(row=7, column=0, padx=20, pady=(30, 15), sticky='ew')
+        bouton_valider.bind("<Enter>", lambda e: e.widget.config(bg=couleur_survol))
+        bouton_valider.bind("<Leave>", lambda e: e.widget.config(bg=couleur_accent))
         self.widgets.append(bouton_valider)
-
-        bouton_retour = Button(self.fenetre_menu, text='Retour', command=self.afficher_parametres)
-        bouton_retour.grid(row=7, column=1, padx=3, pady=3)
+        bouton_retour = Button(self.fenetre_menu, text='Retour', command=self.afficher_parametres, font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=couleur_texte, activebackground="#cfd8dc", activeforeground=couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_retour.grid(row=7, column=1, padx=20, pady=(30, 15), sticky='ew')
+        bouton_retour.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
+        bouton_retour.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
         self.widgets.append(bouton_retour)
+        self.fenetre_menu.grid_columnconfigure(0, weight=1)
+        self.fenetre_menu.grid_columnconfigure(1, weight=1)
 
     def valider_et_quitter(self):
         self.dico_bateaux_a_poser = self.recuperer_taille_bateaux()
