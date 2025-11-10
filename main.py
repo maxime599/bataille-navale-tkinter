@@ -531,8 +531,13 @@ class UI_menu:
         self.dico_bateaux_a_poser = {}
         self.fenetre_menu = Tk()
         self.can_touch = BooleanVar(value=False)
+        self.voir_cibles_adverses = BooleanVar(value=True)
         self.fenetre_menu.title("Bataille navale")
         self.widgets = []
+        self.couleur_fond = "#ffffff"
+        self.couleur_accent = "#42a5f5"
+        self.couleur_texte = "#01579b"
+        self.couleur_survol = "#90caf9"
         self.afficher_menu_principal()
         self.fenetre_menu.mainloop()
 
@@ -543,20 +548,16 @@ class UI_menu:
 
     def afficher_menu_principal(self):
         self.clear_widgets()
-        couleur_fond = "#ffffff"
-        couleur_accent = "#42a5f5"
-        couleur_texte = "#01579b"
-        couleur_survol = "#90caf9"
-        self.fenetre_menu.configure(bg=couleur_fond)
-        label_text_principal_menu = Label(self.fenetre_menu, text='Bataille navale', font=('Helvetica', 32, 'bold'), bg=couleur_fond, fg="#0277bd", pady=40)
+        self.fenetre_menu.configure(bg=self.couleur_fond)
+        label_text_principal_menu = Label(self.fenetre_menu, text='Bataille navale', font=('Helvetica', 32, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=40)
         label_text_principal_menu.grid(row=0, column=0, padx=50, pady=(30, 20))
         self.widgets.append(label_text_principal_menu)
-        bouton_jouer = Button(self.fenetre_menu, text='Jouer', command=self.jouer, font=('Helvetica', 14, 'bold'), bg=couleur_accent, fg="#ffffff", activebackground=couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_jouer = Button(self.fenetre_menu, text='Jouer', command=self.jouer, font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
         bouton_jouer.grid(row=1, column=0, padx=50, pady=15, sticky='ew')
-        bouton_jouer.bind("<Enter>", lambda e: e.widget.config(bg=couleur_survol))
-        bouton_jouer.bind("<Leave>", lambda e: e.widget.config(bg=couleur_accent))
+        bouton_jouer.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
+        bouton_jouer.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
         self.widgets.append(bouton_jouer)
-        bouton_parametre = Button(self.fenetre_menu, text='Paramètres', command=self.afficher_parametres, font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=couleur_texte, activebackground="#cfd8dc", activeforeground=couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_parametre = Button(self.fenetre_menu, text='Paramètres', command=self.afficher_parametres, font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
         bouton_parametre.grid(row=2, column=0, padx=50, pady=15, sticky='ew')
         bouton_parametre.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
         bouton_parametre.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
@@ -569,24 +570,23 @@ class UI_menu:
 
     def afficher_parametres(self):
         self.clear_widgets()
-        couleur_fond = "#ffffff"
-        couleur_accent = "#42a5f5"
-        couleur_texte = "#01579b"
-        couleur_survol = "#90caf9"
-        self.fenetre_menu.configure(bg=couleur_fond)
-        label_text_principal_parametres = Label(self.fenetre_menu, text='Paramètres', font=('Helvetica', 32, 'bold'), bg=couleur_fond, fg="#0277bd", pady=40)
+        self.fenetre_menu.configure(bg=self.couleur_fond)
+        label_text_principal_parametres = Label(self.fenetre_menu, text='Paramètres', font=('Helvetica', 32, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=40)
         label_text_principal_parametres.grid(row=0, column=0, padx=50, pady=(30, 20))
         self.widgets.append(label_text_principal_parametres)
-        check_can_touch = Checkbutton(self.fenetre_menu, text="Autoriser les bateaux à se toucher", variable=self.can_touch, font=('Helvetica', 12), bg=couleur_fond, fg=couleur_texte, selectcolor=couleur_fond, activebackground=couleur_fond, activeforeground=couleur_texte, cursor='hand2')
+        check_can_touch = Checkbutton(self.fenetre_menu, text="Autoriser les bateaux à se toucher", variable=self.can_touch, font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte, selectcolor=self.couleur_fond, activebackground=self.couleur_fond, activeforeground=self.couleur_texte, cursor='hand2')
         check_can_touch.grid(row=1, column=0, padx=50, pady=15)
         self.widgets.append(check_can_touch)
-        bouton_bateaux = Button(self.fenetre_menu, text='Nombres de bateaux', command=self.afficher_fenetre_nb_bateaux, font=('Helvetica', 14, 'bold'), bg=couleur_accent, fg="#ffffff", activebackground=couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
-        bouton_bateaux.grid(row=2, column=0, padx=50, pady=15, sticky='ew')
-        bouton_bateaux.bind("<Enter>", lambda e: e.widget.config(bg=couleur_survol))
-        bouton_bateaux.bind("<Leave>", lambda e: e.widget.config(bg=couleur_accent))
+        check_voir_cibles_adverses = Checkbutton(self.fenetre_menu, text="Voir les cibles adverses", variable=self.voir_cibles_adverses, font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte, selectcolor=self.couleur_fond, activebackground=self.couleur_fond, activeforeground=self.couleur_texte, cursor='hand2')
+        check_voir_cibles_adverses.grid(row=2, column=0, padx=50, pady=15)
+        self.widgets.append(check_voir_cibles_adverses)
+        bouton_bateaux = Button(self.fenetre_menu, text='Nombres de bateaux', command=self.afficher_fenetre_nb_bateaux, font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_bateaux.grid(row=3, column=0, padx=50, pady=15, sticky='ew')
+        bouton_bateaux.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
+        bouton_bateaux.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
         self.widgets.append(bouton_bateaux)
-        bouton_retour = Button(self.fenetre_menu, text='Retour', command=self.afficher_menu_principal, font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=couleur_texte, activebackground="#cfd8dc", activeforeground=couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
-        bouton_retour.grid(row=3, column=0, padx=50, pady=15, sticky='ew')
+        bouton_retour = Button(self.fenetre_menu, text='Retour', command=self.afficher_menu_principal, font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_retour.grid(row=4, column=0, padx=50, pady=15, sticky='ew')
         bouton_retour.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
         bouton_retour.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
         self.widgets.append(bouton_retour)
@@ -594,29 +594,25 @@ class UI_menu:
 
     def afficher_fenetre_nb_bateaux(self):
         self.clear_widgets()
-        couleur_fond = "#ffffff"
-        couleur_accent = "#42a5f5"
-        couleur_texte = "#01579b"
-        couleur_survol = "#90caf9"
-        self.fenetre_menu.configure(bg=couleur_fond)
-        label = Label(self.fenetre_menu, text="Nombre de bateaux de chaque taille", font=('Helvetica', 24, 'bold'), bg=couleur_fond, fg="#0277bd", pady=30)
+        self.fenetre_menu.configure(bg=self.couleur_fond)
+        label = Label(self.fenetre_menu, text="Nombre de bateaux de chaque taille", font=('Helvetica', 24, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=30)
         label.grid(row=0, column=0, columnspan=2, padx=50, pady=(30, 20))
         self.widgets.append(label)
         self.form_nb_bateaux = []
         for i in range(5):
-            label_bateau = Label(self.fenetre_menu, text=f'Nombre de bateau de taille {i+1}', font=('Helvetica', 12), bg=couleur_fond, fg=couleur_texte)
+            label_bateau = Label(self.fenetre_menu, text=f'Nombre de bateau de taille {i+1}', font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte)
             label_bateau.grid(row=i+1, column=0, padx=20, pady=10, sticky='e')
             self.widgets.append(label_bateau)
-            entry = Entry(self.fenetre_menu, font=('Helvetica', 12), bg="#ffffff", fg=couleur_texte, relief='flat', bd=2, highlightthickness=1, highlightbackground=couleur_accent, highlightcolor=couleur_accent)
+            entry = Entry(self.fenetre_menu, font=('Helvetica', 12), bg="#ffffff", fg=self.couleur_texte, relief='flat', bd=2, highlightthickness=1, highlightbackground=self.couleur_accent, highlightcolor=self.couleur_accent)
             entry.grid(row=i+1, column=1, padx=20, pady=10, sticky='w')
             self.widgets.append(entry)
             self.form_nb_bateaux.append(entry)
-        bouton_valider = Button(self.fenetre_menu, text='Valider', command=self.valider_et_quitter, font=('Helvetica', 14, 'bold'), bg=couleur_accent, fg="#ffffff", activebackground=couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_valider = Button(self.fenetre_menu, text='Valider', command=self.valider_et_quitter, font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
         bouton_valider.grid(row=7, column=0, padx=20, pady=(30, 15), sticky='ew')
-        bouton_valider.bind("<Enter>", lambda e: e.widget.config(bg=couleur_survol))
-        bouton_valider.bind("<Leave>", lambda e: e.widget.config(bg=couleur_accent))
+        bouton_valider.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
+        bouton_valider.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
         self.widgets.append(bouton_valider)
-        bouton_retour = Button(self.fenetre_menu, text='Retour', command=self.afficher_parametres, font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=couleur_texte, activebackground="#cfd8dc", activeforeground=couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_retour = Button(self.fenetre_menu, text='Retour', command=self.afficher_parametres, font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
         bouton_retour.grid(row=7, column=1, padx=20, pady=(30, 15), sticky='ew')
         bouton_retour.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
         bouton_retour.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
@@ -697,6 +693,7 @@ dico_bateaux_a_poser = {}
 
 menu = UI_menu()
 option_can_touch = menu.can_touch.get()
+option_voir_cibles_adverses = menu.voir_cibles_adverses.get()
 afficher_croix = False if option_can_touch == True else True
 dico_bateaux_a_poser = menu.dico_bateaux_a_poser
 
@@ -709,10 +706,10 @@ plateau_joueur2.creation_plateau()
 
 fenetre1 = UI_game("joueur 1", 1)
 fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'gauche', afficher_croix)
-fenetre1.afficher_plateau(plateau_joueur2.plateau, True, True, 'droit', afficher_croix)
+fenetre1.afficher_plateau(plateau_joueur2.plateau, option_voir_cibles_adverses, True, 'droit', afficher_croix)
 fenetre2 = UI_game("Joueur 2", 2)
 fenetre2.afficher_plateau(plateau_joueur1.plateau, True, True, 'gauche', afficher_croix)
-fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droit', afficher_croix)
+fenetre2.afficher_plateau(plateau_joueur2.plateau, option_voir_cibles_adverses, True, 'droit', afficher_croix)
 
 #Demande le nombre de bateaux de taille 1 à 6 à poser dans le plateau
 """dico_bateaux_a_poser = {}
@@ -730,7 +727,6 @@ else:
         for i in range(dico_bateaux_a_poser[clef]):
             plateau_joueur1.liste_bateaux_a_poser.append(clef)
             plateau_joueur2.liste_bateaux_a_poser.append(clef)
-    print(liste_bateaux_a_poser)
 
 
 fenetre1.titre_information(fenetre1.fenetre,"C'est à vous de poser les bateaux",1,22,15)
@@ -749,11 +745,11 @@ fenetre2.canva_bind = 'droite'
 for joueur in [1,2]:
     if joueur == 1:
         #plateau_joueur1.afficher_plateau(True, True)
-        fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'droit', afficher_croix)
+        fenetre1.afficher_plateau(plateau_joueur1.plateau, option_voir_cibles_adverses, True, 'droit', afficher_croix)
         liste_bateaux_a_poser = plateau_joueur1.liste_bateaux_a_poser
     else:
         #plateau_joueur2.afficher_plateau(True, True)
-        fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droit', afficher_croix)
+        fenetre2.afficher_plateau(plateau_joueur2.plateau, option_voir_cibles_adverses, True, 'droit', afficher_croix)
         liste_bateaux_a_poser = plateau_joueur2.liste_bateaux_a_poser
 
 
@@ -798,7 +794,7 @@ for joueur in [1,2]:
             if joueur == 1:
                 bonne_position_bateau = plateau_joueur1.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation[0], taille, option_can_touch)
                 #plateau_joueur1.afficher_plateau(True, True)
-                fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'droite', afficher_croix)
+                fenetre1.afficher_plateau(plateau_joueur1.plateau, option_voir_cibles_adverses, True, 'droite', afficher_croix)
                 if bonne_position_bateau == True:
                     liste_bateaux_a_poser.remove(taille)
                     index = taille - 1
@@ -807,7 +803,7 @@ for joueur in [1,2]:
             else:
                 bonne_position_bateau = plateau_joueur2.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation[0], taille, option_can_touch)   
                 #plateau_joueur2.afficher_plateau(True, True)
-                fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droite', afficher_croix)
+                fenetre2.afficher_plateau(plateau_joueur2.plateau, option_voir_cibles_adverses, True, 'droite', afficher_croix)
                 if bonne_position_bateau == True:
                     liste_bateaux_a_poser.remove(taille)
                     index = taille - 1
@@ -865,10 +861,10 @@ while  not fin_du_jeux:
     
     fenetre1.afficher_plateau(plateau_joueur2.plateau, True, False, 'gauche', False)
     if not fenetre1.canva_cacher:
-        fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'droite', False)
+        fenetre1.afficher_plateau(plateau_joueur1.plateau, option_voir_cibles_adverses, True, 'droite', False)
     fenetre2.afficher_plateau(plateau_joueur1.plateau, True, False, 'gauche', False)
     if not fenetre2.canva_cacher:
-        fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droite', False)
+        fenetre2.afficher_plateau(plateau_joueur2.plateau, option_voir_cibles_adverses, True, 'droite', False)
 
 
     print(f"C'est au joueur du joueur {joueur} de jouer")
@@ -976,9 +972,9 @@ while  not fin_du_jeux:
             joueur = 1
 
 fenetre1.afficher_plateau(plateau_joueur2.plateau, True, False, 'gauche', False)
-fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'droite', False)
+fenetre1.afficher_plateau(plateau_joueur1.plateau, option_voir_cibles_adverses, True, 'droite', False)
 fenetre2.afficher_plateau(plateau_joueur1.plateau, True, False, 'gauche', False)
-fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droite', False)
+fenetre2.afficher_plateau(plateau_joueur2.plateau, option_voir_cibles_adverses, True, 'droite', False)
 vert = Image.new("RGBA", (480,480), (0, 255, 0, 120))
 rouge = Image.new("RGBA", (480,480), (255, 0, 0, 120))
 if joueur_perdu == 2:
