@@ -133,17 +133,17 @@ class Plateau:
         elif orientation == 1:
             #on regarde si les trois cases en haut et en bas du bateau sont déja pleines ou non
             for i in range(-1, 2):
-                    try:
-                        if self.plateau[coordonees_x-1][coordonees_y+i].type != 0  and coordonees_x-1>=0 and coordonees_y+i>=0:
-                            return False
-                    except:
-                        pass
-                    
-                    try:
-                        if self.plateau[coordonees_x+taille][coordonees_y+i].type != 0  and i>=0 and coordonees_y+i>=0:
-                            return False
-                    except:
-                        pass
+                try:
+                    if self.plateau[coordonees_x-1][coordonees_y+i].type != 0  and coordonees_x-1>=0 and coordonees_y+i>=0:
+                        return False
+                except:
+                    pass
+                
+                try:
+                    if self.plateau[coordonees_x+taille][coordonees_y+i].type != 0  and coordonees_x+taille>=0 and coordonees_y+i>=0:
+                        return False
+                except:
+                    pass
             for i in range(coordonees_x, coordonees_x+taille):
                 if i >= 10:
                     return False
