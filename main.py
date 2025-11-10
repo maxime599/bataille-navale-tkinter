@@ -697,7 +697,7 @@ dico_bateaux_a_poser = {}
 
 menu = UI_menu()
 option_can_touch = menu.can_touch.get()
-print(option_can_touch)
+afficher_croix = False if option_can_touch == True else True
 dico_bateaux_a_poser = menu.dico_bateaux_a_poser
 
 
@@ -708,11 +708,11 @@ plateau_joueur1.creation_plateau()
 plateau_joueur2.creation_plateau()
 
 fenetre1 = UI_game("joueur 1", 1)
-fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'gauche', True)
-fenetre1.afficher_plateau(plateau_joueur2.plateau, True, True, 'droit', True)
+fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'gauche', afficher_croix)
+fenetre1.afficher_plateau(plateau_joueur2.plateau, True, True, 'droit', afficher_croix)
 fenetre2 = UI_game("Joueur 2", 2)
-fenetre2.afficher_plateau(plateau_joueur1.plateau, True, True, 'gauche', True)
-fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droit', True)
+fenetre2.afficher_plateau(plateau_joueur1.plateau, True, True, 'gauche', afficher_croix)
+fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droit', afficher_croix)
 
 #Demande le nombre de bateaux de taille 1 à 6 à poser dans le plateau
 """dico_bateaux_a_poser = {}
@@ -749,11 +749,11 @@ fenetre2.canva_bind = 'droite'
 for joueur in [1,2]:
     if joueur == 1:
         #plateau_joueur1.afficher_plateau(True, True)
-        fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'droit', True)
+        fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'droit', afficher_croix)
         liste_bateaux_a_poser = plateau_joueur1.liste_bateaux_a_poser
     else:
         #plateau_joueur2.afficher_plateau(True, True)
-        fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droit', True)
+        fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droit', afficher_croix)
         liste_bateaux_a_poser = plateau_joueur2.liste_bateaux_a_poser
 
 
@@ -798,7 +798,7 @@ for joueur in [1,2]:
             if joueur == 1:
                 bonne_position_bateau = plateau_joueur1.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation[0], taille, option_can_touch)
                 #plateau_joueur1.afficher_plateau(True, True)
-                fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'droite', True)
+                fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'droite', afficher_croix)
                 if bonne_position_bateau == True:
                     liste_bateaux_a_poser.remove(taille)
                     index = taille - 1
@@ -807,7 +807,7 @@ for joueur in [1,2]:
             else:
                 bonne_position_bateau = plateau_joueur2.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation[0], taille, option_can_touch)   
                 #plateau_joueur2.afficher_plateau(True, True)
-                fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droite', True)
+                fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droite', afficher_croix)
                 if bonne_position_bateau == True:
                     liste_bateaux_a_poser.remove(taille)
                     index = taille - 1
