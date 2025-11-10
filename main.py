@@ -567,7 +567,7 @@ class UI_menu:
         label_text_principal_menu = Label(self.fenetre_menu, text='Bataille navale', font=('Helvetica', 32, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=40)
         label_text_principal_menu.grid(row=0, column=0, padx=50, pady=(30, 20))
         self.widgets.append(label_text_principal_menu)
-        bouton_jouer = Button(self.fenetre_menu, text='Jouer', command=self.jouer, font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_jouer = Button(self.fenetre_menu, text='Jouer', command=self.afficher_mode_jeu, font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
         bouton_jouer.grid(row=1, column=0, padx=50, pady=15, sticky='ew')
         bouton_jouer.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
         bouton_jouer.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
@@ -635,6 +635,29 @@ class UI_menu:
         self.fenetre_menu.grid_columnconfigure(0, weight=1)
         self.fenetre_menu.grid_columnconfigure(1, weight=1)
 
+    def afficher_mode_jeu(self):
+        self.clear_widgets()
+        self.fenetre_menu.configure(bg=self.couleur_fond)
+        label_text_principal_mode = Label(self.fenetre_menu, text='Mode de jeu', font=('Helvetica', 32, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=40)
+        label_text_principal_mode.grid(row=0, column=0, padx=50, pady=(30, 20))
+        self.widgets.append(label_text_principal_mode)
+        bouton_joueur = Button(self.fenetre_menu, text='Jouer contre un joueur', command=self.jouer_contre_joueur, font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_joueur.grid(row=1, column=0, padx=50, pady=15, sticky='ew')
+        bouton_joueur.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
+        bouton_joueur.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
+        self.widgets.append(bouton_joueur)
+        bouton_ia = Button(self.fenetre_menu, text='Jouer contre une ia', command=self.jouer_contre_ia, font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_ia.grid(row=2, column=0, padx=50, pady=15, sticky='ew')
+        bouton_ia.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
+        bouton_ia.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
+        self.widgets.append(bouton_ia)
+        bouton_retour = Button(self.fenetre_menu, text='Retour', command=self.afficher_menu_principal, font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_retour.grid(row=3, column=0, padx=50, pady=15, sticky='ew')
+        bouton_retour.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
+        bouton_retour.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
+        self.widgets.append(bouton_retour)
+        self.fenetre_menu.grid_columnconfigure(0, weight=1)
+
     def valider_et_quitter(self):
         self.dico_bateaux_a_poser = self.recuperer_taille_bateaux()
         self.afficher_menu_principal()
@@ -658,7 +681,12 @@ class UI_menu:
 
         return {1 : nb_bateaux_1, 2 : nb_bateaux_2, 3 : nb_bateaux_3, 4 : nb_bateaux_4, 5 : nb_bateaux_5}
 
-    def jouer(self):
+    def jouer_contre_ia(self):
+        self.mode_jeu = '2_je'
+        self.fenetre_menu.destroy()
+
+    def jouer_contre_joueur(self):
+        self.mode_jeu = '2_j'
         self.fenetre_menu.destroy()
 
 def on_mouvement(event, fenetre, plateau, orientation, taille, position_canva, can_touch):
@@ -711,8 +739,7 @@ option_can_touch = menu.can_touch.get()
 option_voir_cibles_adverses = menu.voir_cibles_adverses.get()
 afficher_croix = False if option_can_touch == True else True
 dico_bateaux_a_poser = menu.dico_bateaux_a_poser
-mode_jeu = '2_je'
-
+mode_jeu = menu.mode_jeu
 
 plateau_joueur1 = Plateau()
 plateau_joueur1.creation_plateau()
