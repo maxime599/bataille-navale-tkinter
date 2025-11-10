@@ -280,6 +280,7 @@ class UI_game:
         
         self.img_gris = PhotoImage(file='images/gris.png', master=self.fenetre)
         self.img_croix = PhotoImage(file='images/croix.png', master=self.fenetre)
+        self.croix_fond_rouge = PhotoImage(file='images/croix_fond_rouge.png', master=self.fenetre)
         self.img_cible = PhotoImage(file='images/cible.png', master=self.fenetre)
         self.img_touche = PhotoImage(file='images/touché.png', master=self.fenetre)
 
@@ -298,7 +299,7 @@ class UI_game:
         self.canva_ids = []
         self.canva_text_ids = []
 
-    def afficher_plateau(self, plateau, afficher_1, afficher_2, position_canva):
+    def afficher_plateau(self, plateau, afficher_1, afficher_2, position_canva, afficher_croix):
         
         #permet de créer ces deux listes seulement une fois, la première fois que afficher_plateau() est appelée.
         if not hasattr(self, 'images_gauche'):
@@ -328,7 +329,13 @@ class UI_game:
                     self.canva_droite.create_image(x, y, image=self.img_bleu, anchor=NW)
                 if colonne.type == 0:
                     image = self.img_bleu
-                elif colonne.type == 1:
+                if afficher_croix:
+                    for case_to_check_x in range(-1,2):
+                        for case_to_check_y in range(-1,2):
+                            if 0 <= (index_ligne + case_to_check_x) <= 9 and 0 <= (index_colonne + case_to_check_y) <= 9:
+                                if (case_to_check_x, case_to_check_y) != (0,0) and plateau[index_ligne + case_to_check_x][index_colonne + case_to_check_y].type == 2:
+                                    image = self.croix_fond_rouge
+                if colonne.type == 1:
                     image = self.img_cible if afficher_1 else self.img_bleu
                 elif (not afficher_2) and (colonne.type == 2):
                     image = self.img_bleu
@@ -356,8 +363,9 @@ class UI_game:
                     image = self.img_touche
 
                 
-                else:  # colonne.type == 4
+                elif colonne.type != 0:  # colonne.type == 4
                     image = self.img_gris
+                
                 
 
                 if position_canva == 'gauche':
@@ -494,9 +502,9 @@ class UI_game:
         if self.canva_cacher:
             self.canva_droite.delete("cache_noir")
             if self.joueur == 1:
-                self.afficher_plateau(plateau_joueur1.plateau, True, True, 'droite')
+                self.afficher_plateau(plateau_joueur1.plateau, True, True, 'droite', True)
             else:
-                self.afficher_plateau(plateau_joueur2.plateau, True, True, 'droite')
+                self.afficher_plateau(plateau_joueur2.plateau, True, True, 'droite', True)
             self.canva_cacher = False
         else:
             self.canva_cacher = True
@@ -669,7 +677,7 @@ def on_clique_droit(event, plateau, fenetre, canva_placement, text_ids):
         for case_a_supprimer in bateau_touche[1]:
             plateau.plateau[case_a_supprimer[0]][case_a_supprimer[1]].type = 0
 
-        fenetre.afficher_plateau(plateau.plateau, True, True, 'droit') #Mise à jour de l'affichage
+        fenetre.afficher_plateau(plateau.plateau, True, True, 'droit', True) #Mise à jour de l'affichage
         plateau.liste_bateaux_a_poser.append(taille_bateau)            #Mise à jour de la liste des bateaux à poser
 
         index = taille_bateau - 1
@@ -688,7 +696,8 @@ dico_bateaux_a_poser = {}
 
 
 menu = UI_menu()
-option_can_touch = menu.can_touch
+option_can_touch = menu.can_touch.get()
+print(option_can_touch)
 dico_bateaux_a_poser = menu.dico_bateaux_a_poser
 
 
@@ -699,11 +708,11 @@ plateau_joueur1.creation_plateau()
 plateau_joueur2.creation_plateau()
 
 fenetre1 = UI_game("joueur 1", 1)
-fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'gauche')
-fenetre1.afficher_plateau(plateau_joueur2.plateau, True, True, 'droit')
+fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'gauche', True)
+fenetre1.afficher_plateau(plateau_joueur2.plateau, True, True, 'droit', True)
 fenetre2 = UI_game("Joueur 2", 2)
-fenetre2.afficher_plateau(plateau_joueur1.plateau, True, True, 'gauche')
-fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droit')
+fenetre2.afficher_plateau(plateau_joueur1.plateau, True, True, 'gauche', True)
+fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droit', True)
 
 #Demande le nombre de bateaux de taille 1 à 6 à poser dans le plateau
 """dico_bateaux_a_poser = {}
@@ -740,11 +749,11 @@ fenetre2.canva_bind = 'droite'
 for joueur in [1,2]:
     if joueur == 1:
         #plateau_joueur1.afficher_plateau(True, True)
-        fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'droit')
+        fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'droit', True)
         liste_bateaux_a_poser = plateau_joueur1.liste_bateaux_a_poser
     else:
         #plateau_joueur2.afficher_plateau(True, True)
-        fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droit')
+        fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droit', True)
         liste_bateaux_a_poser = plateau_joueur2.liste_bateaux_a_poser
 
 
@@ -789,7 +798,7 @@ for joueur in [1,2]:
             if joueur == 1:
                 bonne_position_bateau = plateau_joueur1.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation[0], taille, option_can_touch)
                 #plateau_joueur1.afficher_plateau(True, True)
-                fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'droite')
+                fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'droite', True)
                 if bonne_position_bateau == True:
                     liste_bateaux_a_poser.remove(taille)
                     index = taille - 1
@@ -798,7 +807,7 @@ for joueur in [1,2]:
             else:
                 bonne_position_bateau = plateau_joueur2.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation[0], taille, option_can_touch)   
                 #plateau_joueur2.afficher_plateau(True, True)
-                fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droite')
+                fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droite', True)
                 if bonne_position_bateau == True:
                     liste_bateaux_a_poser.remove(taille)
                     index = taille - 1
@@ -854,12 +863,12 @@ while  not fin_du_jeux:
         fenetre2.titres[0].configure(text="C'est à vous de jouer")
 
     
-    fenetre1.afficher_plateau(plateau_joueur2.plateau, True, False, 'gauche')
+    fenetre1.afficher_plateau(plateau_joueur2.plateau, True, False, 'gauche', False)
     if not fenetre1.canva_cacher:
-        fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'droite')
-    fenetre2.afficher_plateau(plateau_joueur1.plateau, True, False, 'gauche')
+        fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'droite', False)
+    fenetre2.afficher_plateau(plateau_joueur1.plateau, True, False, 'gauche', False)
     if not fenetre2.canva_cacher:
-        fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droite')
+        fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droite', False)
 
 
     print(f"C'est au joueur du joueur {joueur} de jouer")
@@ -966,10 +975,10 @@ while  not fin_du_jeux:
             print("La case ne contient pas de bateaux")
             joueur = 1
 
-fenetre1.afficher_plateau(plateau_joueur2.plateau, True, False, 'gauche')
-fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'droite')
-fenetre2.afficher_plateau(plateau_joueur1.plateau, True, False, 'gauche')
-fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droite')
+fenetre1.afficher_plateau(plateau_joueur2.plateau, True, False, 'gauche', False)
+fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'droite', False)
+fenetre2.afficher_plateau(plateau_joueur1.plateau, True, False, 'gauche', False)
+fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droite', False)
 vert = Image.new("RGBA", (480,480), (0, 255, 0, 120))
 rouge = Image.new("RGBA", (480,480), (255, 0, 0, 120))
 if joueur_perdu == 2:
