@@ -1,9 +1,7 @@
 from tkinter import *
-import tkinter.font as tkfont 
 import copy
 from PIL import Image, ImageTk
-import re
-from tkinter import ttk
+from random import *
 
 root_created = False
 
@@ -218,6 +216,23 @@ class Plateau:
             output_nb = self.liste_bateaux_a_poser.count(taille)
             output.append(output_nb)
         return output
+
+    def pose_bateaux_aleatoire(self, can_touch):
+        for taille in self.liste_bateaux_a_poser:
+            good_position = False
+            while not good_position:
+                good_position = self.ajouter_bateau(randint(0,9), randint(0,9), randint(0,1), taille, can_touch, False)
+
+    def coup_aléatoire(self):
+        bon_coup = False
+        coordonnee_coup_x = 0
+        coordonnee_coup_y = 0
+        while not bon_coup:
+            coordonnee_coup_x = randint(0,9)
+            coordonnee_coup_y = randint(0,9)
+            bon_coup = self.is_possible_cible(coordonnee_coup_x, coordonnee_coup_y)
+        #self.cible_case(coordonnee_coup_x, coordonnee_coup_y)
+        return (coordonnee_coup_x, coordonnee_coup_y)
 
 class UI_game:
     def __init__(self, nom, joueur):
@@ -699,25 +714,23 @@ menu = UI_menu()
 option_can_touch = menu.can_touch.get()
 afficher_croix = False if option_can_touch == True else True
 dico_bateaux_a_poser = menu.dico_bateaux_a_poser
-
+mode_jeu = '2_je'
 
 
 plateau_joueur1 = Plateau()
-plateau_joueur2 = Plateau()
 plateau_joueur1.creation_plateau()
+plateau_joueur2 = Plateau()
 plateau_joueur2.creation_plateau()
-
 fenetre1 = UI_game("joueur 1", 1)
 fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'gauche', afficher_croix)
 fenetre1.afficher_plateau(plateau_joueur2.plateau, True, True, 'droit', afficher_croix)
+
+
 fenetre2 = UI_game("Joueur 2", 2)
 fenetre2.afficher_plateau(plateau_joueur1.plateau, True, True, 'gauche', afficher_croix)
 fenetre2.afficher_plateau(plateau_joueur2.plateau, True, True, 'droit', afficher_croix)
-
-#Demande le nombre de bateaux de taille 1 à 6 à poser dans le plateau
-"""dico_bateaux_a_poser = {}
-for i in range(1,6):  
-    dico_bateaux_a_poser[i] = int(input(f"Combien de bateaux de taille {i} voulez vous ajouter ? "))"""
+if mode_jeu != '2_j':
+    fenetre2.fenetre.withdraw()
 
 #On met des valeurs par défaut si le joueur ferme la fenêtre
 if dico_bateaux_a_poser == {}:
@@ -734,19 +747,25 @@ else:
 
 
 fenetre1.titre_information(fenetre1.fenetre,"C'est à vous de poser les bateaux",1,22,15)
-fenetre2.titre_information(fenetre2.fenetre,"C'est à l'adversaire de poser ces bateaux",1,22,15)
-
-fenetre1.titre_information(fenetre1.fenetre,"Click droit pour enlever un bateau",3,22,12)
-fenetre2.titre_information(fenetre2.fenetre,"Click droit pour enlever un bateau",3,22,12)
-
 fenetre1.bloc_canva(fenetre1.fenetre, "Vos bateaux à poser", '× ', plateau_joueur1.nb_bateau_restant_a_pose_par_taille(), 2, 22, "bleu")
-fenetre2.bloc_canva(fenetre2.fenetre, "Vos bateaux à poser", '× ', plateau_joueur2.nb_bateau_restant_a_pose_par_taille(), 2, 22, "bleu")
+fenetre1.titre_information(fenetre1.fenetre,"Click droit pour enlever un bateau",3,22,12)
 
+
+fenetre2.titre_information(fenetre2.fenetre,"C'est à l'adversaire de poser ces bateaux",1,22,15)
+fenetre2.titre_information(fenetre2.fenetre,"Click droit pour enlever un bateau",3,22,12)
+fenetre2.bloc_canva(fenetre2.fenetre, "Vos bateaux à poser", '× ', plateau_joueur2.nb_bateau_restant_a_pose_par_taille(), 2, 22, "bleu")
+if mode_jeu == '2_j':
+    liste_joueur_humain = [1,2]
+    liste_joueur_ia = []
+else:
+    liste_joueur_humain = [1]
+    liste_joueur_ia = [2]
 
 #Boucle qui demande aux deux joueurs de donner la position de leurs bateau à poser sur leur plateau
 fenetre1.canva_bind = 'droite'
 fenetre2.canva_bind = 'droite'
-for joueur in [1,2]:
+
+for joueur in liste_joueur_humain:
     if joueur == 1:
         #plateau_joueur1.afficher_plateau(True, True)
         fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'droit', afficher_croix)
@@ -815,7 +834,11 @@ for joueur in [1,2]:
 
     fenetre1.titres[0].configure(text="C'est à l'adversaire de poser ces bateaux")
     fenetre2.titres[0].configure(text="C'est à vous de poser les bateaux")
-
+for joueur in liste_joueur_ia:
+    if joueur == 1:
+        plateau_joueur1.pose_bateaux_aleatoire(option_can_touch)
+    else:
+        plateau_joueur2.pose_bateaux_aleatoire(option_can_touch)
 
 plateau_joueur1.liste_bateau_total = copy.deepcopy(plateau_joueur1.liste_bateau_restant)
 plateau_joueur2.liste_bateau_total = copy.deepcopy(plateau_joueur2.liste_bateau_restant)
@@ -844,7 +867,7 @@ fin_du_jeux = False
 coordonnee_case_x, coordonnee_case_y = 0,0
 fenetre1.canva_bind = 'gauche'
 fenetre2.canva_bind = 'gauche'
-while  not fin_du_jeux:
+while not fin_du_jeux:
     # affiche les plateaux
     print("\n","Ton propre plateau qui sert à viser l'adversaire")
     if joueur == 1:
@@ -880,22 +903,27 @@ while  not fin_du_jeux:
         #coordonner_case_y = int(input("Dans quel numero de colonne veux tu cibler ? "))
 
         if joueur == 1:
-            fenetre1.canva_gauche.config(cursor="none")
-            fenetre1.canva_gauche.bind("<Motion>", fenetre1.afficher_croix)
-            fenetre1.canva_gauche.bind("<Leave>", fenetre1.cacher_croix)
-            coordonnee_case = fenetre1.attendre_click_case()
-            fenetre1.canva_gauche.config(cursor="arrow")
-            fenetre1.canva_gauche.unbind("<Motion>")
-            fenetre1.canva_gauche.unbind("<Leave>")
+            if 1 in liste_joueur_humain:
+                fenetre1.canva_gauche.config(cursor="none")
+                fenetre1.canva_gauche.bind("<Motion>", fenetre1.afficher_croix)
+                fenetre1.canva_gauche.bind("<Leave>", fenetre1.cacher_croix)
+                coordonnee_case = fenetre1.attendre_click_case()
+                fenetre1.canva_gauche.config(cursor="arrow")
+                fenetre1.canva_gauche.unbind("<Motion>")
+                fenetre1.canva_gauche.unbind("<Leave>")
+            else :
+                coordonnee_case = plateau_joueur1.coup_aléatoire()
         else:
-            fenetre2.canva_gauche.config(cursor="none")
-            fenetre2.canva_gauche.bind("<Motion>", fenetre2.afficher_croix)
-            fenetre2.canva_gauche.bind("<Leave>", fenetre2.cacher_croix)
-            coordonnee_case = fenetre2.attendre_click_case()
-            fenetre2.canva_gauche.config(cursor="arrow")
-            fenetre2.canva_gauche.unbind("<Motion>")
-            fenetre2.canva_gauche.unbind("<Leave>")
-            
+            if 2 in liste_joueur_humain:
+                fenetre2.canva_gauche.config(cursor="none")
+                fenetre2.canva_gauche.bind("<Motion>", fenetre2.afficher_croix)
+                fenetre2.canva_gauche.bind("<Leave>", fenetre2.cacher_croix)
+                coordonnee_case = fenetre2.attendre_click_case()
+                fenetre2.canva_gauche.config(cursor="arrow")
+                fenetre2.canva_gauche.unbind("<Motion>")
+                fenetre2.canva_gauche.unbind("<Leave>")
+            else:
+                coordonnee_case = plateau_joueur2.coup_aléatoire()
         coordonnee_case_x = coordonnee_case[0]
         coordonnee_case_y = coordonnee_case[1]
 
