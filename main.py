@@ -502,9 +502,9 @@ class UI_game:
         if self.canva_cacher:
             self.canva_droite.delete("cache_noir")
             if self.joueur == 1:
-                self.afficher_plateau(plateau_joueur1.plateau, True, True, 'droite', True)
+                self.afficher_plateau(plateau_joueur1.plateau, True, True, 'droite', False)
             else:
-                self.afficher_plateau(plateau_joueur2.plateau, True, True, 'droite', True)
+                self.afficher_plateau(plateau_joueur2.plateau, True, True, 'droite', False)
             self.canva_cacher = False
         else:
             self.canva_cacher = True
