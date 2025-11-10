@@ -2,6 +2,7 @@ from tkinter import *
 import copy
 from PIL import Image, ImageTk
 from random import *
+from time import *
 
 root_created = False
 
@@ -223,7 +224,7 @@ class Plateau:
             while not good_position:
                 good_position = self.ajouter_bateau(randint(0,9), randint(0,9), randint(0,1), taille, can_touch, False)
 
-    def coup_aléatoire(self):
+    def coup_aléatoire(self, can_touch):
         bon_coup = False
         coordonnee_coup_x = 0
         coordonnee_coup_y = 0
@@ -231,8 +232,48 @@ class Plateau:
             coordonnee_coup_x = randint(0,9)
             coordonnee_coup_y = randint(0,9)
             bon_coup = self.is_possible_cible(coordonnee_coup_x, coordonnee_coup_y)
-        #self.cible_case(coordonnee_coup_x, coordonnee_coup_y)
+            if not can_touch: #si les bateaux ne peuvent pas se toucher, alors on exclut la case si elle est à coté d'un bateau coulé
+                for x in range(-1, 2):
+                    for y in range(-1, 2):
+                        if 0 <= coordonnee_coup_x + x <= 9 and 0 <= coordonnee_coup_y + y <= 9:
+                            if self.plateau[coordonnee_coup_x + x][coordonnee_coup_y + y].type == 5:
+                                bon_coup = False
         return (coordonnee_coup_x, coordonnee_coup_y)
+
+    def coup_IA(self, can_touch):
+        for index_ligne, ligne in enumerate(self.plateau):
+            for index_colonne, case in enumerate(ligne):
+                if case.type == 3: #Si on detecte une case précedement touchée
+                    liste_cases_touched_autour = []
+                    liste_cases_autour_valides = []
+                    #on compte combien il y des cases touchées autour et de cases que l'on peut cibler
+                    for coordonnee_cases_autour in [[index_ligne-1, index_colonne], [index_ligne, index_colonne - 1], [index_ligne + 1, index_colonne], [index_ligne, index_colonne + 1]]:
+                        if 0 <= coordonnee_cases_autour[0] <= 9 and 0 <= coordonnee_cases_autour[1] <= 9:
+                            if self.plateau[coordonnee_cases_autour[0]][coordonnee_cases_autour[1]].type == 3:
+                                liste_cases_touched_autour.append(coordonnee_cases_autour)
+                            else:
+                                print('ici')
+                                if self.is_possible_cible(coordonnee_cases_autour[0], coordonnee_cases_autour[1]):
+                                    print('case valide')
+                                    liste_cases_autour_valides.append(coordonnee_cases_autour)
+                    if len(liste_cases_touched_autour) == 0:#si il n'y a pas de cases touchée autour, alors on cible une case aléatoir parmit celle que l'on peur cibler
+                        return choice(liste_cases_autour_valides)
+                    
+                    elif len(liste_cases_touched_autour) == 1: #si il y a une autre case touchée autour, alors on tente de viser celle à l'opposé
+                        if liste_cases_touched_autour[0] == [index_ligne-1, index_colonne] and self.is_possible_cible(index_ligne+1, index_colonne):
+                            return (index_ligne+1, index_colonne)
+                        elif liste_cases_touched_autour[0] == [index_ligne, index_colonne - 1] and self.is_possible_cible(index_ligne, index_colonne + 1):
+                            return (index_ligne, index_colonne + 1)
+                        elif liste_cases_touched_autour[0] == [index_ligne+1, index_colonne] and self.is_possible_cible(index_ligne-1, index_colonne):
+                            return (index_ligne-1, index_colonne)
+                        elif liste_cases_touched_autour[0] == [index_ligne, index_colonne + 1] and self.is_possible_cible(index_ligne, index_colonne - 1):
+                            return (index_ligne, index_colonne - 1)
+                        
+                    elif len(liste_cases_touched_autour) == 3: #si il y a 3 cases touchés autour, alors on cible la 4eme
+                        for element in [[index_ligne-1, index_colonne], [index_ligne, index_colonne - 1], [index_ligne + 1, index_colonne], [index_ligne, index_colonne + 1]]:
+                            if element not in liste_cases_touched_autour:
+                                return element
+        return self.coup_aléatoire(can_touch)
 
 class UI_game:
     def __init__(self, nom, joueur):
@@ -863,10 +904,10 @@ fenetre1.canva_bind = 'gauche'
 fenetre2.canva_bind = 'gauche'
 while not fin_du_jeux:
     # affiche les plateaux
-    print("\n","Ton propre plateau qui sert à viser l'adversaire")
+    #print("\n","Ton propre plateau qui sert à viser l'adversaire")
     if joueur == 1:
         #plateau_joueur2.afficher_plateau(True, False)
-        print("\n" , "Ton plateau avec tes bateaux")
+        #print("\n" , "Ton plateau avec tes bateaux")
         #plateau_joueur1.afficher_plateau(True, True)
         fenetre1.titres[0].configure(text="C'est à vous de jouer")
         fenetre2.titres[0].configure(text="C'est à l'adversaire de jouer")
@@ -874,12 +915,11 @@ while not fin_du_jeux:
 
     if joueur == 2:
         #plateau_joueur1.afficher_plateau(True, False)
-        print("\n" , "Ton plateau avec tes bateaux")
+        #print("\n" , "Ton plateau avec tes bateaux")
         #plateau_joueur2.afficher_plateau(True, True)
         fenetre1.titres[0].configure(text="C'est à l'adversaire de jouer")
         fenetre2.titres[0].configure(text="C'est à vous de jouer")
 
-    
     fenetre1.afficher_plateau(plateau_joueur2.plateau, True, False, 'gauche', False)
     if not fenetre1.canva_cacher:
         fenetre1.afficher_plateau(plateau_joueur1.plateau, option_voir_cibles_adverses, True, 'droite', False)
@@ -888,7 +928,7 @@ while not fin_du_jeux:
         fenetre2.afficher_plateau(plateau_joueur2.plateau, option_voir_cibles_adverses, True, 'droite', False)
 
 
-    print(f"C'est au joueur du joueur {joueur} de jouer")
+    #print(f"C'est au joueur du joueur {joueur} de jouer")
 
     # demande la case à ciblé
     bonne_position_cible = False
@@ -906,7 +946,7 @@ while not fin_du_jeux:
                 fenetre1.canva_gauche.unbind("<Motion>")
                 fenetre1.canva_gauche.unbind("<Leave>")
             else :
-                coordonnee_case = plateau_joueur1.coup_aléatoire()
+                coordonnee_case = plateau_joueur2.coup_IA(option_can_touch)
         else:
             if 2 in liste_joueur_humain:
                 fenetre2.canva_gauche.config(cursor="none")
@@ -917,7 +957,7 @@ while not fin_du_jeux:
                 fenetre2.canva_gauche.unbind("<Motion>")
                 fenetre2.canva_gauche.unbind("<Leave>")
             else:
-                coordonnee_case = plateau_joueur2.coup_aléatoire()
+                coordonnee_case = plateau_joueur1.coup_IA(option_can_touch)
         coordonnee_case_x = coordonnee_case[0]
         coordonnee_case_y = coordonnee_case[1]
 
@@ -932,10 +972,11 @@ while not fin_du_jeux:
             taille_bateau_restant = plateau_joueur2.enlever_case_bateau(coordonnee_case_x, coordonnee_case_y)
             plateau_joueur2.modifier_case(coordonnee_case_x, coordonnee_case_y, 3)
             if taille_bateau_restant[1] != 0: # s'il reste des parties non découvertes du bateau trouvé
-                print(f"Le bateau de taille {taille_bateau_restant[0]} a été touché il lui reste {taille_bateau_restant[1]} vie(s)")
+                #print(f"Le bateau de taille {taille_bateau_restant[0]} a été touché il lui reste {taille_bateau_restant[1]} vie(s)")
+                pass
             else: # si tout le bateau a été découvert
                 nb_bateaux_restant = plateau_joueur2.nb_bateau_restant()
-                print(f"Le bateau de taille {taille_bateau_restant[0]} a été coulé")
+                #print(f"Le bateau de taille {taille_bateau_restant[0]} a été coulé")
 
                 idx = taille_bateau_restant[0] - 1   
                 fenetre1.canva_ids[1].itemconfig(fenetre1.canva_text_ids[1][idx], text='× '+ str(plateau_joueur2.nb_bateau_restant_par_taille()[idx]))
@@ -951,14 +992,15 @@ while not fin_du_jeux:
                                       
 
                 if nb_bateaux_restant != 0: # s'il reste des bateaux
-                    print(f"Il reste {nb_bateaux_restant} bateau(x) en vie")
+                    #print(f"Il reste {nb_bateaux_restant} bateau(x) en vie")
+                    pass
                 else: # s'il n'y a plus de bateau restant
-                    print("Partie terminée, le joueur 1 a gagné")
+                    #print("Partie terminée, le joueur 1 a gagné")
                     joueur_perdu = 2
                     fin_du_jeux = True
         else: # une case vide
             plateau_joueur2.modifier_case(coordonnee_case_x, coordonnee_case_y, 1)
-            print("La case ne contient pas de bateaux")
+            #print("La case ne contient pas de bateaux")
             joueur = 2
 
     elif joueur == 2:
@@ -966,10 +1008,11 @@ while not fin_du_jeux:
             taille_bateau_restant = plateau_joueur1.enlever_case_bateau(coordonnee_case_x, coordonnee_case_y)
             plateau_joueur1.modifier_case(coordonnee_case_x, coordonnee_case_y, 3)
             if taille_bateau_restant[1] != 0: # s'il reste des parties non découvertes du bateau trouvé
-                print(f"Le bateau de taille {taille_bateau_restant[0]} a été touché il lui reste {taille_bateau_restant[1]} vie(s)")
+                #print(f"Le bateau de taille {taille_bateau_restant[0]} a été touché il lui reste {taille_bateau_restant[1]} vie(s)")
+                pass
             else: # si tout le bateau a été découvert
                 nb_bateaux_restant = plateau_joueur1.nb_bateau_restant()
-                print(f"Le bateau de taille {taille_bateau_restant[0]} a été coulé")
+                #print(f"Le bateau de taille {taille_bateau_restant[0]} a été coulé")
 
                 idx = taille_bateau_restant[0] - 1
                 fenetre1.canva_ids[0].itemconfig(fenetre1.canva_text_ids[0][idx], text='× '+ str(plateau_joueur1.nb_bateau_restant_par_taille()[idx]))
@@ -987,14 +1030,15 @@ while not fin_du_jeux:
 
 
                 if nb_bateaux_restant != 0: # s'il reste des bateaux
-                    print(f"Il reste {nb_bateaux_restant} bateau(x) en vie")
+                    #print(f"Il reste {nb_bateaux_restant} bateau(x) en vie")
+                    pass
                 else: # s'il n'y a plus de bateau restant
-                    print(f"Partie terminée, le joueur 2 a gagné")
+                    #print(f"Partie terminée, le joueur 2 a gagné")
                     joueur_perdu = 1
                     fin_du_jeux = True
         else: # une case vide
             plateau_joueur1.modifier_case(coordonnee_case_x, coordonnee_case_y, 1)
-            print("La case ne contient pas de bateaux")
+            #print("La case ne contient pas de bateaux")
             joueur = 1
 
 fenetre1.afficher_plateau(plateau_joueur2.plateau, True, False, 'gauche', False)
