@@ -668,7 +668,7 @@ class UI_menu:
             entry.grid(row=i+1, column=1, padx=20, pady=10, sticky='w')
             self.widgets.append(entry)
             self.form_nb_bateaux.append(entry)
-        bouton_valider = Button(self.fenetre_menu, text='Valider', command=self.valider_et_quitter, font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_valider = Button(self.fenetre_menu, text='Valider', command=self.valider_et_quitter, font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
         bouton_valider.grid(row=7, column=0, padx=20, pady=(30, 15), sticky='ew')
         bouton_valider.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
         bouton_valider.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
@@ -679,7 +679,6 @@ class UI_menu:
         bouton_retour.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
         self.widgets.append(bouton_retour)
         self.fenetre_menu.grid_columnconfigure(0, weight=1)
-        self.fenetre_menu.grid_columnconfigure(1, weight=1)
 
     def afficher_mode_jeu(self):
         self.clear_widgets()
@@ -1082,17 +1081,29 @@ vert = Image.new("RGBA", (480,480), (0, 255, 0, 120))
 rouge = Image.new("RGBA", (480,480), (255, 0, 0, 120))
 if joueur_perdu == 2:
     tk_vert = ImageTk.PhotoImage(vert, master=fenetre1.fenetre)
-    tk_rouge = ImageTk.PhotoImage(rouge, master=fenetre1.fenetre)
-    fenetre2.canva_gauche.create_image(1,1,image=tk_rouge, anchor=NW)
+    tk_rouge = ImageTk.PhotoImage(rouge, master=fenetre2.fenetre)
     fenetre1.canva_droite.create_image(1,1,image=tk_vert, anchor=NW)
-    fenetre2.canva_droite.create_image(1,1,image=tk_rouge, anchor=NW)
     fenetre1.canva_gauche.create_image(1,1,image=tk_vert, anchor=NW)
+    fenetre2.canva_droite.create_image(1,1,image=tk_rouge, anchor=NW)
+    fenetre2.canva_gauche.create_image(1,1,image=tk_rouge, anchor=NW)
+
+    fenetre1.canva_droite.create_text(238,238,text="GAGNÉ",font=('Helvetica', 100, 'bold'),fill="#ffffff",anchor='center')
+    fenetre1.canva_gauche.create_text(238,238,text="GAGNÉ",font=('Helvetica', 100, 'bold'),fill="#ffffff",anchor='center')
+    fenetre2.canva_droite.create_text(238,238,text="PERDU",font=('Helvetica', 100, 'bold'),fill="#ffffff",anchor='center')
+    fenetre2.canva_gauche.create_text(238,238,text="PERDU",font=('Helvetica', 100, 'bold'),fill="#ffffff",anchor='center')
 if joueur_perdu == 1:
-    tk_vert = ImageTk.PhotoImage(vert, master=fenetre1.fenetre)
+    tk_vert = ImageTk.PhotoImage(vert, master=fenetre2.fenetre)
     tk_rouge = ImageTk.PhotoImage(rouge, master=fenetre1.fenetre)
-    fenetre2.canva_gauche.create_image(1,1,image=tk_vert, anchor=NW)
+
     fenetre1.canva_droite.create_image(1,1,image=tk_rouge, anchor=NW)
-    fenetre2.canva_droite.create_image(1,1,image=tk_vert, anchor=NW)
     fenetre1.canva_gauche.create_image(1,1,image=tk_rouge, anchor=NW)
+    fenetre2.canva_droite.create_image(1,1,image=tk_vert, anchor=NW)
+    fenetre2.canva_gauche.create_image(1,1,image=tk_vert, anchor=NW)
+    
+    fenetre1.canva_droite.create_text(238,238,text="PERDU",font=('Helvetica', 100, 'bold'),fill="#ffffff",anchor='center')
+    fenetre1.canva_gauche.create_text(238,238,text="PERDU",font=('Helvetica', 100, 'bold'),fill="#ffffff",anchor='center')
+    fenetre2.canva_droite.create_text(238,238,text="GAGNÉ",font=('Helvetica', 100, 'bold'),fill="#ffffff",anchor='center')
+    fenetre2.canva_gauche.create_text(238,238,text="GAGNÉ",font=('Helvetica', 100, 'bold'),fill="#ffffff",anchor='center')
+    
 
 mainloop()
