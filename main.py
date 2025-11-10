@@ -740,8 +740,6 @@ def on_molette(event, fenetre, plateau, orientation, taille, position_canva, can
     fenetre.afficher_previsualisation(plateau, x_case, y_case, orientation[0], taille, position_canva, can_touch)
 
 def on_clique_droit(event, plateau, fenetre, canva_placement, text_ids):
-
-    
     x_case, y_case = fenetre.click_to_case(event.x, event.y)    #Converti les coordonnée de px en coordonnée de cases
     if plateau.plateau[x_case][y_case].type == 2:   #On regarde si la case cliquée est bien un bateau
         bateau_touche = [0,[0,0]]
@@ -761,7 +759,7 @@ def on_clique_droit(event, plateau, fenetre, canva_placement, text_ids):
         plateau.liste_bateaux_a_poser.append(taille_bateau)            #Mise à jour de la liste des bateaux à poser
 
         index = taille_bateau - 1
-        canva_placement.itemconfig(text_ids[index], text='× ' + str(plateau.liste_bateaux_a_poser.count(taille_bateau)))
+        canva_placement.itemconfig(text_ids[0][index], text='× ' + str(plateau.liste_bateaux_a_poser.count(taille_bateau)))
         return taille_bateau
     return None
 
