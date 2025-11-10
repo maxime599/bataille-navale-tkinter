@@ -523,7 +523,7 @@ class UI_game:
             self.croix_id = None
 
     def titre_information(self, parent, texte, row, column, taille):
-        grand_titre = Label(parent, text=texte, font=("Courier", taille), wraplength=280, justify='center')
+        grand_titre = Label(parent, text=texte, font=("Helvetica", taille), wraplength=280, justify='center')
         grand_titre.grid(row=row, column=column, padx=(0,3))
         self.titres.append(grand_titre)
 
@@ -613,11 +613,16 @@ class UI_menu:
         bouton_jouer.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
         bouton_jouer.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
         self.widgets.append(bouton_jouer)
-        bouton_parametre = Button(self.fenetre_menu, text='Paramètres', command=self.afficher_parametres, font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_parametre = Button(self.fenetre_menu, text='Paramètres', command=self.afficher_parametres, font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
         bouton_parametre.grid(row=2, column=0, padx=50, pady=15, sticky='ew')
-        bouton_parametre.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
-        bouton_parametre.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
+        bouton_parametre.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
+        bouton_parametre.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
         self.widgets.append(bouton_parametre)
+        bouton_quitter = Button(self.fenetre_menu, text='Quitter', command=self.quitter_fenetre, font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_quitter.grid(row=3, column=0, padx=50, pady=15, sticky='ew')
+        bouton_quitter.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
+        bouton_quitter.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
+        self.widgets.append(bouton_quitter)
         self.fenetre_menu.grid_columnconfigure(0, weight=1)
 
         """bouton_credits = Button(self.fenetre_menu, text='Crédits', command=self.afficher_credits)
@@ -702,6 +707,9 @@ class UI_menu:
     def valider_et_quitter(self):
         self.dico_bateaux_a_poser = self.recuperer_taille_bateaux()
         self.afficher_menu_principal()
+
+    def quitter_fenetre(self):
+        self.fenetre_menu.destroy()
 
     def recuperer_taille_bateaux(self):
         #On test si les valeurs rentrées par l'utilisateur sont valides
