@@ -656,16 +656,26 @@ class UI_menu:
     def afficher_fenetre_nb_bateaux(self):
         self.clear_widgets()
         self.fenetre_menu.configure(bg=self.couleur_fond)
-        label = Label(self.fenetre_menu, text="Nombre de bateaux de chaque taille", font=('Helvetica', 24, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=30)
+        label = Label(self.fenetre_menu, text="Nombre de bateaux de chaque taille", font=('Helvetica', 24, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=30, wraplength=320)
         label.grid(row=0, column=0, columnspan=2, padx=50, pady=(30, 20))
         self.widgets.append(label)
         self.form_nb_bateaux = []
+        self.valeurs_initiales = []
         for i in range(5):
             label_bateau = Label(self.fenetre_menu, text=f'Nombre de bateau de taille {i+1}', font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte)
-            label_bateau.grid(row=i+1, column=0, padx=20, pady=10, sticky='e')
+            label_bateau.grid(row=i+1, column=0, padx=20, pady=10, sticky='w')
             self.widgets.append(label_bateau)
             entry = Entry(self.fenetre_menu, font=('Helvetica', 12), bg="#ffffff", fg=self.couleur_texte, relief='flat', bd=2, highlightthickness=1, highlightbackground=self.couleur_accent, highlightcolor=self.couleur_accent)
             entry.grid(row=i+1, column=1, padx=20, pady=10, sticky='w')
+            valeurs_defaut = [0, 1, 2, 1, 1]
+            cle = i + 1
+            if cle in self.dico_bateaux_a_poser:
+                valeur = self.dico_bateaux_a_poser[cle]
+            else:
+                valeur = valeurs_defaut[i]
+            valeur_actuelle = str(valeur)
+            entry.insert(0, valeur_actuelle)
+            self.valeurs_initiales.append(valeur_actuelle)
             self.widgets.append(entry)
             self.form_nb_bateaux.append(entry)
         bouton_valider = Button(self.fenetre_menu, text='Valider', command=self.valider_et_quitter, font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
@@ -673,7 +683,7 @@ class UI_menu:
         bouton_valider.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
         bouton_valider.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
         self.widgets.append(bouton_valider)
-        bouton_retour = Button(self.fenetre_menu, text='Retour', command=self.afficher_parametres, font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_retour = Button(self.fenetre_menu, text='Retour', command=self.verifier_modifications, font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
         bouton_retour.grid(row=7, column=1, padx=20, pady=(30, 15), sticky='ew')
         bouton_retour.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
         bouton_retour.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
@@ -711,23 +721,54 @@ class UI_menu:
         self.fenetre_menu.destroy()
 
     def recuperer_taille_bateaux(self):
-        #On test si les valeurs rentrées par l'utilisateur sont valides
         try:
             nb_bateaux_1 = int(self.form_nb_bateaux[0].get())
             nb_bateaux_2 = int(self.form_nb_bateaux[1].get())
             nb_bateaux_3 = int(self.form_nb_bateaux[2].get())
             nb_bateaux_4 = int(self.form_nb_bateaux[3].get())
             nb_bateaux_5 = int(self.form_nb_bateaux[4].get())
-        #sinon on met des valeurs par défaut
+            if nb_bateaux_1 == 0 and nb_bateaux_2 == 0 and nb_bateaux_3 == 0 and nb_bateaux_4 == 0 and nb_bateaux_5 == 0:
+                nb_bateaux_1 = 0
+                nb_bateaux_2 = 1
+                nb_bateaux_3 = 2
+                nb_bateaux_4 = 1
+                nb_bateaux_5 = 1
         except:
             nb_bateaux_1 = 0
             nb_bateaux_2 = 1
             nb_bateaux_3 = 2
             nb_bateaux_4 = 1
             nb_bateaux_5 = 1
-
-
         return {1 : nb_bateaux_1, 2 : nb_bateaux_2, 3 : nb_bateaux_3, 4 : nb_bateaux_4, 5 : nb_bateaux_5}
+    
+    def verifier_modifications(self):
+        modifications = False
+        for i, entry in enumerate(self.form_nb_bateaux):
+            if entry.get() != self.valeurs_initiales[i]:
+                modifications = True
+        if modifications:
+            self.afficher_popup_confirmation()
+        else:
+            self.afficher_parametres()
+
+    def afficher_popup_confirmation(self):
+        overlay = Frame(self.fenetre_menu, bg="#00233e")
+        overlay.place(x=0, y=0, relwidth=1, relheight=1)
+        self.widgets.append(overlay)
+        popup_frame = Frame(overlay, bg="#ffffff", relief='solid', bd=3, highlightbackground=self.couleur_accent, highlightthickness=3)
+        popup_frame.place(relx=0.5, rely=0.5, anchor='center', width=400, height=200)
+        label_popup = Label(popup_frame, text="Des modifications ont été détectées.\nVoulez-vous enregistrer les changements ?", font=('Helvetica', 12), bg="#ffffff", fg=self.couleur_texte, pady=30, wraplength=350)
+        label_popup.pack()
+        frame_boutons = Frame(popup_frame, bg="#ffffff")
+        frame_boutons.pack(pady=10)
+        bouton_oui = Button(frame_boutons, text='Oui', command=lambda: [overlay.destroy(), self.valider_et_quitter()], font=('Helvetica', 12, 'bold'), bg=self.couleur_accent, fg="#ffffff", relief='flat', bd=0, padx=30, pady=10, cursor='hand2')
+        bouton_oui.pack(side='left', padx=10)
+        bouton_oui.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
+        bouton_oui.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
+        bouton_non = Button(frame_boutons, text='Non', command=lambda: [overlay.destroy(), self.afficher_parametres()], font=('Helvetica', 12, 'bold'), bg="#b0bec5", fg=self.couleur_texte, relief='flat', bd=0, padx=30, pady=10, cursor='hand2')
+        bouton_non.pack(side='left', padx=10)
+        bouton_non.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
+        bouton_non.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
 
     def jouer_contre_ia(self):
         self.mode_jeu = '2_je'
@@ -774,17 +815,10 @@ def on_clique_droit(event, plateau, fenetre, canva_placement, text_ids):
 
 
 
-
-
-dico_bateaux_a_poser = {}
-
-
-
 menu = UI_menu()
 option_can_touch = menu.can_touch.get()
 option_voir_cibles_adverses = menu.voir_cibles_adverses.get()
 afficher_croix = False if option_can_touch == True else True
-dico_bateaux_a_poser = menu.dico_bateaux_a_poser
 mode_jeu = menu.mode_jeu
 
 plateau_joueur1 = Plateau()
@@ -800,17 +834,12 @@ fenetre2.afficher_plateau(plateau_joueur2.plateau, option_voir_cibles_adverses, 
 if mode_jeu != '2_j':
     fenetre2.fenetre.withdraw()
 
-#On met des valeurs par défaut si le joueur ferme la fenêtre
-if dico_bateaux_a_poser == {}:
-    plateau_joueur1.liste_bateaux_a_poser = [2,3,3,4,5]
-    plateau_joueur2.liste_bateaux_a_poser = [2,3,3,4,5]
-    dico_bateaux_a_poser = {1:0,2:1,3:2,4:1,5:1}
-else:
-    liste_bateaux_a_poser = []
-    for clef in dico_bateaux_a_poser:
-        for i in range(dico_bateaux_a_poser[clef]):
-            plateau_joueur1.liste_bateaux_a_poser.append(clef)
-            plateau_joueur2.liste_bateaux_a_poser.append(clef)
+dico_bateaux_a_poser = menu.dico_bateaux_a_poser
+liste_bateaux_a_poser = []
+for clef in dico_bateaux_a_poser:
+    for i in range(dico_bateaux_a_poser[clef]):
+        plateau_joueur1.liste_bateaux_a_poser.append(clef)
+        plateau_joueur2.liste_bateaux_a_poser.append(clef)
 
 
 fenetre1.titre_information(fenetre1.fenetre,"C'est à vous de poser les bateaux",1,22,15)
