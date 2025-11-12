@@ -129,18 +129,19 @@ class Plateau:
 
         elif orientation == 1:
             #on regarde si les trois cases en haut et en bas du bateau sont déja pleines ou non
-            for i in range(-1, 2):
-                try:
-                    if self.plateau[coordonees_x-1][coordonees_y+i].type != 0  and coordonees_x-1>=0 and coordonees_y+i>=0:
-                        return False
-                except:
-                    pass
-                
-                try:
-                    if self.plateau[coordonees_x+taille][coordonees_y+i].type != 0  and coordonees_x+taille>=0 and coordonees_y+i>=0:
-                        return False
-                except:
-                    pass
+            if not can_touch:
+                for i in range(-1, 2):
+                    try:
+                        if self.plateau[coordonees_x-1][coordonees_y+i].type != 0  and coordonees_x-1>=0 and coordonees_y+i>=0:
+                            return False
+                    except:
+                        pass
+                    
+                    try:
+                        if self.plateau[coordonees_x+taille][coordonees_y+i].type != 0  and coordonees_x+taille>=0 and coordonees_y+i>=0:
+                            return False
+                    except:
+                        pass
             for i in range(coordonees_x, coordonees_x+taille):
                 if i >= 10:
                     return False
@@ -831,7 +832,7 @@ def on_molette(event, fenetre, plateau, orientation, taille, position_canva, can
     x_case, y_case = fenetre.click_to_case(event.x, event.y)
     fenetre.afficher_previsualisation(plateau, x_case, y_case, orientation[0], taille, position_canva, can_touch)
 
-def on_clique_droit(event, plateau, fenetre, canva_placement, text_ids):
+def on_clique_droit(event, plateau, fenetre, canva_placement, text_ids, afficher_croix):
     x_case, y_case = fenetre.click_to_case(event.x, event.y)    #Converti les coordonnée de px en coordonnée de cases
     if plateau.plateau[x_case][y_case].type == 2:   #On regarde si la case cliquée est bien un bateau
         bateau_touche = [0,[0,0]]
@@ -847,7 +848,7 @@ def on_clique_droit(event, plateau, fenetre, canva_placement, text_ids):
         for case_a_supprimer in bateau_touche[1]:
             plateau.plateau[case_a_supprimer[0]][case_a_supprimer[1]].type = 0
 
-        fenetre.afficher_plateau(plateau.plateau, True, True, 'droit', True) #Mise à jour de l'affichage
+        fenetre.afficher_plateau(plateau.plateau, True, True, 'droit', afficher_croix) #Mise à jour de l'affichage
         plateau.liste_bateaux_a_poser.append(taille_bateau)            #Mise à jour de la liste des bateaux à poser
 
         index = taille_bateau - 1
@@ -861,6 +862,10 @@ def on_clique_droit(event, plateau, fenetre, canva_placement, text_ids):
 
 menu = UI_menu()
 option_can_touch = menu.can_touch.get()
+if option_can_touch == True:
+    afficher_croix = False
+else:
+    afficher_croix = True
 option_voir_cibles_adverses = menu.voir_cibles_adverses.get()
 afficher_croix = False if option_can_touch == True else True
 mode_jeu = menu.mode_jeu
@@ -932,12 +937,12 @@ for joueur in liste_joueur_humain:
             if joueur == 1:
                 fenetre1.canva_droite.bind("<Motion>", lambda event: on_mouvement(event, fenetre1, plateau_joueur1, orientation[0], taille, 'droite', option_can_touch))
                 fenetre1.canva_droite.bind("<MouseWheel>", lambda event: on_molette(event, fenetre1, plateau_joueur1, orientation, taille, 'droite', option_can_touch))
-                fenetre1.canva_droite.bind("<Button-3>", lambda event: on_clique_droit(event, plateau_joueur1, fenetre1, fenetre1.bloc_canva_var, fenetre1.canva_text_ids))
+                fenetre1.canva_droite.bind("<Button-3>", lambda event: on_clique_droit(event, plateau_joueur1, fenetre1, fenetre1.bloc_canva_var, fenetre1.canva_text_ids, afficher_croix))
 
             else:
                 fenetre2.canva_droite.bind("<Motion>", lambda event: on_mouvement(event, fenetre2, plateau_joueur2, orientation[0], taille, 'droite', option_can_touch))
                 fenetre2.canva_droite.bind("<MouseWheel>", lambda event: on_molette(event, fenetre2, plateau_joueur2, orientation, taille, 'droite', option_can_touch))
-                fenetre2.canva_droite.bind("<Button-3>", lambda event: on_clique_droit(event, plateau_joueur2, fenetre2, fenetre2.bloc_canva_var, fenetre2.canva_text_ids))
+                fenetre2.canva_droite.bind("<Button-3>", lambda event: on_clique_droit(event, plateau_joueur2, fenetre2, fenetre2.bloc_canva_var, fenetre2.canva_text_ids, afficher_croix))
 
             if joueur == 1:
                 coordonnee_case = fenetre1.attendre_click_case()
