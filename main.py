@@ -586,12 +586,18 @@ class UI_menu:
         self.fenetre_menu = Tk()
         self.can_touch = BooleanVar(value=False)
         self.voir_cibles_adverses = BooleanVar(value=True)
+        self.volume_voix = DoubleVar(value=75)
+        self.volume_musique = DoubleVar(value=50)
         self.fenetre_menu.title("Bataille navale")
         self.widgets = []
         self.couleur_fond = "#ffffff"
         self.couleur_accent = "#42a5f5"
         self.couleur_texte = "#01579b"
         self.couleur_survol = "#90caf9"
+        self.img_hp_0 = PhotoImage(file='sons/icones_son/haut-parleur_0_crop.png')
+        self.img_hp_1 = PhotoImage(file='sons/icones_son/haut-parleur_1_crop.png')
+        self.img_hp_2 = PhotoImage(file='sons/icones_son/haut-parleur_2_crop.png')
+        self.img_hp_3 = PhotoImage(file='sons/icones_son/haut-parleur_3_crop.png')
         self.afficher_menu_principal()
         self.fenetre_menu.mainloop()
 
@@ -655,8 +661,14 @@ class UI_menu:
         bouton_bateaux.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
         self.widgets.append(bouton_bateaux)
 
+        bouton_son = Button(self.fenetre_menu, text='Volume', command=self.afficher_volume, font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_son.grid(row=4, column=0, padx=50, pady=15, sticky='ew')
+        bouton_son.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
+        bouton_son.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
+        self.widgets.append(bouton_son)
+
         bouton_retour = Button(self.fenetre_menu, text='Retour', command=self.afficher_menu_principal, font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
-        bouton_retour.grid(row=4, column=0, padx=50, pady=15, sticky='ew')
+        bouton_retour.grid(row=5, column=0, padx=50, pady=15, sticky='ew')
         bouton_retour.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
         bouton_retour.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
         self.widgets.append(bouton_retour)
@@ -702,6 +714,97 @@ class UI_menu:
         bouton_retour.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
         self.widgets.append(bouton_retour)
         self.fenetre_menu.grid_columnconfigure(0, weight=1)
+
+    def afficher_volume(self):
+        self.clear_widgets()
+        self.fenetre_menu.configure(bg=self.couleur_fond)
+        label_text_principal_volume = Label(self.fenetre_menu, text='Volume', font=('Helvetica', 32, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=40)
+        label_text_principal_volume.grid(row=0, column=0, columnspan=2, padx=50, pady=(30, 20))
+        self.widgets.append(label_text_principal_volume)
+
+        label_voix = Label(self.fenetre_menu, text='Volume des voix', font=('Helvetica', 14, 'bold'), bg=self.couleur_fond, fg=self.couleur_texte, pady=10)
+        label_voix.grid(row=1, column=0, columnspan=2, padx=50, pady=(20, 5))
+        self.widgets.append(label_voix)
+
+        self.label_hp_voix = Label(self.fenetre_menu, image=self.img_hp_3, bg=self.couleur_fond, cursor='hand2')
+        self.label_hp_voix.grid(row=2, column=0, padx=(50, 10), pady=10)
+        self.label_hp_voix.bind("<Button-1>", lambda e: self.toggle_mute_voix())
+        self.widgets.append(self.label_hp_voix)
+
+        frame_scale_voix = Frame(self.fenetre_menu, bg='#ffffff', relief='raised', bd=3, highlightbackground=self.couleur_accent, highlightthickness=2)
+        frame_scale_voix.grid(row=2, column=1, padx=(10, 50), pady=10)
+        self.widgets.append(frame_scale_voix)
+
+        scale_volume_voix = Scale(frame_scale_voix, variable=self.volume_voix, from_=0, to=100, length=320, orient='horizontal', font=('Helvetica', 11, 'bold'), bg='#ffffff', fg=self.couleur_texte, troughcolor=self.couleur_accent, activebackground=self.couleur_survol, highlightthickness=0, cursor='hand2', relief='sunken', bd=2, sliderrelief='raised', width=20, command=lambda v: self.update_icon_voix())
+        scale_volume_voix.pack(padx=10, pady=10)
+        self.widgets.append(scale_volume_voix)
+
+        label_musique = Label(self.fenetre_menu, text='Volume de la musique', font=('Helvetica', 14, 'bold'), bg=self.couleur_fond, fg=self.couleur_texte, pady=10)
+        label_musique.grid(row=3, column=0, columnspan=2, padx=50, pady=(20, 5))
+        self.widgets.append(label_musique)
+
+        self.label_hp_musique = Label(self.fenetre_menu, image=self.img_hp_3, bg=self.couleur_fond, cursor='hand2')
+        self.label_hp_musique.grid(row=4, column=0, padx=(50, 10), pady=10)
+        self.label_hp_musique.bind("<Button-1>", lambda e: self.toggle_mute_musique())
+        self.widgets.append(self.label_hp_musique)
+
+        frame_scale_musique = Frame(self.fenetre_menu, bg='#ffffff', relief='raised', bd=3, highlightbackground=self.couleur_accent, highlightthickness=2)
+        frame_scale_musique.grid(row=4, column=1, padx=(10, 50), pady=10)
+        self.widgets.append(frame_scale_musique)
+
+        scale_volume_musique = Scale(frame_scale_musique, variable=self.volume_musique, from_=0, to=100, length=320, orient='horizontal', font=('Helvetica', 11, 'bold'), bg='#ffffff', fg=self.couleur_texte, troughcolor=self.couleur_accent, activebackground=self.couleur_survol, highlightthickness=0, cursor='hand2', relief='sunken', bd=2, sliderrelief='raised', width=20, command=lambda v: self.update_icon_musique())
+        scale_volume_musique.pack(padx=10, pady=10)
+        self.widgets.append(scale_volume_musique)
+
+        bouton_retour = Button(self.fenetre_menu, text='Retour', command=self.afficher_parametres, font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_retour.grid(row=5, column=0, columnspan=2, padx=50, pady=(30, 15), sticky='ew')
+        bouton_retour.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
+        bouton_retour.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
+        self.widgets.append(bouton_retour)
+
+        self.fenetre_menu.grid_columnconfigure(1, weight=1)
+        self.volume_voix_avant_mute = self.volume_voix.get()
+        self.volume_musique_avant_mute = self.volume_musique.get()
+        self.update_icon_voix()
+        self.update_icon_musique()
+
+    def update_icon_voix(self):
+        volume = self.volume_voix.get()
+        if volume == 0:
+            self.label_hp_voix.config(image=self.img_hp_0)
+        elif volume <= 33:
+            self.label_hp_voix.config(image=self.img_hp_1)
+        elif volume <= 66:
+            self.label_hp_voix.config(image=self.img_hp_2)
+        else:
+            self.label_hp_voix.config(image=self.img_hp_3)
+
+    def update_icon_musique(self):
+        volume = self.volume_musique.get()
+        if volume == 0:
+            self.label_hp_musique.config(image=self.img_hp_0)
+        elif volume <= 33:
+            self.label_hp_musique.config(image=self.img_hp_1)
+        elif volume <= 66:
+            self.label_hp_musique.config(image=self.img_hp_2)
+        else:
+            self.label_hp_musique.config(image=self.img_hp_3)
+
+    def toggle_mute_voix(self):
+        if self.volume_voix.get() == 0:
+            self.volume_voix.set(self.volume_voix_avant_mute)
+        else:
+            self.volume_voix_avant_mute = self.volume_voix.get()
+            self.volume_voix.set(0)
+        self.update_icon_voix()
+
+    def toggle_mute_musique(self):
+        if self.volume_musique.get() == 0:
+            self.volume_musique.set(self.volume_musique_avant_mute)
+        else:
+            self.volume_musique_avant_mute = self.volume_musique.get()
+            self.volume_musique.set(0)
+        self.update_icon_musique()
 
     def afficher_mode_jeu(self):
         self.clear_widgets()
@@ -889,7 +992,6 @@ for clef in dico_bateaux_a_poser:
     for i in range(dico_bateaux_a_poser[clef]):
         plateau_joueur1.liste_bateaux_a_poser.append(clef)
         plateau_joueur2.liste_bateaux_a_poser.append(clef)
-print(dico_bateaux_a_poser,plateau_joueur1.liste_bateaux_a_poser)
 
 fenetre1.titre_information(fenetre1.fenetre,"C'est à vous de poser les bateaux",1,22,15)
 fenetre1.bloc_canva(fenetre1.fenetre, "Vos bateaux à poser", '× ', plateau_joueur1.nb_bateau_restant_a_pose_par_taille(), 2, 22, "bleu")
