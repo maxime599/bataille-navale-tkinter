@@ -590,7 +590,7 @@ class UI_menu:
         self.can_touch = BooleanVar(value=False)
         self.voir_cibles_adverses = BooleanVar(value=True)
         self.volume_voix = DoubleVar(value=75)
-        self.volume_musique = DoubleVar(value=50)
+        self.volume_musique = DoubleVar(value=20)
         self.fenetre_menu.title("Bataille navale")
         self.widgets = []
         self.couleur_fond = "#ffffff"
@@ -968,9 +968,11 @@ def on_clique_droit(event, plateau, fenetre, canva_placement, text_ids, afficher
 
 menu = UI_menu()
 
+volume_musique = menu.volume_musique.get()*0.01
+volume_voix = menu.volume_voix.get()*0.01
 pygame.mixer.init()
 son = pygame.mixer.Sound("Sons/musics/DEAF KEV - Invincible [NCS Release].mp3")
-son.set_volume(0.3)
+son.set_volume(volume_musique)
 son.play(loops=-1)
 
 option_can_touch = menu.can_touch.get()
@@ -1195,10 +1197,12 @@ while not fin_du_jeux:
             if taille_bateau_restant[1] != 0: # s'il reste des parties non découvertes du bateau trouvé
                 #print(f"Le bateau de taille {taille_bateau_restant[0]} a été touché il lui reste {taille_bateau_restant[1]} vie(s)")
                 son = pygame.mixer.Sound("Sons/Un bateau à été touché !.mp3")
+                son.set_volume(volume_voix)
                 son.play()
             else: # si tout le bateau a été découvert
                 nb_bateaux_restant = plateau_joueur2.nb_bateau_restant()
                 son_bateaux_coule = pygame.mixer.Sound(f"Sons/Le bateau de taille n a été coulé !/Le bateau de taille {taille_bateau_restant[0]} a été coulé !.mp3")
+                son_bateaux_coule.set_volume(volume_voix)
                 channel = son_bateaux_coule.play()
                 #print(f"Le bateau de taille {taille_bateau_restant[0]} a été coulé")
 
@@ -1217,10 +1221,12 @@ while not fin_du_jeux:
 
                 if nb_bateaux_restant != 0: # s'il reste des bateaux
                     son_nb_bateaux_en_vie = pygame.mixer.Sound(f"Sons/Il reste n bateau(x) en vie/Il reste {nb_bateaux_restant} bateau(x) en vie.mp3")
+                    son_nb_bateaux_en_vie.set_volume(volume_voix)
                     channel.queue(son_nb_bateaux_en_vie)
                     pass
                 else: # s'il n'y a plus de bateau restant
                     son = pygame.mixer.Sound("Sons/Partie terminée, le joueur n°n gagne !/Partie terminée, le joueur n°1 gagne !.mp3")
+                    son.set_volume(volume_voix)
                     son.play()                    
                     #print("Partie terminée, le joueur 1 a gagné")
                     joueur_perdu = 2
@@ -1237,10 +1243,12 @@ while not fin_du_jeux:
             if taille_bateau_restant[1] != 0: # s'il reste des parties non découvertes du bateau trouvé
                 #print(f"Le bateau de taille {taille_bateau_restant[0]} a été touché il lui reste {taille_bateau_restant[1]} vie(s)")
                 son = pygame.mixer.Sound("Sons/Un bateau à été touché !.mp3")
+                son.set_volume(volume_voix)
                 son.play()
             else: # si tout le bateau a été découvert
                 nb_bateaux_restant = plateau_joueur2.nb_bateau_restant()
                 son_bateaux_coule = pygame.mixer.Sound(f"Sons/Le bateau de taille n a été coulé !/Le bateau de taille {taille_bateau_restant[0]} a été coulé !.mp3")
+                son_bateaux_coule.set_volume(volume_voix)
                 channel = son_bateaux_coule.play()
                 idx = taille_bateau_restant[0] - 1
                 fenetre1.canva_ids[0].itemconfig(fenetre1.canva_text_ids[0][idx], text='× '+ str(plateau_joueur1.nb_bateau_restant_par_taille()[idx]))
@@ -1259,12 +1267,14 @@ while not fin_du_jeux:
 
                 if nb_bateaux_restant != 0: # s'il reste des bateaux
                     son_nb_bateaux_en_vie = pygame.mixer.Sound(f"Sons/Il reste n bateau(x) en vie/Il reste {nb_bateaux_restant} bateau(x) en vie.mp3")
+                    son_nb_bateaux_en_vie.set_volume(volume_voix)
                     channel.queue(son_nb_bateaux_en_vie)                   
                     #print(f"Il reste {nb_bateaux_restant} bateau(x) en vie")
                     pass
                 else: # s'il n'y a plus de bateau restant
                     #print(f"Partie terminée, le joueur 2 a gagné")
                     son = pygame.mixer.Sound("Sons/Partie terminée, le joueur n°n gagne !/Partie terminée, le joueur n°2 gagne !.mp3")
+                    son.set_volume(volume_voix)
                     son.play() 
                     joueur_perdu = 1
                     fin_du_jeux = True
