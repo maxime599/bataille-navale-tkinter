@@ -864,7 +864,12 @@ def on_clique_droit(event, plateau, fenetre, canva_placement, text_ids, afficher
 
 
 menu = UI_menu()
+
 pygame.mixer.init()
+son = pygame.mixer.Sound("Sons/musics/DEAF KEV - Invincible [NCS Release].mp3")
+son.set_volume(0.3)
+son.play(loops=-1)
+
 option_can_touch = menu.can_touch.get()
 if option_can_touch == True:
     afficher_croix = False
