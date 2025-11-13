@@ -71,7 +71,6 @@ class Plateau:
         if orientation_bateau != None:
             self.plateau[coordonees_x][coordonees_y].orientation_bateau = orientation_bateau
            
-    
     def cible_case(self, coordonees_x, coordonees_y):
         # retourne True si est un bateau est présent
         if self.plateau[coordonees_x][coordonees_y].type == 2 or self.plateau[coordonees_x][coordonees_y].type == 5:
@@ -79,7 +78,6 @@ class Plateau:
         else:
             return False
 
-      
     def is_possible_cible(self, coordonees_x, coordonees_y):
         # retourne True si c'est possible de cibler la case
         if coordonees_x>9 or coordonees_x<0 or coordonees_y>9 or coordonees_y<0:
@@ -89,7 +87,6 @@ class Plateau:
                 return False
             else :
                 return True
-
 
     def ajouter_bateau(self, coordonees_x, coordonees_y, orientation, taille, can_touch, juste_test_possible = False): #orientation = 0 -> droite, 1 -> bas
         #Ajoute renvoir True ou False si l'ajout est possible, et si oui l'ajoute
@@ -588,7 +585,7 @@ class Case:
 
 class UI_menu:
     def __init__(self):
-        self.dico_bateaux_a_poser = {}
+        self.dico_bateaux_a_poser = {1:0, 2:1, 3:2, 4:1, 5:1}
         self.fenetre_menu = Tk()
         self.can_touch = BooleanVar(value=False)
         self.voir_cibles_adverses = BooleanVar(value=True)
@@ -609,47 +606,58 @@ class UI_menu:
     def afficher_menu_principal(self):
         self.clear_widgets()
         self.fenetre_menu.configure(bg=self.couleur_fond)
+
         label_text_principal_menu = Label(self.fenetre_menu, text='Bataille navale', font=('Helvetica', 32, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=40)
         label_text_principal_menu.grid(row=0, column=0, padx=50, pady=(30, 20))
         self.widgets.append(label_text_principal_menu)
+        
         bouton_jouer = Button(self.fenetre_menu, text='Jouer', command=self.afficher_mode_jeu, font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
         bouton_jouer.grid(row=1, column=0, padx=50, pady=15, sticky='ew')
         bouton_jouer.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
         bouton_jouer.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
         self.widgets.append(bouton_jouer)
+
         bouton_parametre = Button(self.fenetre_menu, text='Paramètres', command=self.afficher_parametres, font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
         bouton_parametre.grid(row=2, column=0, padx=50, pady=15, sticky='ew')
         bouton_parametre.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
         bouton_parametre.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
         self.widgets.append(bouton_parametre)
+
+        bouton_credits = Button(self.fenetre_menu, text='Crédits', command=self.afficher_credits, font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_credits.grid(row=3, column=0, padx=50, pady=15, sticky='ew')
+        bouton_credits.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
+        bouton_credits.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
+        self.widgets.append(bouton_credits)
+
         bouton_quitter = Button(self.fenetre_menu, text='Quitter', command=self.quitter_fenetre, font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
-        bouton_quitter.grid(row=3, column=0, padx=50, pady=15, sticky='ew')
+        bouton_quitter.grid(row=4, column=0, padx=50, pady=15, sticky='ew')
         bouton_quitter.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
         bouton_quitter.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
         self.widgets.append(bouton_quitter)
         self.fenetre_menu.grid_columnconfigure(0, weight=1)
 
-        """bouton_credits = Button(self.fenetre_menu, text='Crédits', command=self.afficher_credits)
-        bouton_credits.grid(row=3, column=0, padx=0, pady=0)
-        self.widgets.append(bouton_credits)"""
-
     def afficher_parametres(self):
         self.clear_widgets()
         self.fenetre_menu.configure(bg=self.couleur_fond)
+
         label_text_principal_parametres = Label(self.fenetre_menu, text='Paramètres', font=('Helvetica', 32, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=40)
         label_text_principal_parametres.grid(row=0, column=0, padx=50, pady=(30, 20))
         self.widgets.append(label_text_principal_parametres)
+
         check_can_touch = Checkbutton(self.fenetre_menu, text="Autoriser les bateaux à se toucher", variable=self.can_touch, font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte, selectcolor=self.couleur_fond, activebackground=self.couleur_fond, activeforeground=self.couleur_texte, cursor='hand2')
         check_can_touch.grid(row=1, column=0, padx=50, pady=15)
         self.widgets.append(check_can_touch)
+
         check_voir_cibles_adverses = Checkbutton(self.fenetre_menu, text="Voir les cibles adverses", variable=self.voir_cibles_adverses, font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte, selectcolor=self.couleur_fond, activebackground=self.couleur_fond, activeforeground=self.couleur_texte, cursor='hand2')
         check_voir_cibles_adverses.grid(row=2, column=0, padx=50, pady=15)
         self.widgets.append(check_voir_cibles_adverses)
+
         bouton_bateaux = Button(self.fenetre_menu, text='Nombres de bateaux', command=self.afficher_fenetre_nb_bateaux, font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
         bouton_bateaux.grid(row=3, column=0, padx=50, pady=15, sticky='ew')
         bouton_bateaux.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
         bouton_bateaux.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
         self.widgets.append(bouton_bateaux)
+
         bouton_retour = Button(self.fenetre_menu, text='Retour', command=self.afficher_menu_principal, font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
         bouton_retour.grid(row=4, column=0, padx=50, pady=15, sticky='ew')
         bouton_retour.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
@@ -660,9 +668,11 @@ class UI_menu:
     def afficher_fenetre_nb_bateaux(self):
         self.clear_widgets()
         self.fenetre_menu.configure(bg=self.couleur_fond)
+
         label = Label(self.fenetre_menu, text="Nombre de bateaux de chaque taille", font=('Helvetica', 24, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=30, wraplength=320)
         label.grid(row=0, column=0, columnspan=2, padx=50, pady=(30, 20))
         self.widgets.append(label)
+
         self.form_nb_bateaux = []
         self.valeurs_initiales = []
         for i in range(5):
@@ -682,11 +692,13 @@ class UI_menu:
             self.valeurs_initiales.append(valeur_actuelle)
             self.widgets.append(entry)
             self.form_nb_bateaux.append(entry)
+
         bouton_valider = Button(self.fenetre_menu, text='Valider', command=self.valider_et_quitter, font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
         bouton_valider.grid(row=7, column=0, padx=20, pady=(30, 15), sticky='ew')
         bouton_valider.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
         bouton_valider.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
         self.widgets.append(bouton_valider)
+
         bouton_retour = Button(self.fenetre_menu, text='Retour', command=self.verifier_modifications, font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
         bouton_retour.grid(row=7, column=1, padx=20, pady=(30, 15), sticky='ew')
         bouton_retour.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
@@ -715,6 +727,38 @@ class UI_menu:
         bouton_retour.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
         bouton_retour.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
         self.widgets.append(bouton_retour)
+        self.fenetre_menu.grid_columnconfigure(0, weight=1)
+
+    def afficher_credits(self):
+        self.clear_widgets()
+        self.fenetre_menu.configure(bg=self.couleur_fond)
+
+        label_text_principal_credits = Label(self.fenetre_menu, text='Crédits', font=('Helvetica', 32, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=40)
+        label_text_principal_credits.grid(row=0, column=0, padx=50, pady=(30, 20))
+        self.widgets.append(label_text_principal_credits)
+
+        frame_scrollbar = Frame(self.fenetre_menu, bg=self.couleur_fond)
+        frame_scrollbar.grid(row=1, column=0, padx=50, pady=15, sticky='nsew')
+        self.widgets.append(frame_scrollbar)
+
+        scrollbar = Scrollbar(frame_scrollbar)
+        scrollbar.pack(side='right', fill='y')
+        text_credits = Text(frame_scrollbar, wrap='word', yscrollcommand=scrollbar.set, font=('Helvetica', 11), bg="#ffffff", fg=self.couleur_texte, relief='flat', padx=20, pady=20)
+        text_credits.pack(side='left', fill='both', expand=True)
+        scrollbar.config(command=text_credits.yview)
+        self.widgets.append(scrollbar)
+        self.widgets.append(text_credits)
+        with open('bataille_des_mers_eternelles.md', 'r', encoding='utf-8') as f:
+            contenu = f.read()
+            text_credits.insert('1.0', contenu)
+            text_credits.config(state='disabled')
+        
+        bouton_retour = Button(self.fenetre_menu, text='Retour', command=self.afficher_menu_principal, font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_retour.grid(row=2, column=0, padx=50, pady=15, sticky='ew')
+        bouton_retour.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
+        bouton_retour.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
+        self.widgets.append(bouton_retour)
+        self.fenetre_menu.grid_rowconfigure(1, weight=1)
         self.fenetre_menu.grid_columnconfigure(0, weight=1)
 
     def valider_et_quitter(self):
@@ -849,7 +893,7 @@ for clef in dico_bateaux_a_poser:
     for i in range(dico_bateaux_a_poser[clef]):
         plateau_joueur1.liste_bateaux_a_poser.append(clef)
         plateau_joueur2.liste_bateaux_a_poser.append(clef)
-
+print(dico_bateaux_a_poser,plateau_joueur1.liste_bateaux_a_poser)
 
 fenetre1.titre_information(fenetre1.fenetre,"C'est à vous de poser les bateaux",1,22,15)
 fenetre1.bloc_canva(fenetre1.fenetre, "Vos bateaux à poser", '× ', plateau_joueur1.nb_bateau_restant_a_pose_par_taille(), 2, 22, "bleu")
