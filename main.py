@@ -593,6 +593,7 @@ class UI_menu:
         self.voir_cibles_adverses = BooleanVar(value=True)
         self.volume_voix = DoubleVar(value=75)
         self.volume_musique = DoubleVar(value=20)
+        self.volume_ui = DoubleVar(value=30)
         self.fenetre_menu.title("Bataille navale")
         self.widgets = []
         self.couleur_fond = "#ffffff"
@@ -723,55 +724,60 @@ class UI_menu:
     def afficher_volume(self):
         self.clear_widgets()
         self.fenetre_menu.configure(bg=self.couleur_fond)
-        label_text_principal_volume = Label(self.fenetre_menu, text='Volume', font=('Helvetica', 32, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=40)
-        label_text_principal_volume.grid(row=0, column=0, columnspan=2, padx=50, pady=(30, 20))
+        label_text_principal_volume = Label(self.fenetre_menu, text='Volume', font=('Helvetica', 32, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=30)
+        label_text_principal_volume.grid(row=0, column=0, columnspan=2, padx=50, pady=(20, 10))
         self.widgets.append(label_text_principal_volume)
-
-        label_voix = Label(self.fenetre_menu, text='Volume des voix', font=('Helvetica', 14, 'bold'), bg=self.couleur_fond, fg=self.couleur_texte, pady=10)
-        label_voix.grid(row=1, column=0, columnspan=2, padx=50, pady=(20, 5))
+        label_voix = Label(self.fenetre_menu, text='Volume des voix', font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte)
+        label_voix.grid(row=1, column=1, padx=10, pady=(10, 2), sticky='w')
         self.widgets.append(label_voix)
-
         self.label_hp_voix = Label(self.fenetre_menu, image=self.img_hp_3, bg=self.couleur_fond, cursor='hand2')
-        self.label_hp_voix.grid(row=2, column=0, padx=(50, 10), pady=10)
+        self.label_hp_voix.grid(row=2, column=0, padx=(50, 10), pady=5)
         self.label_hp_voix.bind("<Button-1>", lambda e: self.toggle_mute_voix())
         self.widgets.append(self.label_hp_voix)
-
-        frame_scale_voix = Frame(self.fenetre_menu, bg='#ffffff', relief='raised', bd=3, highlightbackground=self.couleur_accent, highlightthickness=2)
-        frame_scale_voix.grid(row=2, column=1, padx=(10, 50), pady=10)
+        frame_scale_voix = Frame(self.fenetre_menu, bg='#ffffff', relief='flat', bd=2, highlightbackground=self.couleur_accent, highlightthickness=1)
+        frame_scale_voix.grid(row=2, column=1, padx=(10, 50), pady=5, sticky='w')
         self.widgets.append(frame_scale_voix)
-
-        scale_volume_voix = Scale(frame_scale_voix, variable=self.volume_voix, from_=0, to=100, length=320, orient='horizontal', font=('Helvetica', 11, 'bold'), bg='#ffffff', fg=self.couleur_texte, troughcolor=self.couleur_accent, activebackground=self.couleur_survol, highlightthickness=0, cursor='hand2', relief='sunken', bd=2, sliderrelief='raised', width=20, command=lambda v: self.update_icon_voix())
-        scale_volume_voix.pack(padx=10, pady=10)
+        scale_volume_voix = Scale(frame_scale_voix, variable=self.volume_voix, from_=0, to=100, length=280, orient='horizontal', font=('Helvetica', 10), bg='#ffffff', fg=self.couleur_texte, troughcolor=self.couleur_accent, activebackground=self.couleur_survol, highlightthickness=0, cursor='hand2', relief='flat', bd=0, sliderrelief='raised', width=15, command=lambda v: self.update_icon_voix())
+        scale_volume_voix.pack(padx=8, pady=8)
         self.widgets.append(scale_volume_voix)
-
-        label_musique = Label(self.fenetre_menu, text='Volume de la musique', font=('Helvetica', 14, 'bold'), bg=self.couleur_fond, fg=self.couleur_texte, pady=10)
-        label_musique.grid(row=3, column=0, columnspan=2, padx=50, pady=(20, 5))
+        label_musique = Label(self.fenetre_menu, text='Volume de la musique', font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte)
+        label_musique.grid(row=3, column=1, padx=10, pady=(10, 2), sticky='w')
         self.widgets.append(label_musique)
-
         self.label_hp_musique = Label(self.fenetre_menu, image=self.img_hp_3, bg=self.couleur_fond, cursor='hand2')
-        self.label_hp_musique.grid(row=4, column=0, padx=(50, 10), pady=10)
+        self.label_hp_musique.grid(row=4, column=0, padx=(50, 10), pady=5)
         self.label_hp_musique.bind("<Button-1>", lambda e: self.toggle_mute_musique())
         self.widgets.append(self.label_hp_musique)
-
-        frame_scale_musique = Frame(self.fenetre_menu, bg='#ffffff', relief='raised', bd=3, highlightbackground=self.couleur_accent, highlightthickness=2)
-        frame_scale_musique.grid(row=4, column=1, padx=(10, 50), pady=10)
+        frame_scale_musique = Frame(self.fenetre_menu, bg='#ffffff', relief='flat', bd=2, highlightbackground=self.couleur_accent, highlightthickness=1)
+        frame_scale_musique.grid(row=4, column=1, padx=(10, 50), pady=5, sticky='w')
         self.widgets.append(frame_scale_musique)
-
-        scale_volume_musique = Scale(frame_scale_musique, variable=self.volume_musique, from_=0, to=100, length=320, orient='horizontal', font=('Helvetica', 11, 'bold'), bg='#ffffff', fg=self.couleur_texte, troughcolor=self.couleur_accent, activebackground=self.couleur_survol, highlightthickness=0, cursor='hand2', relief='sunken', bd=2, sliderrelief='raised', width=20, command=lambda v: self.update_icon_musique())
-        scale_volume_musique.pack(padx=10, pady=10)
+        scale_volume_musique = Scale(frame_scale_musique, variable=self.volume_musique, from_=0, to=100, length=280, orient='horizontal', font=('Helvetica', 10), bg='#ffffff', fg=self.couleur_texte, troughcolor=self.couleur_accent, activebackground=self.couleur_survol, highlightthickness=0, cursor='hand2', relief='flat', bd=0, sliderrelief='raised', width=15, command=lambda v: self.update_icon_musique())
+        scale_volume_musique.pack(padx=8, pady=8)
         self.widgets.append(scale_volume_musique)
-
+        label_ui = Label(self.fenetre_menu, text='Volume du menu', font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte)
+        label_ui.grid(row=5, column=1, padx=10, pady=(10, 2), sticky='w')
+        self.widgets.append(label_ui)
+        self.label_hp_ui = Label(self.fenetre_menu, image=self.img_hp_3, bg=self.couleur_fond, cursor='hand2')
+        self.label_hp_ui.grid(row=6, column=0, padx=(50, 10), pady=5)
+        self.label_hp_ui.bind("<Button-1>", lambda e: self.toggle_mute_ui())
+        self.widgets.append(self.label_hp_ui)
+        frame_scale_ui = Frame(self.fenetre_menu, bg='#ffffff', relief='flat', bd=2, highlightbackground=self.couleur_accent, highlightthickness=1)
+        frame_scale_ui.grid(row=6, column=1, padx=(10, 50), pady=5, sticky='w')
+        self.widgets.append(frame_scale_ui)
+        scale_volume_ui = Scale(frame_scale_ui, variable=self.volume_ui, from_=0, to=100, length=280, orient='horizontal', font=('Helvetica', 10), bg='#ffffff', fg=self.couleur_texte, troughcolor=self.couleur_accent, activebackground=self.couleur_survol, highlightthickness=0, cursor='hand2', relief='flat', bd=0, sliderrelief='raised', width=15, command=lambda v: self.update_icon_ui())
+        scale_volume_ui.pack(padx=8, pady=8)
+        self.widgets.append(scale_volume_ui)
         bouton_retour = Button(self.fenetre_menu, text='Retour', command=self.afficher_parametres, font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
-        bouton_retour.grid(row=5, column=0, columnspan=2, padx=50, pady=(30, 15), sticky='ew')
+        bouton_retour.grid(row=7, column=0, columnspan=2, padx=50, pady=(20, 15), sticky='ew')
         bouton_retour.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
         bouton_retour.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
         self.widgets.append(bouton_retour)
-
         self.fenetre_menu.grid_columnconfigure(1, weight=1)
         self.volume_voix_avant_mute = self.volume_voix.get()
         self.volume_musique_avant_mute = self.volume_musique.get()
+        self.volume_ui_avant_mute = self.volume_ui.get()
         self.update_icon_voix()
         self.update_icon_musique()
+        self.update_icon_ui()
 
     def update_icon_voix(self):
         volume = self.volume_voix.get()
@@ -795,6 +801,17 @@ class UI_menu:
         else:
             self.label_hp_musique.config(image=self.img_hp_3)
 
+    def update_icon_ui(self):
+        volume = self.volume_ui.get()
+        if volume == 0:
+            self.label_hp_ui.config(image=self.img_hp_0)
+        elif volume <= 33:
+            self.label_hp_ui.config(image=self.img_hp_1)
+        elif volume <= 66:
+            self.label_hp_ui.config(image=self.img_hp_2)
+        else:
+            self.label_hp_ui.config(image=self.img_hp_3)
+
     def toggle_mute_voix(self):
         if self.volume_voix.get() == 0:
             self.volume_voix.set(self.volume_voix_avant_mute)
@@ -810,6 +827,14 @@ class UI_menu:
             self.volume_musique_avant_mute = self.volume_musique.get()
             self.volume_musique.set(0)
         self.update_icon_musique()
+
+    def toggle_mute_ui(self):
+        if self.volume_ui.get() == 0:
+            self.volume_ui.set(self.volume_ui_avant_mute)
+        else:
+            self.volume_ui_avant_mute = self.volume_ui.get()
+            self.volume_ui.set(0)
+        self.update_icon_ui()
 
     def afficher_mode_jeu(self):
         self.clear_widgets()
@@ -852,7 +877,7 @@ class UI_menu:
         scrollbar.config(command=html_label.yview)
         self.widgets.append(scrollbar)
         self.widgets.append(html_label)
-        
+
         with open('bataille_des_mers_eternelles.html', 'r', encoding='utf-8') as f:
             contenu_html = f.read()
             html_label.set_html(contenu_html)
