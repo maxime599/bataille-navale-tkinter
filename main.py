@@ -4,8 +4,10 @@ from PIL import Image, ImageTk
 from random import *
 from time import *
 import pygame
+from tkhtmlview import HTMLLabel
 
 #pip install pygame
+#pip install tkhtmlview
 
 root_created = False
 
@@ -835,7 +837,6 @@ class UI_menu:
     def afficher_credits(self):
         self.clear_widgets()
         self.fenetre_menu.configure(bg=self.couleur_fond)
-
         label_text_principal_credits = Label(self.fenetre_menu, text='Crédits', font=('Helvetica', 32, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=40)
         label_text_principal_credits.grid(row=0, column=0, padx=50, pady=(30, 20))
         self.widgets.append(label_text_principal_credits)
@@ -846,16 +847,15 @@ class UI_menu:
 
         scrollbar = Scrollbar(frame_scrollbar)
         scrollbar.pack(side='right', fill='y')
-        text_credits = Text(frame_scrollbar, wrap='word', yscrollcommand=scrollbar.set, font=('Helvetica', 11), bg="#ffffff", fg=self.couleur_texte, relief='flat', padx=20, pady=20)
-        text_credits.pack(side='left', fill='both', expand=True)
-        scrollbar.config(command=text_credits.yview)
+        html_label = HTMLLabel(frame_scrollbar, yscrollcommand=scrollbar.set, background="#ffffff")
+        html_label.pack(side='left', fill='both', expand=True)
+        scrollbar.config(command=html_label.yview)
         self.widgets.append(scrollbar)
-        self.widgets.append(text_credits)
-        with open('bataille_des_mers_eternelles.md', 'r', encoding='utf-8') as f:
-            contenu = f.read()
-            text_credits.insert('1.0', contenu)
-            text_credits.config(state='disabled')
+        self.widgets.append(html_label)
         
+        with open('bataille_des_mers_eternelles.html', 'r', encoding='utf-8') as f:
+            contenu_html = f.read()
+            html_label.set_html(contenu_html)
         bouton_retour = Button(self.fenetre_menu, text='Retour', command=self.afficher_menu_principal, font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
         bouton_retour.grid(row=2, column=0, padx=50, pady=15, sticky='ew')
         bouton_retour.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
