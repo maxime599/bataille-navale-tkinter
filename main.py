@@ -5,6 +5,7 @@ from random import *
 from time import *
 import pygame
 from tkhtmlview import HTMLLabel
+import threading
 
 #pip install pygame
 #pip install tkhtmlview
@@ -1174,7 +1175,9 @@ while not fin_du_jeux:
     fenetre2.afficher_plateau(plateau_joueur1.plateau, True, False, 'gauche', False)
     if not fenetre2.canva_cacher:
         fenetre2.afficher_plateau(plateau_joueur2.plateau, option_voir_cibles_adverses, True, 'droite', False)
-
+    if joueur not in liste_joueur_humain:
+        fenetre1.fenetre.update()
+        sleep(0.5)
 
     #print(f"C'est au joueur du joueur {joueur} de jouer")
 
@@ -1271,7 +1274,7 @@ while not fin_du_jeux:
                 son.set_volume(volume_voix)
                 son.play()
             else: # si tout le bateau a été découvert
-                nb_bateaux_restant = plateau_joueur2.nb_bateau_restant()
+                nb_bateaux_restant = plateau_joueur1.nb_bateau_restant()
                 son_bateaux_coule = pygame.mixer.Sound(f"Sons/Le bateau de taille n a été coulé !/Le bateau de taille {taille_bateau_restant[0]} a été coulé !.mp3")
                 son_bateaux_coule.set_volume(volume_voix)
                 channel = son_bateaux_coule.play()
