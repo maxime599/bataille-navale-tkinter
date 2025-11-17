@@ -292,6 +292,7 @@ class UI_game:
             self.fenetre = Toplevel()
             
         self.fenetre.title(nom)
+        self.nom = nom
 
         self._clicked = BooleanVar()
         self.croix_id = None
@@ -332,6 +333,11 @@ class UI_game:
         self.phrase.grid(row=11, column=0, columnspan=10)
         self.phrase = Label(self.fenetre, text="Sert à voir vos bateaux touchés", font=("Courier", 12))
         self.phrase.grid(row=11, column=11, columnspan=10)
+
+        self.parametre = PhotoImage(file="images/parametre_crop.png", master=self.fenetre)
+        label_parametre = Label(self.fenetre, image=self.parametre, cursor='hand2')
+        label_parametre.grid(row=0, column=22, padx=10, pady=10, sticky='e')
+        label_parametre.bind("<Button-1>", lambda e: self.afficher_fenetre_parametre())
         
         
         #Gestion des différentes images
@@ -355,7 +361,6 @@ class UI_game:
         self.im_carre_rouge = PhotoImage(file="images/carre_bateau_rouge.png", master=self.fenetre)
 
         self.liste_img_bateaux = [self.img_bateau_1, self.img_bateau_2, self.img_bateau_3, self.img_bateau_4, self.img_bateau_5]
-
         self.titres = []
         self.canva_ids = []
         self.canva_text_ids = []
@@ -438,7 +443,6 @@ class UI_game:
                     if colonne.type == 3:
                         self.canva_droite.create_image(x, y, image=self.img_touche, anchor=NW)
                 
-
     def click_to_case(self, coordonnee_click_x, coordonnee_click_y):
         #Retourne les coordonnées de la case cliquée
         return (int(coordonnee_click_y/(self.taille_case+3)), int(coordonnee_click_x/(self.taille_case+3)))
@@ -522,7 +526,7 @@ class UI_game:
         # Affiche la croix à la position de la souris
         self.croix_id = self.canva_gauche.create_image(event.x, event.y, image=self.img_cible)
 
-    def cacher_croix(self, event):
+    def cacher_croix(self):
         if self.croix_id is not None:
             self.canva_gauche.delete(self.croix_id)
             self.croix_id = None
@@ -569,10 +573,14 @@ class UI_game:
             self.canva_cacher = False
         else:
             self.canva_cacher = True
-            self.canva_droite.create_rectangle(
-                0, 0, self.canva_droite.winfo_width(), self.canva_droite.winfo_height(),
-                fill="black", outline="", tags="cache_noir"
-            )
+            self.canva_droite.create_rectangle(0, 0, self.canva_droite.winfo_width(), self.canva_droite.winfo_height(),fill="black", outline="", tags="cache_noir")
+      
+    def afficher_fenetre_parametre(self):
+        fenetre_parametre = UI_menu(f"Volume du joueur {self.joueur}", 0)
+        fenetre_parametre.fenetre_menu.transient(self.fenetre)
+        fenetre_parametre.fenetre_menu.grab_set()
+        self.fenetre.wait_window(fenetre_parametre.fenetre_menu)
+
 class Case:
     def __init__(self,coordonnee_x, coordonnee_y, type, taille_bateau = None, position_sur_bateau = None, orientation_bateau = None):
         self.coordonnee_x = coordonnee_x
@@ -588,32 +596,42 @@ class Case:
             self.is_beateau = False
 
 class UI_menu:
-    def __init__(self):
+    def __init__(self, nom, en_jeu):
         self.dico_bateaux_a_poser = {1:0, 2:1, 3:2, 4:1, 5:1}
-        self.fenetre_menu = Tk()
+        
+        if en_jeu == 0:
+            self.fenetre_menu = Toplevel()
+        else:
+            self.fenetre_menu = Tk()
+
         self.can_touch = BooleanVar(value=False)
         self.voir_cibles_adverses = BooleanVar(value=True)
         self.volume_voix = DoubleVar(value=75)
         self.volume_musique = DoubleVar(value=20)
         self.volume_ui = DoubleVar(value=30)
-        self.fenetre_menu.title("Bataille navale")
+        self.fenetre_menu.title(nom)
+        self.en_jeu = en_jeu
         self.widgets = []
         self.couleur_fond = "#ffffff"
         self.couleur_accent = "#42a5f5"
         self.couleur_texte = "#01579b"
         self.couleur_survol = "#90caf9"
+        self.fenetre_menu.configure(bg=self.couleur_fond)
         self.img_hp_0 = PhotoImage(file='sons/icones_son/haut-parleur_0_crop.png')
         self.img_hp_1 = PhotoImage(file='sons/icones_son/haut-parleur_1_crop.png')
         self.img_hp_2 = PhotoImage(file='sons/icones_son/haut-parleur_2_crop.png')
         self.img_hp_3 = PhotoImage(file='sons/icones_son/haut-parleur_3_crop.png')
         self.musique_menu = pygame.mixer.Sound("sons/musics/ui/musique_dascenseur.mp3")
         self.musique_menu.set_volume(self.volume_musique.get()*0.01)
-        self.musique_menu.play(loops=-1)
         self.volume_voix_avant_mute = self.volume_voix.get()
         self.volume_musique_avant_mute = self.volume_musique.get()
         self.volume_ui_avant_mute = self.volume_ui.get()
-        self.afficher_menu_principal()
-        self.fenetre_menu.mainloop()
+        if self.en_jeu == 1:
+            self.afficher_menu_principal()
+            self.musique_menu.play(loops=-1)
+            self.fenetre_menu.mainloop()
+        else:
+            self.afficher_volume()
 
     def clear_widgets(self):
         for widget in self.widgets:
@@ -622,7 +640,6 @@ class UI_menu:
 
     def afficher_menu_principal(self):
         self.clear_widgets()
-        self.fenetre_menu.configure(bg=self.couleur_fond)
 
         label_text_principal_menu = Label(self.fenetre_menu, text='Bataille navale', font=('Helvetica', 32, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=40)
         label_text_principal_menu.grid(row=0, column=0, padx=50, pady=(30, 20))
@@ -690,7 +707,6 @@ class UI_menu:
 
     def afficher_fenetre_nb_bateaux(self):
         self.clear_widgets()
-        self.fenetre_menu.configure(bg=self.couleur_fond)
 
         label = Label(self.fenetre_menu, text="Nombre de bateaux de chaque taille", font=('Helvetica', 24, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=30, wraplength=320)
         label.grid(row=0, column=0, columnspan=2, padx=50, pady=(30, 20))
@@ -731,7 +747,6 @@ class UI_menu:
 
     def afficher_volume(self):
         self.clear_widgets()
-        self.fenetre_menu.configure(bg=self.couleur_fond)
         label_text_principal_volume = Label(self.fenetre_menu, text='Volume', font=('Helvetica', 32, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=30)
         label_text_principal_volume.grid(row=0, column=0, columnspan=2, padx=50, pady=(20, 10))
         self.widgets.append(label_text_principal_volume)
@@ -787,7 +802,14 @@ class UI_menu:
         scale_volume_ui.pack(padx=8, pady=8)
         self.widgets.append(scale_volume_ui)
 
-        bouton_retour = Button(self.fenetre_menu, text='Retour', command=lambda: (self.jouer_bouton_gris(), self.afficher_parametres()), font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        if self.en_jeu == 1:
+            texte = "Retour"
+            fonction = self.afficher_parametres
+        else:
+            texte = "Quitter"
+            fonction = self.fenetre_menu.destroy
+
+        bouton_retour = Button(self.fenetre_menu, text=texte, command=lambda: (self.jouer_bouton_gris(), fonction()), font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
         bouton_retour.grid(row=7, column=0, columnspan=2, padx=50, pady=(20, 15), sticky='ew')
         bouton_retour.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
         bouton_retour.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
@@ -862,7 +884,6 @@ class UI_menu:
 
     def afficher_mode_jeu(self):
         self.clear_widgets()
-        self.fenetre_menu.configure(bg=self.couleur_fond)
         label_text_principal_mode = Label(self.fenetre_menu, text='Mode de jeu', font=('Helvetica', 32, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=40)
         label_text_principal_mode.grid(row=0, column=0, padx=50, pady=(30, 20))
         self.widgets.append(label_text_principal_mode)
@@ -885,7 +906,6 @@ class UI_menu:
 
     def afficher_credits(self):
         self.clear_widgets()
-        self.fenetre_menu.configure(bg=self.couleur_fond)
         label_text_principal_credits = Label(self.fenetre_menu, text='Crédits', font=('Helvetica', 32, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=40)
         label_text_principal_credits.grid(row=0, column=0, padx=50, pady=(30, 20))
         self.widgets.append(label_text_principal_credits)
@@ -920,7 +940,7 @@ class UI_menu:
     def quitter_fenetre(self):
         self.musique_menu.stop()
         self.fenetre_menu.destroy()
-        
+      
     def recuperer_taille_bateaux(self):
         try:
             nb_bateaux_1 = int(self.form_nb_bateaux[0].get())
@@ -1048,10 +1068,9 @@ def on_clique_droit(event, plateau, fenetre, canva_placement, text_ids, afficher
 
 
 
-menu = UI_menu()
+menu = UI_menu("Bataille navale", 1)
 
 volume_musique = menu.volume_musique.get()*0.01
-volume_voix = menu.volume_voix.get()*0.01
 son = pygame.mixer.Sound("Sons/musics/jeu/DEAF KEV - Invincible [NCS Release].mp3")
 son.set_volume(volume_musique)
 son.play(loops=-1)
@@ -1280,12 +1299,12 @@ while not fin_du_jeux:
             if taille_bateau_restant[1] != 0: # s'il reste des parties non découvertes du bateau trouvé
                 #print(f"Le bateau de taille {taille_bateau_restant[0]} a été touché il lui reste {taille_bateau_restant[1]} vie(s)")
                 son = pygame.mixer.Sound("Sons/Un bateau à été touché !.mp3")
-                son.set_volume(volume_voix)
+                son.set_volume(menu.volume_voix.get()*0.01)
                 son.play()
             else: # si tout le bateau a été découvert
                 nb_bateaux_restant = plateau_joueur2.nb_bateau_restant()
                 son_bateaux_coule = pygame.mixer.Sound(f"Sons/Le bateau de taille n a été coulé !/Le bateau de taille {taille_bateau_restant[0]} a été coulé !.mp3")
-                son_bateaux_coule.set_volume(volume_voix)
+                son_bateaux_coule.set_volume(menu.volume_voix.get()*0.01)
                 channel = son_bateaux_coule.play()
                 #print(f"Le bateau de taille {taille_bateau_restant[0]} a été coulé")
 
@@ -1304,12 +1323,12 @@ while not fin_du_jeux:
 
                 if nb_bateaux_restant != 0: # s'il reste des bateaux
                     son_nb_bateaux_en_vie = pygame.mixer.Sound(f"Sons/Il reste n bateau(x) en vie/Il reste {nb_bateaux_restant} bateau(x) en vie.mp3")
-                    son_nb_bateaux_en_vie.set_volume(volume_voix)
+                    son_nb_bateaux_en_vie.set_volume(menu.volume_voix.get()*0.01)
                     channel.queue(son_nb_bateaux_en_vie)
                     pass
                 else: # s'il n'y a plus de bateau restant
                     son = pygame.mixer.Sound("Sons/Partie terminée, le joueur n°n gagne !/Partie terminée, le joueur n°1 gagne !.mp3")
-                    son.set_volume(volume_voix)
+                    son.set_volume(menu.volume_voix.get()*0.01)
                     son.play()                    
                     #print("Partie terminée, le joueur 1 a gagné")
                     joueur_perdu = 2
@@ -1326,12 +1345,12 @@ while not fin_du_jeux:
             if taille_bateau_restant[1] != 0: # s'il reste des parties non découvertes du bateau trouvé
                 #print(f"Le bateau de taille {taille_bateau_restant[0]} a été touché il lui reste {taille_bateau_restant[1]} vie(s)")
                 son = pygame.mixer.Sound("Sons/Un bateau à été touché !.mp3")
-                son.set_volume(volume_voix)
+                son.set_volume(menu.volume_voix.get()*0.01)
                 son.play()
             else: # si tout le bateau a été découvert
                 nb_bateaux_restant = plateau_joueur1.nb_bateau_restant()
                 son_bateaux_coule = pygame.mixer.Sound(f"Sons/Le bateau de taille n a été coulé !/Le bateau de taille {taille_bateau_restant[0]} a été coulé !.mp3")
-                son_bateaux_coule.set_volume(volume_voix)
+                son_bateaux_coule.set_volume(menu.volume_voix.get()*0.01)
                 channel = son_bateaux_coule.play()
                 idx = taille_bateau_restant[0] - 1
                 fenetre1.canva_ids[0].itemconfig(fenetre1.canva_text_ids[0][idx], text='× '+ str(plateau_joueur1.nb_bateau_restant_par_taille()[idx]))
@@ -1350,14 +1369,14 @@ while not fin_du_jeux:
 
                 if nb_bateaux_restant != 0: # s'il reste des bateaux
                     son_nb_bateaux_en_vie = pygame.mixer.Sound(f"Sons/Il reste n bateau(x) en vie/Il reste {nb_bateaux_restant} bateau(x) en vie.mp3")
-                    son_nb_bateaux_en_vie.set_volume(volume_voix)
+                    son_nb_bateaux_en_vie.set_volume(menu.volume_voix.get()*0.01)
                     channel.queue(son_nb_bateaux_en_vie)                   
                     #print(f"Il reste {nb_bateaux_restant} bateau(x) en vie")
                     pass
                 else: # s'il n'y a plus de bateau restant
                     #print(f"Partie terminée, le joueur 2 a gagné")
                     son = pygame.mixer.Sound("Sons/Partie terminée, le joueur n°n gagne !/Partie terminée, le joueur n°2 gagne !.mp3")
-                    son.set_volume(volume_voix)
+                    son.set_volume(menu.volume_voix.get()*0.01)
                     son.play() 
                     joueur_perdu = 1
                     fin_du_jeux = True
