@@ -576,7 +576,7 @@ class UI_game:
             self.canva_droite.create_rectangle(0, 0, self.canva_droite.winfo_width(), self.canva_droite.winfo_height(),fill="black", outline="", tags="cache_noir")
       
     def afficher_fenetre_parametre(self):
-        fenetre_parametre = UI_menu(f"Volume du joueur {self.joueur}", 0)
+        fenetre_parametre = UI_menu(f"Volume du joueur {self.joueur}", True)
         fenetre_parametre.fenetre_menu.transient(self.fenetre)
         fenetre_parametre.fenetre_menu.grab_set()
         self.fenetre.wait_window(fenetre_parametre.fenetre_menu)
@@ -596,19 +596,26 @@ class Case:
             self.is_beateau = False
 
 class UI_menu:
-    def __init__(self, nom, en_jeu):
+    volume_voix_global = 75
+    volume_musique_global = 20
+    volume_ui_global = 30
+    volume_voix_avant_mute_global = volume_voix_global
+    volume_musique_avant_mute_global = volume_musique_global
+    volume_ui_avant_mute_global = volume_ui_global
+    def __init__(self, nom, en_jeu):        
         self.dico_bateaux_a_poser = {1:0, 2:1, 3:2, 4:1, 5:1}
         
-        if en_jeu == 0:
+        if en_jeu:
             self.fenetre_menu = Toplevel()
         else:
             self.fenetre_menu = Tk()
 
         self.can_touch = BooleanVar(value=False)
         self.voir_cibles_adverses = BooleanVar(value=True)
-        self.volume_voix = DoubleVar(value=75)
-        self.volume_musique = DoubleVar(value=20)
-        self.volume_ui = DoubleVar(value=30)
+        self.volume_voix = DoubleVar(value=UI_menu.volume_voix_global)
+        self.volume_musique = DoubleVar(value=UI_menu.volume_musique_global)
+        self.volume_ui = DoubleVar(value=UI_menu.volume_ui_global)
+
         self.fenetre_menu.title(nom)
         self.en_jeu = en_jeu
         self.widgets = []
@@ -626,7 +633,7 @@ class UI_menu:
         self.volume_voix_avant_mute = self.volume_voix.get()
         self.volume_musique_avant_mute = self.volume_musique.get()
         self.volume_ui_avant_mute = self.volume_ui.get()
-        if self.en_jeu == 1:
+        if not self.en_jeu:
             self.afficher_menu_principal()
             self.musique_menu.play(loops=-1)
             self.fenetre_menu.mainloop()
@@ -764,7 +771,7 @@ class UI_menu:
         frame_scale_voix.grid(row=2, column=1, padx=(10, 50), pady=5, sticky='w')
         self.widgets.append(frame_scale_voix)
 
-        scale_volume_voix = Scale(frame_scale_voix, variable=self.volume_voix, from_=0, to=100, length=280, orient='horizontal', font=('Helvetica', 10), bg='#ffffff', fg=self.couleur_texte, troughcolor=self.couleur_accent, activebackground=self.couleur_survol, highlightthickness=0, cursor='hand2', relief='flat', bd=0, sliderrelief='raised', width=15, command=lambda v: [self.update_icon_voix(), self.jouer_clic()])
+        scale_volume_voix = Scale(frame_scale_voix, variable=self.volume_voix, from_=0, to=100, length=280, orient='horizontal', font=('Helvetica', 10), bg='#ffffff', fg=self.couleur_texte, troughcolor=self.couleur_accent, activebackground=self.couleur_survol, highlightthickness=0, cursor='hand2', relief='flat', bd=0, sliderrelief='raised', width=15, command=lambda v: self.changer_volume_voix())
         scale_volume_voix.pack(padx=8, pady=8)
         self.widgets.append(scale_volume_voix)
 
@@ -781,7 +788,7 @@ class UI_menu:
         frame_scale_musique.grid(row=4, column=1, padx=(10, 50), pady=5, sticky='w')
         self.widgets.append(frame_scale_musique)
 
-        scale_volume_musique = Scale(frame_scale_musique, variable=self.volume_musique, from_=0, to=100, length=280, orient='horizontal', font=('Helvetica', 10), bg='#ffffff', fg=self.couleur_texte, troughcolor=self.couleur_accent, activebackground=self.couleur_survol, highlightthickness=0, cursor='hand2', relief='flat', bd=0, sliderrelief='raised', width=15, command=lambda v: [self.update_icon_musique(), self.actuliser_musique_menu(), self.jouer_clic()])
+        scale_volume_musique = Scale(frame_scale_musique, variable=self.volume_musique, from_=0, to=100, length=280, orient='horizontal', font=('Helvetica', 10), bg='#ffffff', fg=self.couleur_texte, troughcolor=self.couleur_accent, activebackground=self.couleur_survol, highlightthickness=0, cursor='hand2', relief='flat', bd=0, sliderrelief='raised', width=15, command=lambda v: self.changer_volume_musique())
         scale_volume_musique.pack(padx=8, pady=8)
         self.widgets.append(scale_volume_musique)
 
@@ -798,11 +805,11 @@ class UI_menu:
         frame_scale_ui.grid(row=6, column=1, padx=(10, 50), pady=5, sticky='w')
         self.widgets.append(frame_scale_ui)
 
-        scale_volume_ui = Scale(frame_scale_ui, variable=self.volume_ui, from_=0, to=100, length=280, orient='horizontal', font=('Helvetica', 10), bg='#ffffff', fg=self.couleur_texte, troughcolor=self.couleur_accent, activebackground=self.couleur_survol, highlightthickness=0, cursor='hand2', relief='flat', bd=0, sliderrelief='raised', width=15, command=lambda v: [self.update_icon_ui(), self.jouer_clic()])
+        scale_volume_ui = Scale(frame_scale_ui, variable=self.volume_ui, from_=0, to=100, length=280, orient='horizontal', font=('Helvetica', 10), bg='#ffffff', fg=self.couleur_texte, troughcolor=self.couleur_accent, activebackground=self.couleur_survol, highlightthickness=0, cursor='hand2', relief='flat', bd=0, sliderrelief='raised', width=15, command=lambda v: self.changer_volume_ui())
         scale_volume_ui.pack(padx=8, pady=8)
         self.widgets.append(scale_volume_ui)
 
-        if self.en_jeu == 1:
+        if not self.en_jeu:
             texte = "Retour"
             fonction = self.afficher_parametres
         else:
@@ -854,31 +861,37 @@ class UI_menu:
 
     def toggle_mute_voix(self):
         if self.volume_voix.get() == 0:
-            self.volume_voix.set(self.volume_voix_avant_mute)
+            self.volume_voix.set(UI_menu.volume_voix_avant_mute_global)
+            UI_menu.volume_voix_global = UI_menu.volume_voix_avant_mute_global
             self.jouer_bouton_bleu()
         else:
-            self.volume_voix_avant_mute = self.volume_voix.get()
+            UI_menu.volume_voix_avant_mute_global = self.volume_voix.get()
             self.volume_voix.set(0)
+            UI_menu.volume_voix_global = 0
             self.jouer_bouton_gris()
         self.update_icon_voix()
 
     def toggle_mute_musique(self):
         if self.volume_musique.get() == 0:
-            self.volume_musique.set(self.volume_musique_avant_mute)
+            self.volume_musique.set(UI_menu.volume_musique_avant_mute_global)
+            UI_menu.volume_musique_global = UI_menu.volume_musique_avant_mute_global
             self.jouer_bouton_bleu()
         else:
-            self.volume_musique_avant_mute = self.volume_musique.get()
+            UI_menu.volume_musique_avant_mute_global = self.volume_musique.get()
             self.volume_musique.set(0)
+            UI_menu.volume_musique_global = 0
             self.jouer_bouton_gris()
         self.update_icon_musique()
 
     def toggle_mute_ui(self):
         if self.volume_ui.get() == 0:
-            self.volume_ui.set(self.volume_ui_avant_mute)
+            self.volume_ui.set(UI_menu.volume_ui_avant_mute_global)
+            UI_menu.volume_ui_global = UI_menu.volume_ui_avant_mute_global
             self.jouer_bouton_bleu()
         else:
-            self.volume_ui_avant_mute = self.volume_ui.get()
+            UI_menu.volume_ui_avant_mute_global = self.volume_ui.get()
             self.volume_ui.set(0)
+            UI_menu.volume_ui_global = 0
             self.jouer_bouton_gris()
         self.update_icon_ui()
 
@@ -1031,6 +1044,22 @@ class UI_menu:
         else:
             self.jouer_bouton_gris()
 
+    def changer_volume_voix(self):
+        UI_menu.volume_voix_global = self.volume_voix.get()
+        self.update_icon_voix()
+        self.jouer_clic()
+
+    def changer_volume_musique(self):
+        UI_menu.volume_musique_global = self.volume_musique.get()
+        self.update_icon_musique()
+        self.actuliser_musique_menu()
+        self.jouer_clic()
+
+    def changer_volume_ui(self):
+        UI_menu.volume_ui_global = self.volume_ui.get()
+        self.update_icon_ui()
+        self.jouer_clic()
+
 def on_mouvement(event, fenetre, plateau, orientation, taille, position_canva, can_touch):
     x_case, y_case = fenetre.click_to_case(event.x, event.y)
     fenetre.afficher_previsualisation(plateau, x_case, y_case, orientation, taille, position_canva, can_touch)
@@ -1068,11 +1097,10 @@ def on_clique_droit(event, plateau, fenetre, canva_placement, text_ids, afficher
 
 
 
-menu = UI_menu("Bataille navale", 1)
+menu = UI_menu("Bataille navale", False)
 
-volume_musique = menu.volume_musique.get()*0.01
 son = pygame.mixer.Sound("Sons/musics/jeu/DEAF KEV - Invincible [NCS Release].mp3")
-son.set_volume(volume_musique)
+son.set_volume(menu.volume_musique.get()*0.01)
 son.play(loops=-1)
 
 option_can_touch = menu.can_touch.get()
