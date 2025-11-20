@@ -6,6 +6,7 @@ from time import *
 import pygame
 from tkhtmlview import HTMLLabel
 import threading
+import socket
 
 #pip install pygame
 #pip install tkhtmlview
@@ -603,6 +604,7 @@ class UI_menu:
     volume_musique_avant_mute_global = volume_musique_global
     volume_ui_avant_mute_global = volume_ui_global
     musique_en_jeu_ref = None
+    
     def __init__(self, nom, en_jeu):        
         self.dico_bateaux_a_poser = {1:0, 2:1, 3:2, 4:1, 5:1}
         
@@ -616,7 +618,10 @@ class UI_menu:
         self.volume_voix = DoubleVar(value=UI_menu.volume_voix_global)
         self.volume_musique = DoubleVar(value=UI_menu.volume_musique_global)
         self.volume_ui = DoubleVar(value=UI_menu.volume_ui_global)
-
+        self.img_hp_0 = PhotoImage(file='sons/icones_son/haut-parleur_0_crop.png')
+        self.img_hp_1 = PhotoImage(file='sons/icones_son/haut-parleur_1_crop.png')
+        self.img_hp_2 = PhotoImage(file='sons/icones_son/haut-parleur_2_crop.png')
+        self.img_hp_3 = PhotoImage(file='sons/icones_son/haut-parleur_3_crop.png')
         self.fenetre_menu.title(nom)
         self.en_jeu = en_jeu
         self.widgets = []
@@ -625,10 +630,6 @@ class UI_menu:
         self.couleur_texte = "#01579b"
         self.couleur_survol = "#90caf9"
         self.fenetre_menu.configure(bg=self.couleur_fond)
-        self.img_hp_0 = PhotoImage(file='sons/icones_son/haut-parleur_0_crop.png')
-        self.img_hp_1 = PhotoImage(file='sons/icones_son/haut-parleur_1_crop.png')
-        self.img_hp_2 = PhotoImage(file='sons/icones_son/haut-parleur_2_crop.png')
-        self.img_hp_3 = PhotoImage(file='sons/icones_son/haut-parleur_3_crop.png')
         self.musique_menu = pygame.mixer.Sound("sons/musics/ui/musique_dascenseur.mp3")
         self.musique_menu.set_volume(self.volume_musique.get()*0.01)
         self.volume_voix_avant_mute = self.volume_voix.get()
@@ -834,7 +835,6 @@ class UI_menu:
 
     def afficher_choix_volume(self):
         self.clear_widgets()
-        self.fenetre_menu.configure(bg=self.couleur_fond)
         label_text_principal_choix_volume = Label(self.fenetre_menu, text='Choix des sons', font=('Helvetica', 32, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=30)
         label_text_principal_choix_volume.grid(row=0, column=0, columnspan=2, padx=50, pady=(20, 10))
         self.widgets.append(label_text_principal_choix_volume)
@@ -938,6 +938,45 @@ class UI_menu:
         self.widgets.append(bouton_retour)
         self.fenetre_menu.grid_columnconfigure(1, weight=1)
 
+    def afficher_ip(self):
+        self.clear_widgets()
+        label_text_principal_ip = Label(self.fenetre_menu, text='Jouer contre un joueur', font=('Helvetica', 32, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=30)
+        label_text_principal_ip.grid(row=0, column=0, columnspan=2, padx=50, pady=(20, 10))
+        self.widgets.append(label_text_principal_ip)
+
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip_locale = s.getsockname()[0]
+        s.close()
+        label_ip = Label(self.fenetre_menu, text=f'Votre ip: {ip_locale}', font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte)
+        label_ip.grid(row=1, column=0, padx=10, pady=10)
+        self.widgets.append(label_ip)
+
+        bouton_se_connecter = Button(self.fenetre_menu, text='Copier', command=lambda: (self.jouer_bouton_bleu(), self.copier(ip_locale)), font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_se_connecter.grid(row=1, column=1, padx=50, pady=15, sticky='ew')
+        bouton_se_connecter.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
+        bouton_se_connecter.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
+        self.widgets.append(bouton_se_connecter)
+        
+        label_connect = Label(self.fenetre_menu, text='Se connecter à un joueur:', font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte)
+        label_connect.grid(row=2, column=0, padx=10, pady=10, sticky='e')
+        self.widgets.append(label_connect)
+        entry = Entry(self.fenetre_menu, font=('Helvetica', 12), bg="#ffffff", fg=self.couleur_texte, relief='flat', bd=2, highlightthickness=1, highlightbackground=self.couleur_accent, highlightcolor=self.couleur_accent)
+        entry.grid(row=2, column=1, padx=20, pady=10, sticky='w')
+        self.widgets.append(entry)
+
+        bouton_se_connecter = Button(self.fenetre_menu, text='Se connecter', command=lambda: (self.jouer_bouton_bleu()), font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_se_connecter.grid(row=3, column=0, columnspan=2, padx=50, pady=15, sticky='ew')
+        bouton_se_connecter.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
+        bouton_se_connecter.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
+        self.widgets.append(bouton_se_connecter)
+
+        bouton_retour = Button(self.fenetre_menu, text='retour', command=lambda: (self.jouer_bouton_gris(), self.afficher_mode_jeu()), font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_retour.grid(row=4, column=0, columnspan=2, padx=50, pady=15, sticky='ew')
+        bouton_retour.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
+        bouton_retour.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
+        self.widgets.append(bouton_retour)
+
     def update_icon_voix(self):
         volume = self.volume_voix.get()
         if volume == 0:
@@ -1021,13 +1060,21 @@ class UI_menu:
         bouton_joueur.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
         bouton_joueur.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
         self.widgets.append(bouton_joueur)
+
         bouton_ia = Button(self.fenetre_menu, text='Jouer contre une ia', command=lambda: (self.jouer_bouton_bleu(), self.jouer_contre_ia()), font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
         bouton_ia.grid(row=2, column=0, padx=50, pady=15, sticky='ew')
         bouton_ia.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
         bouton_ia.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
         self.widgets.append(bouton_ia)
+
+        bouton_jouer_contre_joueur = Button(self.fenetre_menu, text='Jouer contre un joueur à distance', command=lambda: (self.jouer_bouton_bleu(), self.afficher_ip()), font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_jouer_contre_joueur.grid(row=3, column=0, padx=50, pady=15, sticky='ew')
+        bouton_jouer_contre_joueur.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
+        bouton_jouer_contre_joueur.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
+        self.widgets.append(bouton_jouer_contre_joueur)
+
         bouton_retour = Button(self.fenetre_menu, text='Retour', command=lambda: (self.jouer_bouton_gris(), self.afficher_menu_principal()), font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
-        bouton_retour.grid(row=3, column=0, padx=50, pady=15, sticky='ew')
+        bouton_retour.grid(row=4, column=0, padx=50, pady=15, sticky='ew')
         bouton_retour.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
         bouton_retour.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
         self.widgets.append(bouton_retour)
@@ -1177,6 +1224,11 @@ class UI_menu:
         UI_menu.volume_ui_global = self.volume_ui.get()
         self.update_icon_ui()
         self.jouer_clic()
+
+    def copier(self, texte):
+        self.fenetre_menu.clipboard_clear()
+        self.fenetre_menu.clipboard_append(str(texte))
+        self.fenetre_menu.update()
 
 def on_mouvement(event, fenetre, plateau, orientation, taille, position_canva, can_touch):
     x_case, y_case = fenetre.click_to_case(event.x, event.y)
