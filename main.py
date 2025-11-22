@@ -1313,8 +1313,8 @@ else:
     afficher_croix = True
 option_voir_cibles_adverses = menu.voir_cibles_adverses.get()
 afficher_croix = False if option_can_touch == True else True
-#mode_jeu = menu.mode_jeu
-mode_jeu = 'socket_serveur'
+mode_jeu = menu.mode_jeu
+
 
 
 plateau_joueur1 = Plateau()
