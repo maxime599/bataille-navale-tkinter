@@ -1342,7 +1342,7 @@ if mode_jeu == 'IA' or mode_jeu == 'socket_serveur':
     fenetre2.fenetre.withdraw()
 elif mode_jeu == 'socket_client':
     fenetre1.fenetre.withdraw()
-    
+
 fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'gauche', afficher_croix)
 fenetre1.afficher_plateau(plateau_joueur2.plateau, option_voir_cibles_adverses, True, 'droit', afficher_croix)
 fenetre1.fenetre.update()
@@ -1410,11 +1410,19 @@ for joueur in [1,2]:
             #plateau_joueur1.afficher_plateau(True, True)
             fenetre1.afficher_plateau(plateau_joueur1.plateau, option_voir_cibles_adverses, True, 'droit', afficher_croix)
             liste_bateaux_a_poser = plateau_joueur1.liste_bateaux_a_poser
+            fenetre1.titres[0].configure(text="C'est à vous de poser les bateaux")
+            fenetre2.titres[0].configure(text="C'est à l'adversaire de poser ces bateaux")
+            fenetre1.fenetre.update()
+            fenetre2.fenetre.update()
         else:
             #plateau_joueur2.afficher_plateau(True, True)
             fenetre2.afficher_plateau(plateau_joueur2.plateau, option_voir_cibles_adverses, True, 'droit', afficher_croix)
             liste_bateaux_a_poser = plateau_joueur2.liste_bateaux_a_poser
-
+            fenetre1.titres[0].configure(text="C'est à l'adversaire de poser ces bateaux")
+            fenetre2.titres[0].configure(text="C'est à vous de poser les bateaux")
+            
+            fenetre1.fenetre.update()
+            fenetre2.fenetre.update()
 
         indice = 0
         while indice < len(liste_bateaux_a_poser):
@@ -1458,6 +1466,7 @@ for joueur in [1,2]:
                     bonne_position_bateau = plateau_joueur1.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation[0], taille, option_can_touch)
                     #plateau_joueur1.afficher_plateau(True, True)
                     fenetre1.afficher_plateau(plateau_joueur1.plateau, option_voir_cibles_adverses, True, 'droite', afficher_croix)
+                    fenetre1.fenetre.update()
                     if bonne_position_bateau == True:
                         liste_bateaux_a_poser.remove(taille)
                         index = taille - 1
@@ -1467,12 +1476,15 @@ for joueur in [1,2]:
                     bonne_position_bateau = plateau_joueur2.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation[0], taille, option_can_touch)   
                     #plateau_joueur2.afficher_plateau(True, True)
                     fenetre2.afficher_plateau(plateau_joueur2.plateau, option_voir_cibles_adverses, True, 'droite', afficher_croix)
+                    fenetre2.fenetre.update()
                     if bonne_position_bateau == True:
                         liste_bateaux_a_poser.remove(taille)
                         index = taille - 1
                         fenetre2.bloc_canva_var.itemconfig(fenetre2.canva_text_ids[0][index], text='× ' + str(liste_bateaux_a_poser.count(taille)))
         fenetre1.titres[0].configure(text="C'est à l'adversaire de poser ces bateaux")
         fenetre2.titres[0].configure(text="C'est à vous de poser les bateaux")
+        fenetre1.fenetre.update()
+        fenetre2.fenetre.update()   
         if mode_jeu == 'socket_serveur' or mode_jeu == 'socket_client':
             if joueur == 1:
                 matrice = [[{ "type": case.type,"taille_bateau": case.taille_bateau,"position_sur_bateau": case.position_sur_bateau,"orientation_bateau": case.orientation_bateau} for case in ligne] for ligne in plateau_joueur1.plateau]
@@ -1491,6 +1503,17 @@ for joueur in [1,2]:
         else:
             plateau_joueur2.pose_bateaux_aleatoire(option_can_touch)
     else:#joueur in liste_joueur_socket
+        if joueur == 1:
+            fenetre1.titres[0].configure(text="C'est à vous de poser les bateaux")
+            fenetre2.titres[0].configure(text="C'est à l'adversaire de poser ces bateaux")
+            fenetre1.fenetre.update()
+            fenetre2.fenetre.update()
+        else:
+            fenetre1.titres[0].configure(text="C'est à l'adversaire de poser ces bateaux")
+            fenetre2.titres[0].configure(text="C'est à vous de poser les bateaux")
+            
+            fenetre1.fenetre.update()
+            fenetre2.fenetre.update()
         buffer = ""
         continue_receiving = True
         while continue_receiving:
