@@ -6,6 +6,8 @@ from time import *
 import pygame
 from tkhtmlview import HTMLLabel
 import threading
+import socket
+import json
 
 #pip install pygame
 #pip install tkhtmlview
@@ -257,9 +259,7 @@ class Plateau:
                             if self.plateau[coordonnee_cases_autour[0]][coordonnee_cases_autour[1]].type == 3:
                                 liste_cases_touched_autour.append(coordonnee_cases_autour)
                             else:
-                                print('ici')
                                 if self.is_possible_cible(coordonnee_cases_autour[0], coordonnee_cases_autour[1]):
-                                    print('case valide')
                                     liste_cases_autour_valides.append(coordonnee_cases_autour)
                     if len(liste_cases_touched_autour) == 0:#si il n'y a pas de cases touchée autour, alors on cible une case aléatoir parmit celle que l'on peur cibler
                         return choice(liste_cases_autour_valides)
@@ -972,7 +972,7 @@ class UI_menu:
         bouton_non.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
 
     def jouer_contre_ia(self):
-        self.mode_jeu = '2_je'
+        self.mode_jeu = 'IA'
         self.musique_menu.stop()
         self.fenetre_menu.destroy()
 
@@ -1063,7 +1063,9 @@ else:
     afficher_croix = True
 option_voir_cibles_adverses = menu.voir_cibles_adverses.get()
 afficher_croix = False if option_can_touch == True else True
-mode_jeu = menu.mode_jeu
+#mode_jeu = menu.mode_jeu
+mode_jeu = 'socket_serveur'
+
 
 plateau_joueur1 = Plateau()
 plateau_joueur1.creation_plateau()
@@ -1072,11 +1074,16 @@ plateau_joueur2.creation_plateau()
 fenetre1 = UI_game("joueur 1", 1)
 fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'gauche', afficher_croix)
 fenetre1.afficher_plateau(plateau_joueur2.plateau, option_voir_cibles_adverses, True, 'droit', afficher_croix)
+fenetre1.fenetre.update()
 fenetre2 = UI_game("Joueur 2", 2)
 fenetre2.afficher_plateau(plateau_joueur1.plateau, True, True, 'gauche', afficher_croix)
 fenetre2.afficher_plateau(plateau_joueur2.plateau, option_voir_cibles_adverses, True, 'droit', afficher_croix)
-if mode_jeu != '2_j':
+fenetre2.fenetre.update()
+
+if mode_jeu == 'IA' or mode_jeu == 'socket_serveur':
     fenetre2.fenetre.withdraw()
+elif mode_jeu == 'socket_client':
+    fenetre1.fenetre.withdraw()
 
 dico_bateaux_a_poser = menu.dico_bateaux_a_poser
 liste_bateaux_a_poser = []
@@ -1096,89 +1103,154 @@ fenetre2.bloc_canva(fenetre2.fenetre, "Vos bateaux à poser", '× ', plateau_jou
 if mode_jeu == '2_j':
     liste_joueur_humain = [1,2]
     liste_joueur_ia = []
-else:
+    liste_joueur_socket = []
+elif mode_jeu == 'IA':
     liste_joueur_humain = [1]
     liste_joueur_ia = [2]
+    liste_joueur_socket = []
+elif mode_jeu == 'socket_serveur':
+    liste_joueur_humain = [1]
+    liste_joueur_ia = []
+    liste_joueur_socket = [2]
+    HOST = "0.0.0.0"   # Pour écouter sur toutes les interfaces réseau
+    PORT = 5000        # Port d'écoute du serveur
+    # Création du socket TCP
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.bind((HOST, PORT))
+    server.listen(1)
 
-#Boucle qui demande aux deux joueurs de donner la position de leurs bateau à poser sur leur plateau
+    # Accepter un client
+    conn, addr = server.accept()
+    print(f"[SERVEUR] Client connecté : {addr}")
+else:# mode_jeu == 'socket_client':
+    liste_joueur_humain = [2]
+    liste_joueur_ia = []
+    liste_joueur_socket = [1]
+    HOST = "192.168.1.80"   # Adresse du serveur (localhost)
+    PORT = 5000          # Port du serveur
+
+    # Création du socket TCP
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.connect((HOST, PORT))
+
 fenetre1.canva_bind = 'droite'
 fenetre2.canva_bind = 'droite'
+#Boucle qui demande aux deux joueurs de donner la position de leurs bateau à poser sur leur plateau
+for joueur in [1,2]:
+    if joueur in liste_joueur_humain:
+        if joueur == 1:
+            #plateau_joueur1.afficher_plateau(True, True)
+            fenetre1.afficher_plateau(plateau_joueur1.plateau, option_voir_cibles_adverses, True, 'droit', afficher_croix)
+            liste_bateaux_a_poser = plateau_joueur1.liste_bateaux_a_poser
+        else:
+            #plateau_joueur2.afficher_plateau(True, True)
+            fenetre2.afficher_plateau(plateau_joueur2.plateau, option_voir_cibles_adverses, True, 'droit', afficher_croix)
+            liste_bateaux_a_poser = plateau_joueur2.liste_bateaux_a_poser
 
-for joueur in liste_joueur_humain:
-    if joueur == 1:
-        #plateau_joueur1.afficher_plateau(True, True)
-        fenetre1.afficher_plateau(plateau_joueur1.plateau, option_voir_cibles_adverses, True, 'droit', afficher_croix)
-        liste_bateaux_a_poser = plateau_joueur1.liste_bateaux_a_poser
-    else:
-        #plateau_joueur2.afficher_plateau(True, True)
-        fenetre2.afficher_plateau(plateau_joueur2.plateau, option_voir_cibles_adverses, True, 'droit', afficher_croix)
-        liste_bateaux_a_poser = plateau_joueur2.liste_bateaux_a_poser
 
+        indice = 0
+        while indice < len(liste_bateaux_a_poser):
+            taille = liste_bateaux_a_poser[indice]
+            bonne_position_bateau = False  
+            bateau_supprime = False
+            while not bonne_position_bateau:
+                #coordonnee_case_x = int(input(f"Dans quel numéro de ligne veut tu placer le coin de ton bateau n° {indice+1} de taille {taille} ? : "))
+                #coordonnee_case_y = int(input(f"Dans quel numéro de colonne veut tu placer le coin de ton bateau n° {indice+1} de taille {taille} ? : "))
 
-    indice = 0
-    while indice < len(liste_bateaux_a_poser):
-        taille = liste_bateaux_a_poser[indice]
-        bonne_position_bateau = False  
-        bateau_supprime = False
-        while not bonne_position_bateau:
-            #coordonnee_case_x = int(input(f"Dans quel numéro de ligne veut tu placer le coin de ton bateau n° {indice+1} de taille {taille} ? : "))
-            #coordonnee_case_y = int(input(f"Dans quel numéro de colonne veut tu placer le coin de ton bateau n° {indice+1} de taille {taille} ? : "))
+                #orientation = int(input("Dans quel orientation ? (0 = droite, 1 = bas)"))
 
-            #orientation = int(input("Dans quel orientation ? (0 = droite, 1 = bas)"))
+                orientation = [0]
 
-            orientation = [0]
+                if joueur == 1:
+                    fenetre1.canva_droite.bind("<Motion>", lambda event: on_mouvement(event, fenetre1, plateau_joueur1, orientation[0], taille, 'droite', option_can_touch))
+                    fenetre1.canva_droite.bind("<MouseWheel>", lambda event: on_molette(event, fenetre1, plateau_joueur1, orientation, taille, 'droite', option_can_touch))
+                    fenetre1.canva_droite.bind("<Button-3>", lambda event: on_clique_droit(event, plateau_joueur1, fenetre1, fenetre1.bloc_canva_var, fenetre1.canva_text_ids, afficher_croix))
 
+                else:
+                    fenetre2.canva_droite.bind("<Motion>", lambda event: on_mouvement(event, fenetre2, plateau_joueur2, orientation[0], taille, 'droite', option_can_touch))
+                    fenetre2.canva_droite.bind("<MouseWheel>", lambda event: on_molette(event, fenetre2, plateau_joueur2, orientation, taille, 'droite', option_can_touch))
+                    fenetre2.canva_droite.bind("<Button-3>", lambda event: on_clique_droit(event, plateau_joueur2, fenetre2, fenetre2.bloc_canva_var, fenetre2.canva_text_ids, afficher_croix))
+
+                if joueur == 1:
+                    coordonnee_case = fenetre1.attendre_click_case()
+                else:
+                    coordonnee_case = fenetre2.attendre_click_case()
+
+                fenetre1.canva_droite.unbind("<Motion>")
+                fenetre1.canva_droite.unbind("<MouseWheel>")
+                fenetre1.canva_droite.unbind("<Button-3>")
+                fenetre2.canva_droite.unbind("<Motion>")
+                fenetre2.canva_droite.unbind("<MouseWheel>")
+                fenetre2.canva_droite.unbind("<Button-3>")
+
+                coordonnee_case_x = coordonnee_case[0]
+                coordonnee_case_y = coordonnee_case[1]
+
+                if joueur == 1:
+                    bonne_position_bateau = plateau_joueur1.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation[0], taille, option_can_touch)
+                    #plateau_joueur1.afficher_plateau(True, True)
+                    fenetre1.afficher_plateau(plateau_joueur1.plateau, option_voir_cibles_adverses, True, 'droite', afficher_croix)
+                    if bonne_position_bateau == True:
+                        liste_bateaux_a_poser.remove(taille)
+                        index = taille - 1
+                        fenetre1.bloc_canva_var.itemconfig(fenetre1.canva_text_ids[0][index], text='× ' + str(liste_bateaux_a_poser.count(taille)))
+                    num_joueur = 2
+                else:
+                    bonne_position_bateau = plateau_joueur2.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation[0], taille, option_can_touch)   
+                    #plateau_joueur2.afficher_plateau(True, True)
+                    fenetre2.afficher_plateau(plateau_joueur2.plateau, option_voir_cibles_adverses, True, 'droite', afficher_croix)
+                    if bonne_position_bateau == True:
+                        liste_bateaux_a_poser.remove(taille)
+                        index = taille - 1
+                        fenetre2.bloc_canva_var.itemconfig(fenetre2.canva_text_ids[0][index], text='× ' + str(liste_bateaux_a_poser.count(taille)))
+        fenetre1.titres[0].configure(text="C'est à l'adversaire de poser ces bateaux")
+        fenetre2.titres[0].configure(text="C'est à vous de poser les bateaux")
+        if mode_jeu == 'socket_serveur' or mode_jeu == 'socket_client':
             if joueur == 1:
-                fenetre1.canva_droite.bind("<Motion>", lambda event: on_mouvement(event, fenetre1, plateau_joueur1, orientation[0], taille, 'droite', option_can_touch))
-                fenetre1.canva_droite.bind("<MouseWheel>", lambda event: on_molette(event, fenetre1, plateau_joueur1, orientation, taille, 'droite', option_can_touch))
-                fenetre1.canva_droite.bind("<Button-3>", lambda event: on_clique_droit(event, plateau_joueur1, fenetre1, fenetre1.bloc_canva_var, fenetre1.canva_text_ids, afficher_croix))
-
+                matrice = [[{ "type": case.type,"taille_bateau": case.taille_bateau,"position_sur_bateau": case.position_sur_bateau,"orientation_bateau": case.orientation_bateau} for case in ligne] for ligne in plateau_joueur1.plateau]
+                payload = {"matrice": matrice,"liste_bateau_restant": plateau_joueur1.liste_bateau_restant}
             else:
-                fenetre2.canva_droite.bind("<Motion>", lambda event: on_mouvement(event, fenetre2, plateau_joueur2, orientation[0], taille, 'droite', option_can_touch))
-                fenetre2.canva_droite.bind("<MouseWheel>", lambda event: on_molette(event, fenetre2, plateau_joueur2, orientation, taille, 'droite', option_can_touch))
-                fenetre2.canva_droite.bind("<Button-3>", lambda event: on_clique_droit(event, plateau_joueur2, fenetre2, fenetre2.bloc_canva_var, fenetre2.canva_text_ids, afficher_croix))
-
-            if joueur == 1:
-                coordonnee_case = fenetre1.attendre_click_case()
+                matrice = [[{ "type": case.type,"taille_bateau": case.taille_bateau,"position_sur_bateau": case.position_sur_bateau,"orientation_bateau": case.orientation_bateau} for case in ligne] for ligne in plateau_joueur2.plateau]
+                payload = {"matrice": matrice,"liste_bateau_restant": plateau_joueur2.liste_bateau_restant}
+            data = json.dumps(payload)   
+            if mode_jeu == 'socket_serveur': 
+                conn.sendall(data.encode() + b'\n')
             else:
-                coordonnee_case = fenetre2.attendre_click_case()
-
-            fenetre1.canva_droite.unbind("<Motion>")
-            fenetre1.canva_droite.unbind("<MouseWheel>")
-            fenetre1.canva_droite.unbind("<Button-3>")
-            fenetre2.canva_droite.unbind("<Motion>")
-            fenetre2.canva_droite.unbind("<MouseWheel>")
-            fenetre2.canva_droite.unbind("<Button-3>")
-
-            coordonnee_case_x = coordonnee_case[0]
-            coordonnee_case_y = coordonnee_case[1]
-
-            if joueur == 1:
-                bonne_position_bateau = plateau_joueur1.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation[0], taille, option_can_touch)
-                #plateau_joueur1.afficher_plateau(True, True)
-                fenetre1.afficher_plateau(plateau_joueur1.plateau, option_voir_cibles_adverses, True, 'droite', afficher_croix)
-                if bonne_position_bateau == True:
-                    liste_bateaux_a_poser.remove(taille)
-                    index = taille - 1
-                    fenetre1.bloc_canva_var.itemconfig(fenetre1.canva_text_ids[0][index], text='× ' + str(liste_bateaux_a_poser.count(taille)))
-                num_joueur = 2
+                server.sendall(data.encode() + b'\n')
+    elif joueur in liste_joueur_ia:
+        if joueur == 1:
+            plateau_joueur1.pose_bateaux_aleatoire(option_can_touch)
+        else:
+            plateau_joueur2.pose_bateaux_aleatoire(option_can_touch)
+    else:#joueur in liste_joueur_socket
+        buffer = ""
+        continue_receiving = True
+        while continue_receiving:
+            if mode_jeu == 'socket_serveur':
+                buffer += conn.recv(4096).decode()
             else:
-                bonne_position_bateau = plateau_joueur2.ajouter_bateau(coordonnee_case_x, coordonnee_case_y, orientation[0], taille, option_can_touch)   
-                #plateau_joueur2.afficher_plateau(True, True)
-                fenetre2.afficher_plateau(plateau_joueur2.plateau, option_voir_cibles_adverses, True, 'droite', afficher_croix)
-                if bonne_position_bateau == True:
-                    liste_bateaux_a_poser.remove(taille)
-                    index = taille - 1
-                    fenetre2.bloc_canva_var.itemconfig(fenetre2.canva_text_ids[0][index], text='× ' + str(liste_bateaux_a_poser.count(taille)))
-
-    fenetre1.titres[0].configure(text="C'est à l'adversaire de poser ces bateaux")
-    fenetre2.titres[0].configure(text="C'est à vous de poser les bateaux")
-for joueur in liste_joueur_ia:
-    if joueur == 1:
-        plateau_joueur1.pose_bateaux_aleatoire(option_can_touch)
-    else:
-        plateau_joueur2.pose_bateaux_aleatoire(option_can_touch)
-
+                buffer += server.recv(4096).decode()
+            if '\n' in buffer:
+                data, buffer = buffer.split('\n', 1)
+                matrice = json.loads(data)
+                continue_receiving = False
+        payload = json.loads(data)
+        matrice = payload["matrice"]
+        liste_bateau_restant = payload["liste_bateau_restant"]
+        if joueur == 1:
+            plateau_joueur1.liste_bateau_restant = liste_bateau_restant
+        else:   
+            plateau_joueur2.liste_bateau_restant = liste_bateau_restant
+        for i, ligne in enumerate(matrice):
+            for j, case_dict in enumerate(ligne):
+                if joueur == 1:
+                    case = plateau_joueur1.plateau[i][j]
+                else:
+                    case = plateau_joueur2.plateau[i][j]
+                case.type = case_dict["type"]
+                case.taille_bateau = case_dict["taille_bateau"]
+                case.position_sur_bateau = case_dict["position_sur_bateau"]
+                case.orientation_bateau = case_dict["orientation_bateau"]
 plateau_joueur1.liste_bateau_total = copy.deepcopy(plateau_joueur1.liste_bateau_restant)
 plateau_joueur2.liste_bateau_total = copy.deepcopy(plateau_joueur2.liste_bateau_restant)
 
@@ -1251,7 +1323,7 @@ while not fin_du_jeux:
                 fenetre1.canva_gauche.config(cursor="arrow")
                 fenetre1.canva_gauche.unbind("<Motion>")
                 fenetre1.canva_gauche.unbind("<Leave>")
-            else :
+            elif 1 in liste_joueur_ia :
                 coordonnee_case = plateau_joueur2.coup_IA(option_can_touch)
         else:
             if 2 in liste_joueur_humain:
@@ -1262,8 +1334,16 @@ while not fin_du_jeux:
                 fenetre2.canva_gauche.config(cursor="arrow")
                 fenetre2.canva_gauche.unbind("<Motion>")
                 fenetre2.canva_gauche.unbind("<Leave>")
-            else:
+            elif 1 in liste_joueur_ia :
                 coordonnee_case = plateau_joueur1.coup_IA(option_can_touch)
+        if joueur in liste_joueur_socket:
+            if mode_jeu == 'socket_serveur':
+                data = conn.recv(1024)
+            else:
+                data = server.recv(1024)
+            splited_data = data.decode().split()
+            coordonnee_case_x, coordonnee_case_y = map(int, splited_data)
+            coordonnee_case = [coordonnee_case_x, coordonnee_case_y]
         coordonnee_case_x = coordonnee_case[0]
         coordonnee_case_y = coordonnee_case[1]
 
@@ -1271,7 +1351,12 @@ while not fin_du_jeux:
             bonne_position_cible = plateau_joueur2.is_possible_cible(coordonnee_case_x, coordonnee_case_y)
         else:
             bonne_position_cible = plateau_joueur1.is_possible_cible(coordonnee_case_x, coordonnee_case_y)
-
+    if joueur in liste_joueur_humain and (mode_jeu == 'socket_serveur' or mode_jeu == 'socket_client'):
+        concactened_data = f"{coordonnee_case_x} {coordonnee_case_y}"
+        if mode_jeu == 'socket_serveur':
+            conn.send(concactened_data.encode())
+        else:
+            server.send(concactened_data.encode())
     # cible une case et gestion bateaux plus fin de game
     if joueur == 1:
         if plateau_joueur2.cible_case(coordonnee_case_x, coordonnee_case_y) == True: # si bateau présent
