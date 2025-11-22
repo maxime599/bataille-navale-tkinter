@@ -1320,12 +1320,8 @@ musique_en_jeu.set_volume(UI_menu.volume_musique_global*0.01)
 musique_en_jeu.play(loops=-1)
 UI_menu.musique_en_jeu_ref = musique_en_jeu
 
-option_can_touch = menu.can_touch.get()
-if option_can_touch == True:
-    afficher_croix = False
-else:
-    afficher_croix = True
 option_voir_cibles_adverses = menu.voir_cibles_adverses.get()
+option_can_touch = menu.can_touch.get()
 afficher_croix = False if option_can_touch == True else True
 mode_jeu = menu.mode_jeu
 
@@ -1354,11 +1350,7 @@ fenetre2.fenetre.update()
 
 
 dico_bateaux_a_poser = menu.dico_bateaux_a_poser
-liste_bateaux_a_poser = []
-for clef in dico_bateaux_a_poser:
-    for i in range(dico_bateaux_a_poser[clef]):
-        plateau_joueur1.liste_bateaux_a_poser.append(clef)
-        plateau_joueur2.liste_bateaux_a_poser.append(clef)
+
 
 fenetre1.titre_information(fenetre1.fenetre,"C'est à vous de poser les bateaux",1,22,15)
 fenetre1.bloc_canva(fenetre1.fenetre, "Vos bateaux à poser", '× ', plateau_joueur1.nb_bateau_restant_a_pose_par_taille(), 2, 22, "bleu")
@@ -1390,6 +1382,13 @@ elif mode_jeu == 'socket_serveur':
     # Accepter un client
     conn, addr = server.accept()
     print(f"[SERVEUR] Client connecté : {addr}")
+    
+    parametres = {
+        "option_can_touch": option_can_touch,
+        "option_voir_cibles_adverses": option_voir_cibles_adverses,
+        "dico_bateaux_a_poser": dico_bateaux_a_poser
+    }
+    conn.sendall((json.dumps(parametres) + '\n').encode())
 else:# mode_jeu == 'socket_client':
     liste_joueur_humain = [2]
     liste_joueur_ia = []
@@ -1400,6 +1399,25 @@ else:# mode_jeu == 'socket_client':
     # Création du socket TCP
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.connect((HOST, PORT))
+    buffer = ""
+    continuer = True
+    while continuer:
+        buffer += server.recv(4096).decode()
+        if '\n' in buffer:
+            data, buffer = buffer.split('\n', 1)
+            continuer = False
+    params = json.loads(data)
+    option_can_touch = params["option_can_touch"]
+    option_voir_cibles_adverses = params["option_voir_cibles_adverses"]
+    dico_bateaux_a_poser = params["dico_bateaux_a_poser"]
+
+liste_bateaux_a_poser = []
+for clef in dico_bateaux_a_poser:
+    for i in range(dico_bateaux_a_poser[clef]):
+        plateau_joueur1.liste_bateaux_a_poser.append(int(clef))
+        plateau_joueur2.liste_bateaux_a_poser.append(int(clef))
+       
+afficher_croix = False if option_can_touch == True else True
 
 fenetre1.canva_bind = 'droite'
 fenetre2.canva_bind = 'droite'
