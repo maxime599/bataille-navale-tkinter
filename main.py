@@ -634,6 +634,7 @@ class UI_menu:
         self.volume_voix_avant_mute = self.volume_voix.get()
         self.volume_musique_avant_mute = self.volume_musique.get()
         self.volume_ui_avant_mute = self.volume_ui.get()
+        self.ip_adresse_serveur = '0.0.0.0'
         if not self.en_jeu:
             self.afficher_menu_principal()
             self.musique_menu.play(loops=-1)
@@ -980,14 +981,21 @@ class UI_menu:
         label_saisir.grid(row=1, column=0, padx=20, pady=10, sticky='e')
         self.entry_ip = Entry(self.frame_client, font=('Helvetica', 12), bg="#ffffff", fg=self.couleur_texte, relief='flat', bd=2, highlightthickness=1, highlightbackground=self.couleur_accent, highlightcolor=self.couleur_accent, width=25)
         self.entry_ip.grid(row=1, column=1, padx=20, pady=10, sticky='w')
-        self.entry_ip.bind("<FocusIn>", lambda e: self.desactiver_boutons())
-        self.entry_ip.bind("<FocusOut>", lambda e: self.activer_boutons())
-        self.bouton_se_connecter = Button(self.frame_client, text='Se connecter', command=lambda: self.jouer_bouton_bleu(), font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        """self.entry_ip.bind("<FocusIn>", lambda e: self.desactiver_boutons())
+        self.entry_ip.bind("<FocusOut>", lambda e: self.activer_boutons())"""
+        """self.bouton_se_connecter = Button(self.frame_client, text='Se connecter', command=lambda: self.jouer_bouton_bleu(), font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
         self.bouton_se_connecter.grid(row=2, column=0, columnspan=2, padx=0, pady=(10, 10), sticky='ew')
         self.bouton_se_connecter.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol) if e.widget['state'] == 'normal' else None)
-        self.bouton_se_connecter.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent) if e.widget['state'] == 'normal' else None)
+        self.bouton_se_connecter.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent) if e.widget['state'] == 'normal' else None)"""
+        
+        bouton_valider = Button(self.fenetre_menu, text='Valider', command=lambda: (self.jouer_bouton_bleu(), self.jouer_contre_joueur_socket(self.mode_reseau.get(), self.entry_ip.get())), font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_valider.grid(row=6, column=0, padx=50, pady=15, sticky='ew')
+        bouton_valider.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
+        bouton_valider.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
+        self.widgets.append(bouton_valider)
+        
         bouton_retour = Button(self.fenetre_menu, text='Retour', command=lambda: [self.jouer_bouton_gris(), self.afficher_mode_jeu()], font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
-        bouton_retour.grid(row=6, column=0, columnspan=2, padx=50, pady=(20, 15), sticky='ew')
+        bouton_retour.grid(row=7, column=0, columnspan=2, padx=50, pady=(20, 15), sticky='ew')
         bouton_retour.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
         bouton_retour.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
         self.widgets.append(bouton_retour)
@@ -1003,11 +1011,11 @@ class UI_menu:
             self.jouer_bouton_bleu()
             self.frame_client.grid_remove()
 
-    def desactiver_boutons(self):
+    """def desactiver_boutons(self):
         self.bouton_se_connecter.config(state='disabled', bg="#90caf9", cursor='arrow')
 
     def activer_boutons(self):
-        self.bouton_se_connecter.config(state='normal', bg=self.couleur_accent, cursor='hand2')
+        self.bouton_se_connecter.config(state='normal', bg=self.couleur_accent, cursor='hand2')"""
 
     def update_icon_voix(self):
         volume = self.volume_voix.get()
@@ -1209,6 +1217,12 @@ class UI_menu:
         self.musique_menu.stop()
         self.fenetre_menu.destroy()
 
+    def jouer_contre_joueur_socket(self, mode_reseau, ip_adresse):
+        self.mode_jeu = 'socket_' + str(mode_reseau)
+        self.ip_adresse_serveur = ip_adresse
+        self.musique_menu.stop()
+        self.fenetre_menu.destroy()
+
     def jouer_bouton_bleu(self):
         bouton_bleu = pygame.mixer.Sound("Sons/ui/par_defaut_bleu.mp3")
         bouton_bleu.set_volume(self.volume_ui.get()*0.01)
@@ -1376,7 +1390,7 @@ else:# mode_jeu == 'socket_client':
     liste_joueur_humain = [2]
     liste_joueur_ia = []
     liste_joueur_socket = [1]
-    HOST = "192.168.1.80"   # Adresse du serveur (localhost)
+    HOST = menu.ip_adresse_serveur   # Adresse du serveur (localhost)
     PORT = 5000          # Port du serveur
 
     # Création du socket TCP
