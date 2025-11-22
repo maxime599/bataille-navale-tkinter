@@ -292,6 +292,7 @@ class UI_game:
             self.fenetre = Toplevel()
             
         self.fenetre.title(nom)
+        self.nom = nom
 
         self._clicked = BooleanVar()
         self.croix_id = None
@@ -332,6 +333,11 @@ class UI_game:
         self.phrase.grid(row=11, column=0, columnspan=10)
         self.phrase = Label(self.fenetre, text="Sert à voir vos bateaux touchés", font=("Courier", 12))
         self.phrase.grid(row=11, column=11, columnspan=10)
+
+        self.parametre = PhotoImage(file="images/parametre_crop.png", master=self.fenetre)
+        label_parametre = Label(self.fenetre, image=self.parametre, cursor='hand2')
+        label_parametre.grid(row=0, column=22, padx=10, pady=10, sticky='e')
+        label_parametre.bind("<Button-1>", lambda e: self.afficher_fenetre_parametre())
         
         
         #Gestion des différentes images
@@ -355,7 +361,6 @@ class UI_game:
         self.im_carre_rouge = PhotoImage(file="images/carre_bateau_rouge.png", master=self.fenetre)
 
         self.liste_img_bateaux = [self.img_bateau_1, self.img_bateau_2, self.img_bateau_3, self.img_bateau_4, self.img_bateau_5]
-
         self.titres = []
         self.canva_ids = []
         self.canva_text_ids = []
@@ -438,7 +443,6 @@ class UI_game:
                     if colonne.type == 3:
                         self.canva_droite.create_image(x, y, image=self.img_touche, anchor=NW)
                 
-
     def click_to_case(self, coordonnee_click_x, coordonnee_click_y):
         #Retourne les coordonnées de la case cliquée
         return (int(coordonnee_click_y/(self.taille_case+3)), int(coordonnee_click_x/(self.taille_case+3)))
@@ -522,7 +526,7 @@ class UI_game:
         # Affiche la croix à la position de la souris
         self.croix_id = self.canva_gauche.create_image(event.x, event.y, image=self.img_cible)
 
-    def cacher_croix(self, event):
+    def cacher_croix(self, event=None):
         if self.croix_id is not None:
             self.canva_gauche.delete(self.croix_id)
             self.croix_id = None
@@ -569,10 +573,14 @@ class UI_game:
             self.canva_cacher = False
         else:
             self.canva_cacher = True
-            self.canva_droite.create_rectangle(
-                0, 0, self.canva_droite.winfo_width(), self.canva_droite.winfo_height(),
-                fill="black", outline="", tags="cache_noir"
-            )
+            self.canva_droite.create_rectangle(0, 0, self.canva_droite.winfo_width(), self.canva_droite.winfo_height(),fill="black", outline="", tags="cache_noir")
+      
+    def afficher_fenetre_parametre(self):
+        fenetre_parametre = UI_menu(f"Volume du joueur {self.joueur}", True)
+        fenetre_parametre.fenetre_menu.transient(self.fenetre)
+        fenetre_parametre.fenetre_menu.grab_set()
+        self.fenetre.wait_window(fenetre_parametre.fenetre_menu)
+
 class Case:
     def __init__(self,coordonnee_x, coordonnee_y, type, taille_bateau = None, position_sur_bateau = None, orientation_bateau = None):
         self.coordonnee_x = coordonnee_x
@@ -588,32 +596,50 @@ class Case:
             self.is_beateau = False
 
 class UI_menu:
-    def __init__(self):
+    volume_voix_global = 75
+    volume_musique_global = 20
+    volume_ui_global = 30
+    volume_voix_avant_mute_global = volume_voix_global
+    volume_musique_avant_mute_global = volume_musique_global
+    volume_ui_avant_mute_global = volume_ui_global
+    musique_en_jeu_ref = None
+    
+    def __init__(self, nom, en_jeu):        
         self.dico_bateaux_a_poser = {1:0, 2:1, 3:2, 4:1, 5:1}
-        self.fenetre_menu = Tk()
+        
+        if en_jeu:
+            self.fenetre_menu = Toplevel()
+        else:
+            self.fenetre_menu = Tk()
+
         self.can_touch = BooleanVar(value=False)
         self.voir_cibles_adverses = BooleanVar(value=True)
-        self.volume_voix = DoubleVar(value=75)
-        self.volume_musique = DoubleVar(value=20)
-        self.volume_ui = DoubleVar(value=30)
-        self.fenetre_menu.title("Bataille navale")
+        self.volume_voix = DoubleVar(value=UI_menu.volume_voix_global)
+        self.volume_musique = DoubleVar(value=UI_menu.volume_musique_global)
+        self.volume_ui = DoubleVar(value=UI_menu.volume_ui_global)
+        self.img_hp_0 = PhotoImage(file='sons/icones_son/haut-parleur_0_crop.png')
+        self.img_hp_1 = PhotoImage(file='sons/icones_son/haut-parleur_1_crop.png')
+        self.img_hp_2 = PhotoImage(file='sons/icones_son/haut-parleur_2_crop.png')
+        self.img_hp_3 = PhotoImage(file='sons/icones_son/haut-parleur_3_crop.png')
+        self.fenetre_menu.title(nom)
+        self.en_jeu = en_jeu
         self.widgets = []
         self.couleur_fond = "#ffffff"
         self.couleur_accent = "#42a5f5"
         self.couleur_texte = "#01579b"
         self.couleur_survol = "#90caf9"
-        self.img_hp_0 = PhotoImage(file='sons/icones_son/haut-parleur_0_crop.png')
-        self.img_hp_1 = PhotoImage(file='sons/icones_son/haut-parleur_1_crop.png')
-        self.img_hp_2 = PhotoImage(file='sons/icones_son/haut-parleur_2_crop.png')
-        self.img_hp_3 = PhotoImage(file='sons/icones_son/haut-parleur_3_crop.png')
+        self.fenetre_menu.configure(bg=self.couleur_fond)
         self.musique_menu = pygame.mixer.Sound("sons/musics/ui/musique_dascenseur.mp3")
         self.musique_menu.set_volume(self.volume_musique.get()*0.01)
-        self.musique_menu.play(loops=-1)
         self.volume_voix_avant_mute = self.volume_voix.get()
         self.volume_musique_avant_mute = self.volume_musique.get()
         self.volume_ui_avant_mute = self.volume_ui.get()
-        self.afficher_menu_principal()
-        self.fenetre_menu.mainloop()
+        if not self.en_jeu:
+            self.afficher_menu_principal()
+            self.musique_menu.play(loops=-1)
+            self.fenetre_menu.mainloop()
+        else:
+            self.afficher_volume()
 
     def clear_widgets(self):
         for widget in self.widgets:
@@ -622,7 +648,6 @@ class UI_menu:
 
     def afficher_menu_principal(self):
         self.clear_widgets()
-        self.fenetre_menu.configure(bg=self.couleur_fond)
 
         label_text_principal_menu = Label(self.fenetre_menu, text='Bataille navale', font=('Helvetica', 32, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=40)
         label_text_principal_menu.grid(row=0, column=0, padx=50, pady=(30, 20))
@@ -690,7 +715,6 @@ class UI_menu:
 
     def afficher_fenetre_nb_bateaux(self):
         self.clear_widgets()
-        self.fenetre_menu.configure(bg=self.couleur_fond)
 
         label = Label(self.fenetre_menu, text="Nombre de bateaux de chaque taille", font=('Helvetica', 24, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=30, wraplength=320)
         label.grid(row=0, column=0, columnspan=2, padx=50, pady=(30, 20))
@@ -731,7 +755,6 @@ class UI_menu:
 
     def afficher_volume(self):
         self.clear_widgets()
-        self.fenetre_menu.configure(bg=self.couleur_fond)
         label_text_principal_volume = Label(self.fenetre_menu, text='Volume', font=('Helvetica', 32, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=30)
         label_text_principal_volume.grid(row=0, column=0, columnspan=2, padx=50, pady=(20, 10))
         self.widgets.append(label_text_principal_volume)
@@ -749,7 +772,7 @@ class UI_menu:
         frame_scale_voix.grid(row=2, column=1, padx=(10, 50), pady=5, sticky='w')
         self.widgets.append(frame_scale_voix)
 
-        scale_volume_voix = Scale(frame_scale_voix, variable=self.volume_voix, from_=0, to=100, length=280, orient='horizontal', font=('Helvetica', 10), bg='#ffffff', fg=self.couleur_texte, troughcolor=self.couleur_accent, activebackground=self.couleur_survol, highlightthickness=0, cursor='hand2', relief='flat', bd=0, sliderrelief='raised', width=15, command=lambda v: [self.update_icon_voix(), self.jouer_clic()])
+        scale_volume_voix = Scale(frame_scale_voix, variable=self.volume_voix, from_=0, to=100, length=280, orient='horizontal', font=('Helvetica', 10), bg='#ffffff', fg=self.couleur_texte, troughcolor=self.couleur_accent, activebackground=self.couleur_survol, highlightthickness=0, cursor='hand2', relief='flat', bd=0, sliderrelief='raised', width=15, command=lambda v: self.changer_volume_voix())
         scale_volume_voix.pack(padx=8, pady=8)
         self.widgets.append(scale_volume_voix)
 
@@ -766,7 +789,7 @@ class UI_menu:
         frame_scale_musique.grid(row=4, column=1, padx=(10, 50), pady=5, sticky='w')
         self.widgets.append(frame_scale_musique)
 
-        scale_volume_musique = Scale(frame_scale_musique, variable=self.volume_musique, from_=0, to=100, length=280, orient='horizontal', font=('Helvetica', 10), bg='#ffffff', fg=self.couleur_texte, troughcolor=self.couleur_accent, activebackground=self.couleur_survol, highlightthickness=0, cursor='hand2', relief='flat', bd=0, sliderrelief='raised', width=15, command=lambda v: [self.update_icon_musique(), self.actuliser_musique_menu(), self.jouer_clic()])
+        scale_volume_musique = Scale(frame_scale_musique, variable=self.volume_musique, from_=0, to=100, length=280, orient='horizontal', font=('Helvetica', 10), bg='#ffffff', fg=self.couleur_texte, troughcolor=self.couleur_accent, activebackground=self.couleur_survol, highlightthickness=0, cursor='hand2', relief='flat', bd=0, sliderrelief='raised', width=15, command=lambda v: self.changer_volume_musique())
         scale_volume_musique.pack(padx=8, pady=8)
         self.widgets.append(scale_volume_musique)
 
@@ -783,12 +806,24 @@ class UI_menu:
         frame_scale_ui.grid(row=6, column=1, padx=(10, 50), pady=5, sticky='w')
         self.widgets.append(frame_scale_ui)
 
-        scale_volume_ui = Scale(frame_scale_ui, variable=self.volume_ui, from_=0, to=100, length=280, orient='horizontal', font=('Helvetica', 10), bg='#ffffff', fg=self.couleur_texte, troughcolor=self.couleur_accent, activebackground=self.couleur_survol, highlightthickness=0, cursor='hand2', relief='flat', bd=0, sliderrelief='raised', width=15, command=lambda v: [self.update_icon_ui(), self.jouer_clic()])
+        scale_volume_ui = Scale(frame_scale_ui, variable=self.volume_ui, from_=0, to=100, length=280, orient='horizontal', font=('Helvetica', 10), bg='#ffffff', fg=self.couleur_texte, troughcolor=self.couleur_accent, activebackground=self.couleur_survol, highlightthickness=0, cursor='hand2', relief='flat', bd=0, sliderrelief='raised', width=15, command=lambda v: self.changer_volume_ui())
         scale_volume_ui.pack(padx=8, pady=8)
         self.widgets.append(scale_volume_ui)
 
-        bouton_retour = Button(self.fenetre_menu, text='Retour', command=lambda: (self.jouer_bouton_gris(), self.afficher_parametres()), font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
-        bouton_retour.grid(row=7, column=0, columnspan=2, padx=50, pady=(20, 15), sticky='ew')
+        bouton_choix_son = Button(self.fenetre_menu, text='Choix des sons', command=lambda: (self.jouer_bouton_bleu(), self.afficher_choix_volume()), font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_choix_son.grid(row=7, column=0, columnspan=2, padx=50, pady=(20, 15), sticky='ew')
+        bouton_choix_son.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
+        bouton_choix_son.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
+        self.widgets.append(bouton_choix_son)
+        
+        if not self.en_jeu:
+            texte = "Retour"
+            fonction = self.afficher_parametres
+        else:
+            texte = "Quitter"
+            fonction = self.fenetre_menu.destroy
+        bouton_retour = Button(self.fenetre_menu, text=texte, command=lambda: (self.jouer_bouton_gris(), fonction()), font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_retour.grid(row=8, column=0, columnspan=2, padx=50, pady=15, sticky='ew')
         bouton_retour.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
         bouton_retour.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
         self.widgets.append(bouton_retour)
@@ -796,6 +831,183 @@ class UI_menu:
         self.update_icon_voix()
         self.update_icon_musique()
         self.update_icon_ui()
+
+    def afficher_choix_volume(self):
+        self.clear_widgets()
+        label_text_principal_choix_volume = Label(self.fenetre_menu, text='Choix des sons', font=('Helvetica', 32, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=30)
+        label_text_principal_choix_volume.grid(row=0, column=0, columnspan=2, padx=50, pady=(20, 10))
+        self.widgets.append(label_text_principal_choix_volume)
+        
+        label_bouton_bleu = Label(self.fenetre_menu, text='Son bouton bleu', font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte)
+        label_bouton_bleu.grid(row=1, column=0, padx=10, pady=(10, 2), sticky='e')
+        self.widgets.append(label_bouton_bleu)
+        frame_liste_bouton_bleu = Frame(self.fenetre_menu, bg='#ffffff', relief='flat', bd=2, highlightbackground=self.couleur_accent, highlightthickness=1)
+        frame_liste_bouton_bleu.grid(row=1, column=1, padx=(10, 50), pady=5, sticky='w')
+        self.widgets.append(frame_liste_bouton_bleu)
+        liste_bouton_bleu = Listbox(frame_liste_bouton_bleu, height=1, font=('Helvetica', 10), bg='#ffffff', fg=self.couleur_texte, relief='flat', bd=0, highlightthickness=0, cursor='hand2')
+        liste_bouton_bleu.pack(padx=8, pady=8)
+        self.widgets.append(liste_bouton_bleu)
+        
+        label_bouton_gris = Label(self.fenetre_menu, text='Son bouton gris', font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte)
+        label_bouton_gris.grid(row=2, column=0, padx=10, pady=(10, 2), sticky='e')
+        self.widgets.append(label_bouton_gris)
+        frame_liste_bouton_gris = Frame(self.fenetre_menu, bg='#ffffff', relief='flat', bd=2, highlightbackground=self.couleur_accent, highlightthickness=1)
+        frame_liste_bouton_gris.grid(row=2, column=1, padx=(10, 50), pady=5, sticky='w')
+        self.widgets.append(frame_liste_bouton_gris)
+        liste_bouton_gris = Listbox(frame_liste_bouton_gris, height=1, font=('Helvetica', 10), bg='#ffffff', fg=self.couleur_texte, relief='flat', bd=0, highlightthickness=0, cursor='hand2')
+        liste_bouton_gris.pack(padx=8, pady=8)
+        self.widgets.append(liste_bouton_gris)
+        
+        label_musique_menu = Label(self.fenetre_menu, text='Musique du menu', font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte)
+        label_musique_menu.grid(row=3, column=0, padx=10, pady=(10, 2), sticky='e')
+        self.widgets.append(label_musique_menu)
+        frame_liste_musique_menu = Frame(self.fenetre_menu, bg='#ffffff', relief='flat', bd=2, highlightbackground=self.couleur_accent, highlightthickness=1)
+        frame_liste_musique_menu.grid(row=3, column=1, padx=(10, 50), pady=5, sticky='w')
+        self.widgets.append(frame_liste_musique_menu)
+        liste_musique_menu = Listbox(frame_liste_musique_menu, height=1, font=('Helvetica', 10), bg='#ffffff', fg=self.couleur_texte, relief='flat', bd=0, highlightthickness=0, cursor='hand2')
+        liste_musique_menu.pack(padx=8, pady=8)
+        self.widgets.append(liste_musique_menu)
+        label_musique_jeu = Label(self.fenetre_menu, text='Musique en jeu', font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte)
+        label_musique_jeu.grid(row=4, column=0, padx=10, pady=(10, 2), sticky='e')
+        self.widgets.append(label_musique_jeu)
+        frame_liste_musique_jeu = Frame(self.fenetre_menu, bg='#ffffff', relief='flat', bd=2, highlightbackground=self.couleur_accent, highlightthickness=1)
+        frame_liste_musique_jeu.grid(row=4, column=1, padx=(10, 50), pady=5, sticky='w')
+        self.widgets.append(frame_liste_musique_jeu)
+        liste_musique_jeu = Listbox(frame_liste_musique_jeu, height=1, font=('Helvetica', 10), bg='#ffffff', fg=self.couleur_texte, relief='flat', bd=0, highlightthickness=0, cursor='hand2')
+        liste_musique_jeu.pack(padx=8, pady=8)
+        self.widgets.append(liste_musique_jeu)
+        label_poser_bateaux = Label(self.fenetre_menu, text="C'est au joueur n de poser ses bateaux !", font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte)
+        label_poser_bateaux.grid(row=5, column=0, padx=10, pady=(10, 2), sticky='e')
+        self.widgets.append(label_poser_bateaux)
+        frame_liste_poser_bateaux = Frame(self.fenetre_menu, bg='#ffffff', relief='flat', bd=2, highlightbackground=self.couleur_accent, highlightthickness=1)
+        frame_liste_poser_bateaux.grid(row=5, column=1, padx=(10, 50), pady=5, sticky='w')
+        self.widgets.append(frame_liste_poser_bateaux)
+        liste_poser_bateaux = Listbox(frame_liste_poser_bateaux, height=1, font=('Helvetica', 10), bg='#ffffff', fg=self.couleur_texte, relief='flat', bd=0, highlightthickness=0, cursor='hand2')
+        liste_poser_bateaux.pack(padx=8, pady=8)
+        self.widgets.append(liste_poser_bateaux)
+        label_reste_bateau = Label(self.fenetre_menu, text='Il reste n bateau(x) en vie', font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte)
+        label_reste_bateau.grid(row=6, column=0, padx=10, pady=(10, 2), sticky='e')
+        self.widgets.append(label_reste_bateau)
+        frame_liste_reste_bateau = Frame(self.fenetre_menu, bg='#ffffff', relief='flat', bd=2, highlightbackground=self.couleur_accent, highlightthickness=1)
+        frame_liste_reste_bateau.grid(row=6, column=1, padx=(10, 50), pady=5, sticky='w')
+        self.widgets.append(frame_liste_reste_bateau)
+        liste_reste_bateau = Listbox(frame_liste_reste_bateau, height=1, font=('Helvetica', 10), bg='#ffffff', fg=self.couleur_texte, relief='flat', bd=0, highlightthickness=0, cursor='hand2')
+        liste_reste_bateau.pack(padx=8, pady=8)
+        self.widgets.append(liste_reste_bateau)
+        label_bateau_coule = Label(self.fenetre_menu, text='Le bateau de taille n a été coulé !', font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte)
+        label_bateau_coule.grid(row=7, column=0, padx=10, pady=(10, 2), sticky='e')
+        self.widgets.append(label_bateau_coule)
+        frame_liste_bateau_coule = Frame(self.fenetre_menu, bg='#ffffff', relief='flat', bd=2, highlightbackground=self.couleur_accent, highlightthickness=1)
+        frame_liste_bateau_coule.grid(row=7, column=1, padx=(10, 50), pady=5, sticky='w')
+        self.widgets.append(frame_liste_bateau_coule)
+        liste_bateau_coule = Listbox(frame_liste_bateau_coule, height=1, font=('Helvetica', 10), bg='#ffffff', fg=self.couleur_texte, relief='flat', bd=0, highlightthickness=0, cursor='hand2')
+        liste_bateau_coule.pack(padx=8, pady=8)
+        self.widgets.append(liste_bateau_coule)
+        label_partie_terminee = Label(self.fenetre_menu, text='Partie terminée, le joueur n°n gagne !', font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte)
+        label_partie_terminee.grid(row=8, column=0, padx=10, pady=(10, 2), sticky='e')
+        self.widgets.append(label_partie_terminee)
+        frame_liste_partie_terminee = Frame(self.fenetre_menu, bg='#ffffff', relief='flat', bd=2, highlightbackground=self.couleur_accent, highlightthickness=1)
+        frame_liste_partie_terminee.grid(row=8, column=1, padx=(10, 50), pady=5, sticky='w')
+        self.widgets.append(frame_liste_partie_terminee)
+        liste_partie_terminee = Listbox(frame_liste_partie_terminee, height=1, font=('Helvetica', 10), bg='#ffffff', fg=self.couleur_texte, relief='flat', bd=0, highlightthickness=0, cursor='hand2')
+        liste_partie_terminee.pack(padx=8, pady=8)
+        self.widgets.append(liste_partie_terminee)
+        label_navires_prets = Label(self.fenetre_menu, text='Les navires sont prêts au combat !', font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte)
+        label_navires_prets.grid(row=9, column=0, padx=10, pady=(10, 2), sticky='e')
+        self.widgets.append(label_navires_prets)
+        frame_liste_navires_prets = Frame(self.fenetre_menu, bg='#ffffff', relief='flat', bd=2, highlightbackground=self.couleur_accent, highlightthickness=1)
+        frame_liste_navires_prets.grid(row=9, column=1, padx=(10, 50), pady=5, sticky='w')
+        self.widgets.append(frame_liste_navires_prets)
+        liste_navires_prets = Listbox(frame_liste_navires_prets, height=1, font=('Helvetica', 10), bg='#ffffff', fg=self.couleur_texte, relief='flat', bd=0, highlightthickness=0, cursor='hand2')
+        liste_navires_prets.pack(padx=8, pady=8)
+        self.widgets.append(liste_navires_prets)
+        label_bateau_touche = Label(self.fenetre_menu, text='Un bateau à été touché !', font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte)
+        label_bateau_touche.grid(row=10, column=0, padx=10, pady=(10, 2), sticky='e')
+        self.widgets.append(label_bateau_touche)
+        frame_liste_bateau_touche = Frame(self.fenetre_menu, bg='#ffffff', relief='flat', bd=2, highlightbackground=self.couleur_accent, highlightthickness=1)
+        frame_liste_bateau_touche.grid(row=10, column=1, padx=(10, 50), pady=5, sticky='w')
+        self.widgets.append(frame_liste_bateau_touche)
+        liste_bateau_touche = Listbox(frame_liste_bateau_touche, height=1, font=('Helvetica', 10), bg='#ffffff', fg=self.couleur_texte, relief='flat', bd=0, highlightthickness=0, cursor='hand2')
+        liste_bateau_touche.pack(padx=8, pady=8)
+        self.widgets.append(liste_bateau_touche)
+        bouton_retour = Button(self.fenetre_menu, text='Retour', command=lambda e: [self.afficher_volume(), self.jouer_bouton_gris()], font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_retour.grid(row=11, column=0, columnspan=2, padx=50, pady=(20, 15), sticky='ew')
+        bouton_retour.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
+        bouton_retour.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
+        self.widgets.append(bouton_retour)
+        self.fenetre_menu.grid_columnconfigure(1, weight=1)
+
+    def afficher_ip(self):
+        self.clear_widgets()
+        self.fenetre_menu.configure(bg=self.couleur_fond)
+        label_text_principal_ip = Label(self.fenetre_menu, text='Jouer contre un joueur', font=('Helvetica', 32, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=30)
+        label_text_principal_ip.grid(row=0, column=0, columnspan=2, padx=50, pady=(20, 10))
+        self.widgets.append(label_text_principal_ip)
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip_locale = s.getsockname()[0]
+        s.close()
+        label_ip_titre = Label(self.fenetre_menu, text='Votre adresse IP :', font=('Helvetica', 14, 'bold'), bg=self.couleur_fond, fg=self.couleur_texte, pady=20)
+        label_ip_titre.grid(row=1, column=0, columnspan=2, padx=50, pady=(10, 5))
+        self.widgets.append(label_ip_titre)
+        frame_ip = Frame(self.fenetre_menu, bg='#ffffff', relief='flat', bd=2, highlightbackground=self.couleur_accent, highlightthickness=2)
+        frame_ip.grid(row=2, column=0, columnspan=2, padx=50, pady=5)
+        self.widgets.append(frame_ip)
+        label_ip = Label(frame_ip, text=ip_locale, font=('Helvetica', 16, 'bold'), bg='#ffffff', fg=self.couleur_accent, padx=30, pady=15)
+        label_ip.pack()
+        self.widgets.append(label_ip)
+        bouton_copier = Button(self.fenetre_menu, text='Copier l\'adresse IP', command=lambda: [self.jouer_bouton_bleu(), self.copier(ip_locale)], font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_copier.grid(row=3, column=0, columnspan=2, padx=50, pady=(10, 20), sticky='ew')
+        bouton_copier.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
+        bouton_copier.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
+        self.widgets.append(bouton_copier)
+        self.mode_reseau = StringVar(value="serveur")
+        frame_choix = Frame(self.fenetre_menu, bg=self.couleur_fond)
+        frame_choix.grid(row=4, column=0, columnspan=2, padx=50, pady=(10, 20))
+        self.widgets.append(frame_choix)
+        radio_serveur = Radiobutton(frame_choix, text="Être le serveur", variable=self.mode_reseau, value="serveur", command=self.basculer_mode_reseau, font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte, selectcolor=self.couleur_fond, activebackground=self.couleur_fond, activeforeground=self.couleur_texte, cursor='hand2')
+        radio_serveur.pack(side='left', padx=20)
+        self.widgets.append(radio_serveur)
+        radio_client = Radiobutton(frame_choix, text="Être le client", variable=self.mode_reseau, value="client", command=self.basculer_mode_reseau, font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte, selectcolor=self.couleur_fond, activebackground=self.couleur_fond, activeforeground=self.couleur_texte, cursor='hand2')
+        radio_client.pack(side='left', padx=20)
+        self.widgets.append(radio_client)
+        self.frame_client = Frame(self.fenetre_menu, bg=self.couleur_fond)
+        self.frame_client.grid(row=5, column=0, columnspan=2, padx=50, pady=(10, 20))
+        self.widgets.append(self.frame_client)
+        label_connect = Label(self.frame_client, text='Se connecter à un joueur', font=('Helvetica', 14, 'bold'), bg=self.couleur_fond, fg=self.couleur_texte, pady=10)
+        label_connect.grid(row=0, column=0, columnspan=2, padx=0, pady=(10, 5))
+        label_saisir = Label(self.frame_client, text='Adresse IP :', font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte)
+        label_saisir.grid(row=1, column=0, padx=20, pady=10, sticky='e')
+        self.entry_ip = Entry(self.frame_client, font=('Helvetica', 12), bg="#ffffff", fg=self.couleur_texte, relief='flat', bd=2, highlightthickness=1, highlightbackground=self.couleur_accent, highlightcolor=self.couleur_accent, width=25)
+        self.entry_ip.grid(row=1, column=1, padx=20, pady=10, sticky='w')
+        self.entry_ip.bind("<FocusIn>", lambda e: self.desactiver_boutons())
+        self.entry_ip.bind("<FocusOut>", lambda e: self.activer_boutons())
+        self.bouton_se_connecter = Button(self.frame_client, text='Se connecter', command=lambda: self.jouer_bouton_bleu(), font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        self.bouton_se_connecter.grid(row=2, column=0, columnspan=2, padx=0, pady=(10, 10), sticky='ew')
+        self.bouton_se_connecter.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol) if e.widget['state'] == 'normal' else None)
+        self.bouton_se_connecter.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent) if e.widget['state'] == 'normal' else None)
+        bouton_retour = Button(self.fenetre_menu, text='Retour', command=lambda: [self.jouer_bouton_gris(), self.afficher_mode_jeu()], font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_retour.grid(row=6, column=0, columnspan=2, padx=50, pady=(20, 15), sticky='ew')
+        bouton_retour.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
+        bouton_retour.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
+        self.widgets.append(bouton_retour)
+        self.fenetre_menu.grid_columnconfigure(0, weight=1)
+        self.fenetre_menu.grid_columnconfigure(1, weight=1)
+        self.frame_client.grid_remove()
+
+    def basculer_mode_reseau(self):
+        if self.mode_reseau.get() == "client":
+            self.jouer_bouton_gris()
+            self.frame_client.grid()
+        else:
+            self.jouer_bouton_bleu()
+            self.frame_client.grid_remove()
+
+    def desactiver_boutons(self):
+        self.bouton_se_connecter.config(state='disabled', bg="#90caf9", cursor='arrow')
+
+    def activer_boutons(self):
+        self.bouton_se_connecter.config(state='normal', bg=self.couleur_accent, cursor='hand2')
 
     def update_icon_voix(self):
         volume = self.volume_voix.get()
@@ -832,37 +1044,46 @@ class UI_menu:
 
     def toggle_mute_voix(self):
         if self.volume_voix.get() == 0:
-            self.volume_voix.set(self.volume_voix_avant_mute)
+            self.volume_voix.set(UI_menu.volume_voix_avant_mute_global)
+            UI_menu.volume_voix_global = UI_menu.volume_voix_avant_mute_global
             self.jouer_bouton_bleu()
         else:
-            self.volume_voix_avant_mute = self.volume_voix.get()
+            UI_menu.volume_voix_avant_mute_global = self.volume_voix.get()
             self.volume_voix.set(0)
+            UI_menu.volume_voix_global = 0
             self.jouer_bouton_gris()
         self.update_icon_voix()
 
     def toggle_mute_musique(self):
         if self.volume_musique.get() == 0:
-            self.volume_musique.set(self.volume_musique_avant_mute)
+            self.volume_musique.set(UI_menu.volume_musique_avant_mute_global)
+            UI_menu.volume_musique_global = UI_menu.volume_musique_avant_mute_global
+            if UI_menu.musique_en_jeu_ref != None:
+                UI_menu.musique_en_jeu_ref.set_volume(self.volume_musique.get()*0.01)
             self.jouer_bouton_bleu()
         else:
-            self.volume_musique_avant_mute = self.volume_musique.get()
+            UI_menu.volume_musique_avant_mute_global = self.volume_musique.get()
             self.volume_musique.set(0)
+            UI_menu.volume_musique_global = 0
+            if UI_menu.musique_en_jeu_ref != None:
+                UI_menu.musique_en_jeu_ref.set_volume(self.volume_musique.get()*0.01)
             self.jouer_bouton_gris()
         self.update_icon_musique()
 
     def toggle_mute_ui(self):
         if self.volume_ui.get() == 0:
-            self.volume_ui.set(self.volume_ui_avant_mute)
+            self.volume_ui.set(UI_menu.volume_ui_avant_mute_global)
+            UI_menu.volume_ui_global = UI_menu.volume_ui_avant_mute_global
             self.jouer_bouton_bleu()
         else:
-            self.volume_ui_avant_mute = self.volume_ui.get()
+            UI_menu.volume_ui_avant_mute_global = self.volume_ui.get()
             self.volume_ui.set(0)
+            UI_menu.volume_ui_global = 0
             self.jouer_bouton_gris()
         self.update_icon_ui()
 
     def afficher_mode_jeu(self):
         self.clear_widgets()
-        self.fenetre_menu.configure(bg=self.couleur_fond)
         label_text_principal_mode = Label(self.fenetre_menu, text='Mode de jeu', font=('Helvetica', 32, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=40)
         label_text_principal_mode.grid(row=0, column=0, padx=50, pady=(30, 20))
         self.widgets.append(label_text_principal_mode)
@@ -871,13 +1092,21 @@ class UI_menu:
         bouton_joueur.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
         bouton_joueur.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
         self.widgets.append(bouton_joueur)
+
         bouton_ia = Button(self.fenetre_menu, text='Jouer contre une ia', command=lambda: (self.jouer_bouton_bleu(), self.jouer_contre_ia()), font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
         bouton_ia.grid(row=2, column=0, padx=50, pady=15, sticky='ew')
         bouton_ia.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
         bouton_ia.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
         self.widgets.append(bouton_ia)
+
+        bouton_jouer_contre_joueur = Button(self.fenetre_menu, text='Jouer contre un joueur à distance', command=lambda: (self.jouer_bouton_bleu(), self.afficher_ip()), font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_jouer_contre_joueur.grid(row=3, column=0, padx=50, pady=15, sticky='ew')
+        bouton_jouer_contre_joueur.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
+        bouton_jouer_contre_joueur.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
+        self.widgets.append(bouton_jouer_contre_joueur)
+
         bouton_retour = Button(self.fenetre_menu, text='Retour', command=lambda: (self.jouer_bouton_gris(), self.afficher_menu_principal()), font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
-        bouton_retour.grid(row=3, column=0, padx=50, pady=15, sticky='ew')
+        bouton_retour.grid(row=4, column=0, padx=50, pady=15, sticky='ew')
         bouton_retour.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
         bouton_retour.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
         self.widgets.append(bouton_retour)
@@ -885,7 +1114,6 @@ class UI_menu:
 
     def afficher_credits(self):
         self.clear_widgets()
-        self.fenetre_menu.configure(bg=self.couleur_fond)
         label_text_principal_credits = Label(self.fenetre_menu, text='Crédits', font=('Helvetica', 32, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=40)
         label_text_principal_credits.grid(row=0, column=0, padx=50, pady=(30, 20))
         self.widgets.append(label_text_principal_credits)
@@ -920,7 +1148,7 @@ class UI_menu:
     def quitter_fenetre(self):
         self.musique_menu.stop()
         self.fenetre_menu.destroy()
-        
+      
     def recuperer_taille_bateaux(self):
         try:
             nb_bateaux_1 = int(self.form_nb_bateaux[0].get())
@@ -1011,6 +1239,29 @@ class UI_menu:
         else:
             self.jouer_bouton_gris()
 
+    def changer_volume_voix(self):
+        UI_menu.volume_voix_global = self.volume_voix.get()
+        self.update_icon_voix()
+        self.jouer_clic()
+
+    def changer_volume_musique(self):
+        UI_menu.volume_musique_global = self.volume_musique.get()
+        self.update_icon_musique()
+        self.actuliser_musique_menu()
+        if UI_menu.musique_en_jeu_ref != None:
+            UI_menu.musique_en_jeu_ref.set_volume(self.volume_musique.get()*0.01)
+        self.jouer_clic()
+
+    def changer_volume_ui(self):
+        UI_menu.volume_ui_global = self.volume_ui.get()
+        self.update_icon_ui()
+        self.jouer_clic()
+
+    def copier(self, texte):
+        self.fenetre_menu.clipboard_clear()
+        self.fenetre_menu.clipboard_append(str(texte))
+        self.fenetre_menu.update()
+
 def on_mouvement(event, fenetre, plateau, orientation, taille, position_canva, can_touch):
     x_case, y_case = fenetre.click_to_case(event.x, event.y)
     fenetre.afficher_previsualisation(plateau, x_case, y_case, orientation, taille, position_canva, can_touch)
@@ -1048,13 +1299,12 @@ def on_clique_droit(event, plateau, fenetre, canva_placement, text_ids, afficher
 
 
 
-menu = UI_menu()
+menu = UI_menu("Bataille navale", False)
 
-volume_musique = menu.volume_musique.get()*0.01
-volume_voix = menu.volume_voix.get()*0.01
-son = pygame.mixer.Sound("Sons/musics/jeu/DEAF KEV - Invincible [NCS Release].mp3")
-son.set_volume(volume_musique)
-son.play(loops=-1)
+musique_en_jeu = pygame.mixer.Sound("Sons/musics/jeu/DEAF KEV - Invincible [NCS Release].mp3")
+musique_en_jeu.set_volume(UI_menu.volume_musique_global*0.01)
+musique_en_jeu.play(loops=-1)
+UI_menu.musique_en_jeu_ref = musique_en_jeu
 
 option_can_touch = menu.can_touch.get()
 if option_can_touch == True:
@@ -1365,12 +1615,12 @@ while not fin_du_jeux:
             if taille_bateau_restant[1] != 0: # s'il reste des parties non découvertes du bateau trouvé
                 #print(f"Le bateau de taille {taille_bateau_restant[0]} a été touché il lui reste {taille_bateau_restant[1]} vie(s)")
                 son = pygame.mixer.Sound("Sons/Un bateau à été touché !.mp3")
-                son.set_volume(volume_voix)
+                son.set_volume(UI_menu.volume_voix_global*0.01)
                 son.play()
             else: # si tout le bateau a été découvert
                 nb_bateaux_restant = plateau_joueur2.nb_bateau_restant()
                 son_bateaux_coule = pygame.mixer.Sound(f"Sons/Le bateau de taille n a été coulé !/Le bateau de taille {taille_bateau_restant[0]} a été coulé !.mp3")
-                son_bateaux_coule.set_volume(volume_voix)
+                son_bateaux_coule.set_volume(UI_menu.volume_voix_global*0.01)
                 channel = son_bateaux_coule.play()
                 #print(f"Le bateau de taille {taille_bateau_restant[0]} a été coulé")
 
@@ -1389,12 +1639,12 @@ while not fin_du_jeux:
 
                 if nb_bateaux_restant != 0: # s'il reste des bateaux
                     son_nb_bateaux_en_vie = pygame.mixer.Sound(f"Sons/Il reste n bateau(x) en vie/Il reste {nb_bateaux_restant} bateau(x) en vie.mp3")
-                    son_nb_bateaux_en_vie.set_volume(volume_voix)
+                    son_nb_bateaux_en_vie.set_volume(UI_menu.volume_voix_global*0.01)
                     channel.queue(son_nb_bateaux_en_vie)
                     pass
                 else: # s'il n'y a plus de bateau restant
                     son = pygame.mixer.Sound("Sons/Partie terminée, le joueur n°n gagne !/Partie terminée, le joueur n°1 gagne !.mp3")
-                    son.set_volume(volume_voix)
+                    son.set_volume(UI_menu.volume_voix_global*0.01)
                     son.play()                    
                     #print("Partie terminée, le joueur 1 a gagné")
                     joueur_perdu = 2
@@ -1411,12 +1661,12 @@ while not fin_du_jeux:
             if taille_bateau_restant[1] != 0: # s'il reste des parties non découvertes du bateau trouvé
                 #print(f"Le bateau de taille {taille_bateau_restant[0]} a été touché il lui reste {taille_bateau_restant[1]} vie(s)")
                 son = pygame.mixer.Sound("Sons/Un bateau à été touché !.mp3")
-                son.set_volume(volume_voix)
+                son.set_volume(UI_menu.volume_voix_global*0.01)
                 son.play()
             else: # si tout le bateau a été découvert
                 nb_bateaux_restant = plateau_joueur1.nb_bateau_restant()
                 son_bateaux_coule = pygame.mixer.Sound(f"Sons/Le bateau de taille n a été coulé !/Le bateau de taille {taille_bateau_restant[0]} a été coulé !.mp3")
-                son_bateaux_coule.set_volume(volume_voix)
+                son_bateaux_coule.set_volume(UI_menu.volume_voix_global*0.01)
                 channel = son_bateaux_coule.play()
                 idx = taille_bateau_restant[0] - 1
                 fenetre1.canva_ids[0].itemconfig(fenetre1.canva_text_ids[0][idx], text='× '+ str(plateau_joueur1.nb_bateau_restant_par_taille()[idx]))
@@ -1435,14 +1685,14 @@ while not fin_du_jeux:
 
                 if nb_bateaux_restant != 0: # s'il reste des bateaux
                     son_nb_bateaux_en_vie = pygame.mixer.Sound(f"Sons/Il reste n bateau(x) en vie/Il reste {nb_bateaux_restant} bateau(x) en vie.mp3")
-                    son_nb_bateaux_en_vie.set_volume(volume_voix)
+                    son_nb_bateaux_en_vie.set_volume(UI_menu.volume_voix_global*0.01)
                     channel.queue(son_nb_bateaux_en_vie)                   
                     #print(f"Il reste {nb_bateaux_restant} bateau(x) en vie")
                     pass
                 else: # s'il n'y a plus de bateau restant
                     #print(f"Partie terminée, le joueur 2 a gagné")
                     son = pygame.mixer.Sound("Sons/Partie terminée, le joueur n°n gagne !/Partie terminée, le joueur n°2 gagne !.mp3")
-                    son.set_volume(volume_voix)
+                    son.set_volume(UI_menu.volume_voix_global*0.01)
                     son.play() 
                     joueur_perdu = 1
                     fin_du_jeux = True
