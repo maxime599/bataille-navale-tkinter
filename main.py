@@ -1336,18 +1336,22 @@ plateau_joueur1.creation_plateau()
 plateau_joueur2 = Plateau()
 plateau_joueur2.creation_plateau()
 fenetre1 = UI_game("joueur 1", 1)
-fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'gauche', afficher_croix)
-fenetre1.afficher_plateau(plateau_joueur2.plateau, option_voir_cibles_adverses, True, 'droit', afficher_croix)
-fenetre1.fenetre.update()
 fenetre2 = UI_game("Joueur 2", 2)
-fenetre2.afficher_plateau(plateau_joueur1.plateau, True, True, 'gauche', afficher_croix)
-fenetre2.afficher_plateau(plateau_joueur2.plateau, option_voir_cibles_adverses, True, 'droit', afficher_croix)
-fenetre2.fenetre.update()
 
 if mode_jeu == 'IA' or mode_jeu == 'socket_serveur':
     fenetre2.fenetre.withdraw()
 elif mode_jeu == 'socket_client':
     fenetre1.fenetre.withdraw()
+    
+fenetre1.afficher_plateau(plateau_joueur1.plateau, True, True, 'gauche', afficher_croix)
+fenetre1.afficher_plateau(plateau_joueur2.plateau, option_voir_cibles_adverses, True, 'droit', afficher_croix)
+fenetre1.fenetre.update()
+
+fenetre2.afficher_plateau(plateau_joueur1.plateau, True, True, 'gauche', afficher_croix)
+fenetre2.afficher_plateau(plateau_joueur2.plateau, option_voir_cibles_adverses, True, 'droit', afficher_croix)
+fenetre2.fenetre.update()
+
+
 
 dico_bateaux_a_poser = menu.dico_bateaux_a_poser
 liste_bateaux_a_poser = []
