@@ -949,10 +949,10 @@ class UI_menu:
         ip_locale = s.getsockname()[0]
         s.close()
         label_ip_titre = Label(self.fenetre_menu, text='Votre adresse IP :', font=('Helvetica', 14, 'bold'), bg=self.couleur_fond, fg=self.couleur_texte, pady=20)
-        label_ip_titre.grid(row=1, column=0, columnspan=2, padx=50, pady=(10, 5))
+        label_ip_titre.grid(row=1, column=0, columnspan=1, padx=50, pady=(10, 5))
         self.widgets.append(label_ip_titre)
         frame_ip = Frame(self.fenetre_menu, bg='#ffffff', relief='flat', bd=2, highlightbackground=self.couleur_accent, highlightthickness=2)
-        frame_ip.grid(row=2, column=0, columnspan=2, padx=50, pady=5)
+        frame_ip.grid(row=1, column=1, columnspan=1, padx=50, pady=5)
         self.widgets.append(frame_ip)
         label_ip = Label(frame_ip, text=ip_locale, font=('Helvetica', 16, 'bold'), bg='#ffffff', fg=self.couleur_accent, padx=30, pady=15)
         label_ip.pack()
@@ -989,7 +989,7 @@ class UI_menu:
         self.bouton_se_connecter.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent) if e.widget['state'] == 'normal' else None)"""
         
         bouton_valider = Button(self.fenetre_menu, text='Valider', command=lambda: (self.jouer_bouton_bleu(), self.jouer_contre_joueur_socket(self.mode_reseau.get(), self.entry_ip.get())), font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
-        bouton_valider.grid(row=6, column=0, padx=50, pady=15, sticky='ew')
+        bouton_valider.grid(row=6, column=0, columnspan=2, padx=50, pady=15, sticky='ew')
         bouton_valider.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
         bouton_valider.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
         self.widgets.append(bouton_valider)
