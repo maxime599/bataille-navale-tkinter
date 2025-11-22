@@ -28,9 +28,9 @@ class Plateau:
 
     def __init__(self):
         self.plateau = []
-        self.liste_bateau_restant = []
-        self.liste_bateau_total = []
-        self.liste_bateaux_a_poser = []
+        self.liste_bateau_restant = [] #liste des bateaux encore en vie, chaque élément est une liste de la forme [taille_bateau, [[x1,y1], [x2,y2], ...]]
+        self.liste_bateau_total = [] #liste des bateaux total, chaque élément est une liste de la forme [taille_bateau, [[x1,y1], [x2,y2], ...]]
+        self.liste_bateaux_a_poser = [] #liste des tailles des bateaux à poser
 
     def creation_plateau(self):
         #Fonction qui créer le plateau vide, en 10x10, rempli de 0
@@ -66,6 +66,7 @@ class Plateau:
         print("  0 1 2 3 4 5 6 7 8 9")
 
     def modifier_case(self, coordonees_x, coordonees_y, valeur, taille_bateau = None, position_sur_bateau = None, orientation_bateau = None):
+        #Modifie une case du plateau en fonction des parametres passés
         self.plateau[coordonees_x][coordonees_y].coordonees_x = coordonees_x
         self.plateau[coordonees_x][coordonees_y].coordonees_y = coordonees_y
         self.plateau[coordonees_x][coordonees_y].type = valeur
@@ -99,7 +100,7 @@ class Plateau:
         
         #Renvoie False si le bateau est en dehors de l'écran ou si il y a déja un bateau sur le terrain
 
-        if coordonees_x <0 or coordonees_x >9 or coordonees_y<0 or coordonees_y>9:
+        if coordonees_x <0 or coordonees_x >9 or coordonees_y<0 or coordonees_y>9: #hors plateau
             return False 
 
         if orientation == 0:
@@ -118,7 +119,7 @@ class Plateau:
                     except:
                         pass
 
-            for i in range(coordonees_y, coordonees_y+taille):
+            for i in range(coordonees_y, coordonees_y+taille): #on regarde si les cases du bateau sont libres et dans le plateau
                 if i >= 10  :   
                     return False
                 if self.plateau[coordonees_x][i].type != 0 and i>=0:
@@ -151,7 +152,7 @@ class Plateau:
                             return False
                     except:
                         pass
-            for i in range(coordonees_x, coordonees_x+taille):
+            for i in range(coordonees_x, coordonees_x+taille): #on regarde si les cases du bateau sont libres et dans le plateau
                 if i >= 10:
                     return False
                 if self.plateau[i][coordonees_y].type != 0  and i>=0:
@@ -171,6 +172,7 @@ class Plateau:
         else:
             return False
         
+        #Si on est en mode test, on arrete ici
         if juste_test_possible == False:
             self.liste_bateau_restant.append([taille,[]])
             #modifie la matrice plateau avec les bonnes valeurs
@@ -226,12 +228,14 @@ class Plateau:
         return output
 
     def pose_bateaux_aleatoire(self, can_touch):
+        #Pose aléatoirement les bateaux dans la liste des bateaux à poser
         for taille in self.liste_bateaux_a_poser:
             good_position = False
             while not good_position:
                 good_position = self.ajouter_bateau(randint(0,9), randint(0,9), randint(0,1), taille, can_touch, False)
 
     def coup_aléatoire(self, can_touch):
+        #Renvoie des coordonnées semi-aléatoires pour un coup
         bon_coup = False
         coordonnee_coup_x = 0
         coordonnee_coup_y = 0
@@ -248,6 +252,7 @@ class Plateau:
         return (coordonnee_coup_x, coordonnee_coup_y)
 
     def coup_IA(self, can_touch):
+        #Renvoie des coordonnées pour un coup en mode IA
         for index_ligne, ligne in enumerate(self.plateau):
             for index_colonne, case in enumerate(ligne):
                 if case.type == 3: #Si on detecte une case précedement touchée
@@ -366,6 +371,7 @@ class UI_game:
         self.canva_text_ids = []
 
     def afficher_plateau(self, plateau, afficher_1, afficher_2, position_canva, afficher_croix):
+        #Fonction qui affiche le plateau dans le canva spécifié (gauche ou droite)
         
         #permet de créer ces deux listes seulement une fois, la première fois que afficher_plateau() est appelée.
         if not hasattr(self, 'images_gauche'):
@@ -393,20 +399,22 @@ class UI_game:
                     self.canva_gauche.create_image(x, y, image=self.img_bleu, anchor=NW)
                 else:
                     self.canva_droite.create_image(x, y, image=self.img_bleu, anchor=NW)
+
                 if colonne.type == 0:
                     image = self.img_bleu
-                if afficher_croix:
+                if afficher_croix: #affiche une croix rouge sur les cases ciblées sans bateaux autour desquelles il y a un bateau
                     for case_to_check_x in range(-1,2):
                         for case_to_check_y in range(-1,2):
                             if 0 <= (index_ligne + case_to_check_x) <= 9 and 0 <= (index_colonne + case_to_check_y) <= 9:
                                 if (case_to_check_x, case_to_check_y) != (0,0) and plateau[index_ligne + case_to_check_x][index_colonne + case_to_check_y].type == 2:
                                     image = self.croix_fond_rouge
-                if colonne.type == 1:
+                if colonne.type == 1: #case ciblé sans bateaux
                     image = self.img_cible if afficher_1 else self.img_bleu
-                elif (not afficher_2) and (colonne.type == 2):
+                elif (not afficher_2) and (colonne.type == 2): #case avec bateau non affiché
                     image = self.img_bleu
 
-                elif (colonne.type == 2 and afficher_2) or (colonne.type == 3 and position_canva != 'gauche') or colonne.type == 5:
+                elif (colonne.type == 2 and afficher_2) or (colonne.type == 3 and position_canva != 'gauche') or colonne.type == 5: #case avec bateau affiché ou case touché avec bateau (uniquement sur le canva de droite) ou bateau coulé
+                    # Découpe l'image du bateau en fonction de sa taille, position et orientation
                     img_original_pil = Image.open(f'Images/Bateaux/{colonne.taille_bateau}.png')
                     if colonne.type == 5:
                         img_original_pil = img_original_pil.convert("RGBA")
@@ -414,18 +422,18 @@ class UI_game:
                     x2 = x1 + 48  
                     image_cropped = img_original_pil.crop((x1, 0, x2, 45))
                     
-                    if colonne.orientation_bateau == 1:
-                        image_cropped = image_cropped = image_cropped.rotate(-90, expand=True)
+                    if colonne.orientation_bateau == 1: #si le bateau est vertical on retourne l'image
+                        image_cropped = image_cropped = image_cropped.rotate(-90, expand=True) #on fait une rotation de -90 degré pour que l'image soit dans le bon sens
                     
-                    if colonne.type == 5:
+                    if colonne.type == 5: #si le bateau est coulé on le rend semi-transparent
                         alpha = image_cropped.split()[-1]
                         alpha = alpha.point(lambda p: p * 0.5)  # 0.5 = 50% transparent
                         image_cropped.putalpha(alpha)
 
-                    image = ImageTk.PhotoImage(image_cropped, master=self.fenetre)
+                    image = ImageTk.PhotoImage(image_cropped, master=self.fenetre) #on convertit l'image PIL en image Tkinter
                 
 
-                elif colonne.type == 3:
+                elif colonne.type == 3: #
                     image = self.img_touche
 
                 
@@ -433,8 +441,8 @@ class UI_game:
                     image = self.img_gris
                 
                 
-
-                if position_canva == 'gauche':
+                # On ajoute l'image au canva approprié et on la stocke dans la liste correspondante
+                if position_canva == 'gauche': 
                     self.images_gauche.append(image)
                     self.canva_gauche.create_image(x, y, image=image, anchor=NW)
                 else:
@@ -452,11 +460,11 @@ class UI_game:
         
         self.click_coord = (0,0)
         self._clicked.set(False)
-        if self.canva_bind == 'droite':
+        if self.canva_bind == 'droite': #definie quel canva il faut regarder pour le clique gauche
             self.canva_droite.bind("<Button-1>", self.on_click)
         else:
             self.canva_gauche.bind("<Button-1>", self.on_click)
-            self.canva_droite.bind("<Button-1>", lambda event: self.toogle_cache_noir_droite())
+            self.canva_droite.bind("<Button-1>", lambda event: self.toogle_cache_noir_droite()) #permet de cacher/montrer le canva droite au clique
         self.fenetre.wait_variable(self._clicked) 
         return self.click_coord  # retourne un tuple (x_case, y_case)
     
@@ -474,6 +482,8 @@ class UI_game:
         self._clicked.set(True)
 
     def afficher_previsualisation(self, plateau, x, y, orientation, taille, position_canva, can_touch):
+        # Affiche une prévisualisation semi-transparente d'un bateau à la position (x, y) avec l'orientation et la taille spécifiées
+        # position_canva : 'gauche' ou 'droite'
         
         if plateau.ajouter_bateau(x, y, orientation, taille, can_touch, True) == False:
             possible = False
@@ -486,34 +496,38 @@ class UI_game:
         else:
             self.canva_droite.delete("preview")
 
+        # Affiche la nouvelle prévisualisation
         for i in range(taille):
             if orientation == 0:
                 case_x, case_y = x, y + i
             else:
                 case_x, case_y = x + i, y
-            if 0 <= case_x < 10 and 0 <= case_y < 10:
+            if 0 <= case_x < 10 and 0 <= case_y < 10: # Vérifie que la case est dans les limites du plateau
                 img_path = f'Images/Bateaux/{taille}.png'
                 img_pil = Image.open(img_path).convert("RGBA")
                 x1 = i * self.taille_case + i * 3
                 x2 = x1 + self.taille_case + 3
-                image_cropped = img_pil.crop((x1, 0, x2, self.taille_case))
+                image_cropped = img_pil.crop((x1, 0, x2, self.taille_case)) # Découpe l'image du bateau
                 if orientation == 1:
-                    image_cropped = image_cropped.rotate(-90, expand=True)
-                # Semi-transparence
+                    image_cropped = image_cropped.rotate(-90, expand=True) # Rotation de l'image si le bateau est vertical
+                
+                # Rend l'image semi-transparente
                 alpha = image_cropped.split()[-1]
                 alpha = alpha.point(lambda p: p * 0.5)
                 image_cropped.putalpha(alpha)
-                # Si placement impossible, applique filtre rouge
-                if not possible:
+                
+                if not possible: # Si placement impossible, applique filtre rouge
                     # Crée un overlay rouge semi-transparent
                     rouge = Image.new("RGBA", image_cropped.size, (255, 0, 0, 120))
                     image_cropped = Image.alpha_composite(image_cropped, rouge)
                 image = ImageTk.PhotoImage(image_cropped, master=self.fenetre)
-                if not hasattr(self, 'preview_images'):
+                if not hasattr(self, 'preview_images'): # Initialise la liste des images de prévisualisation si elle n'existe pas encore
                     self.preview_images = []
-                self.preview_images.append(image)
+                self.preview_images.append(image) # Stocke la référence de l'image pour éviter qu'elle soit garbage collectée
                 px = case_y * self.taille_case + case_y * 3 + 1
                 py = case_x * self.taille_case + case_x * 3 + 1
+                
+                # Affiche l'image dans le canva approprié
                 if position_canva == 'gauche':
                     self.canva_gauche.create_image(px, py, image=image, anchor=NW, tags="preview")
                 else:
@@ -527,23 +541,27 @@ class UI_game:
         self.croix_id = self.canva_gauche.create_image(event.x, event.y, image=self.img_cible)
 
     def cacher_croix(self, event=None):
+        # Supprime la croix si elle existe
         if self.croix_id is not None:
             self.canva_gauche.delete(self.croix_id)
             self.croix_id = None
 
     def titre_information(self, parent, texte, row, column, taille):
+        #Ajoute un grand titre dans le parent spécifié
         grand_titre = Label(parent, text=texte, font=("Helvetica", taille), wraplength=280, justify='center')
         grand_titre.grid(row=row, column=column, padx=(0,3))
         self.titres.append(grand_titre)
 
     def bloc_canva(self, parent, titre, text, text2, row, column, image):
+        #Ajoute un bloc canva avec des bateaux et du texte dans le parent spécifié
         self.bloc_canva_var = Canvas(parent, width=260, height=220, background="#f8f9fb")
         self.bloc_canva_var.grid(row=row, column=column, padx=6, pady=6)
         self.bloc_canva_var.create_rectangle(4, 4, 260, 220, outline="#cfcfcf", width=2, fill="#ffffff")
         self.bloc_canva_var.create_text(130, 18, text=titre, fill="#1f2f3f", font=("Helvetica", 14, "bold"))
         self.canva_ids.append(self.bloc_canva_var)
         texte_apres_image_liste= []
-        for bateau in range(5):
+        
+        for bateau in range(5): #pour chaque taille de bateau
             y = 40 + 36 * bateau
             img_x = 20
             for i in range(0, bateau+1):
@@ -557,6 +575,7 @@ class UI_game:
         self.canva_text_ids.append(texte_apres_image_liste)
 
     def vider_ids(self):
+        #Vide les listes d'ids des canva et titres pour éviter les doublons
         self.canva_ids = []
         self.titres = []
         self.bloc_canva_var = []
@@ -576,6 +595,7 @@ class UI_game:
             self.canva_droite.create_rectangle(0, 0, self.canva_droite.winfo_width(), self.canva_droite.winfo_height(),fill="black", outline="", tags="cache_noir")
       
     def afficher_fenetre_parametre(self):
+        # Affiche la fenêtre des paramètres
         fenetre_parametre = UI_menu(f"Volume du joueur {self.joueur}", True)
         fenetre_parametre.fenetre_menu.transient(self.fenetre)
         fenetre_parametre.fenetre_menu.grab_set()
@@ -585,15 +605,11 @@ class Case:
     def __init__(self,coordonnee_x, coordonnee_y, type, taille_bateau = None, position_sur_bateau = None, orientation_bateau = None):
         self.coordonnee_x = coordonnee_x
         self.coordonnee_y = coordonnee_y
-        self.type = type
+        self.type = type # 0: bateau non ciblée, 1: bateau ciblée, 2: bateau non ciblé, 3: bateau touché, 4: bateau coulé (affiché différemment), 5: bateau coulé (case finale)
         self.taille_bateau = taille_bateau
         self.position_sur_bateau = position_sur_bateau
         self.orientation_bateau = orientation_bateau
 
-        if self.type == 3 or self.type == 4:
-            self.is_beateau = True
-        else:
-            self.is_beateau = False
 
 class UI_menu:
     volume_voix_global = 75
@@ -605,13 +621,14 @@ class UI_menu:
     musique_en_jeu_ref = None
     
     def __init__(self, nom, en_jeu):        
-        self.dico_bateaux_a_poser = {1:0, 2:1, 3:2, 4:1, 5:1}
+        self.dico_bateaux_a_poser = {1:0, 2:1, 3:2, 4:1, 5:1} #dictionnaire qui indique le nombre de bateau à poser par taille
         
         if en_jeu:
             self.fenetre_menu = Toplevel()
         else:
             self.fenetre_menu = Tk()
 
+        #Initialisation des variables
         self.can_touch = BooleanVar(value=False)
         self.voir_cibles_adverses = BooleanVar(value=True)
         self.volume_voix = DoubleVar(value=UI_menu.volume_voix_global)
@@ -643,16 +660,22 @@ class UI_menu:
             self.afficher_volume()
 
     def clear_widgets(self):
+        #Supprime tous les widgets de la fenêtre
         for widget in self.widgets:
             widget.destroy()
         self.widgets = []
 
     def afficher_menu_principal(self):
-        self.clear_widgets()
+        #Affiche le menu principal
+
+        self.clear_widgets() #Supprime tous les widgets de la fenêtre
+
+        #Ajout des boutons du menu principal
 
         label_text_principal_menu = Label(self.fenetre_menu, text='Bataille navale', font=('Helvetica', 32, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=40)
         label_text_principal_menu.grid(row=0, column=0, padx=50, pady=(30, 20))
         self.widgets.append(label_text_principal_menu)
+        
         
         bouton_jouer = Button(self.fenetre_menu, text='Jouer', command=lambda: (self.jouer_bouton_bleu(), self.afficher_mode_jeu()), font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
         bouton_jouer.grid(row=1, column=0, padx=50, pady=15, sticky='ew')
@@ -680,6 +703,7 @@ class UI_menu:
         self.fenetre_menu.grid_columnconfigure(0, weight=1)
 
     def afficher_parametres(self):
+        #Affiche la fenêtre des paramètres
         self.clear_widgets()
         self.fenetre_menu.configure(bg=self.couleur_fond)
 
@@ -715,6 +739,7 @@ class UI_menu:
         self.fenetre_menu.grid_columnconfigure(0, weight=1)
 
     def afficher_fenetre_nb_bateaux(self):
+        #Affiche la fenêtre pour définir le nombre de bateaux de chaque taille
         self.clear_widgets()
 
         label = Label(self.fenetre_menu, text="Nombre de bateaux de chaque taille", font=('Helvetica', 24, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=30, wraplength=320)
@@ -723,7 +748,7 @@ class UI_menu:
 
         self.form_nb_bateaux = []
         self.valeurs_initiales = []
-        for i in range(5):
+        for i in range(5): #pour chaque taille de bateau
             label_bateau = Label(self.fenetre_menu, text=f'Nombre de bateau de taille {i+1}', font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte)
             label_bateau.grid(row=i+1, column=0, padx=20, pady=10, sticky='w')
             self.widgets.append(label_bateau)
@@ -741,6 +766,7 @@ class UI_menu:
             self.widgets.append(entry)
             self.form_nb_bateaux.append(entry)
 
+        #Ajout des boutons Valider et Retour
         bouton_valider = Button(self.fenetre_menu, text='Valider', command=lambda: (self.jouer_bouton_bleu(), self.valider_et_quitter()), font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
         bouton_valider.grid(row=7, column=0, padx=20, pady=(30, 15), sticky='ew')
         bouton_valider.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
@@ -755,6 +781,7 @@ class UI_menu:
         self.fenetre_menu.grid_columnconfigure(0, weight=1)
 
     def afficher_volume(self):
+        #Affiche la fenêtre de réglage du volume
         self.clear_widgets()
         label_text_principal_volume = Label(self.fenetre_menu, text='Volume', font=('Helvetica', 32, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=30)
         label_text_principal_volume.grid(row=0, column=0, columnspan=2, padx=50, pady=(20, 10))
@@ -834,6 +861,7 @@ class UI_menu:
         self.update_icon_ui()
 
     def afficher_choix_volume(self):
+        #Affiche la fenêtre de choix des sons
         self.clear_widgets()
         label_text_principal_choix_volume = Label(self.fenetre_menu, text='Choix des sons', font=('Helvetica', 32, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=30)
         label_text_principal_choix_volume.grid(row=0, column=0, columnspan=2, padx=50, pady=(20, 10))
@@ -938,49 +966,72 @@ class UI_menu:
         self.widgets.append(bouton_retour)
         self.fenetre_menu.grid_columnconfigure(1, weight=1)
 
-    def afficher_ip(self):
+    def afficher_mode_socket(self):
+        #Affiche la fenêtre pour jouer en réseau via une connexion socket
         self.clear_widgets()
         self.fenetre_menu.configure(bg=self.couleur_fond)
+
         label_text_principal_ip = Label(self.fenetre_menu, text='Jouer contre un joueur', font=('Helvetica', 32, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=30)
         label_text_principal_ip.grid(row=0, column=0, columnspan=2, padx=50, pady=(20, 10))
         self.widgets.append(label_text_principal_ip)
+        
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(("8.8.8.8", 80))
         ip_locale = s.getsockname()[0]
         s.close()
+
         label_ip_titre = Label(self.fenetre_menu, text='Votre adresse IP :', font=('Helvetica', 14, 'bold'), bg=self.couleur_fond, fg=self.couleur_texte, pady=20)
         label_ip_titre.grid(row=1, column=0, columnspan=1, padx=50, pady=(10, 5))
         self.widgets.append(label_ip_titre)
+        
+        # Affichage de l'adresse IP dans un cadre
         frame_ip = Frame(self.fenetre_menu, bg='#ffffff', relief='flat', bd=2, highlightbackground=self.couleur_accent, highlightthickness=2)
         frame_ip.grid(row=1, column=1, columnspan=1, padx=50, pady=5)
         self.widgets.append(frame_ip)
         label_ip = Label(frame_ip, text=ip_locale, font=('Helvetica', 16, 'bold'), bg='#ffffff', fg=self.couleur_accent, padx=30, pady=15)
         label_ip.pack()
         self.widgets.append(label_ip)
+
+        # Bouton pour copier l'adresse IP dans le presse-papiers
         bouton_copier = Button(self.fenetre_menu, text='Copier l\'adresse IP', command=lambda: [self.jouer_bouton_bleu(), self.copier(ip_locale)], font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
         bouton_copier.grid(row=3, column=0, columnspan=2, padx=50, pady=(10, 20), sticky='ew')
         bouton_copier.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
         bouton_copier.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
         self.widgets.append(bouton_copier)
+
+        # Choix du mode : serveur ou client
         self.mode_reseau = StringVar(value="serveur")
         frame_choix = Frame(self.fenetre_menu, bg=self.couleur_fond)
         frame_choix.grid(row=4, column=0, columnspan=2, padx=50, pady=(10, 20))
         self.widgets.append(frame_choix)
+        
+
+        # Radio boutons pour choisir le mode
         radio_serveur = Radiobutton(frame_choix, text="Être le serveur", variable=self.mode_reseau, value="serveur", command=self.basculer_mode_reseau, font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte, selectcolor=self.couleur_fond, activebackground=self.couleur_fond, activeforeground=self.couleur_texte, cursor='hand2')
         radio_serveur.pack(side='left', padx=20)
         self.widgets.append(radio_serveur)
+
         radio_client = Radiobutton(frame_choix, text="Être le client", variable=self.mode_reseau, value="client", command=self.basculer_mode_reseau, font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte, selectcolor=self.couleur_fond, activebackground=self.couleur_fond, activeforeground=self.couleur_texte, cursor='hand2')
         radio_client.pack(side='left', padx=20)
         self.widgets.append(radio_client)
+
+
+        # Cadre pour saisir l'adresse IP du serveur (visible uniquement si mode client)
         self.frame_client = Frame(self.fenetre_menu, bg=self.couleur_fond)
         self.frame_client.grid(row=5, column=0, columnspan=2, padx=50, pady=(10, 20))
         self.widgets.append(self.frame_client)
+
+
+        # Texte et champ de saisie de l'adresse IP
         label_connect = Label(self.frame_client, text='Se connecter à un joueur', font=('Helvetica', 14, 'bold'), bg=self.couleur_fond, fg=self.couleur_texte, pady=10)
         label_connect.grid(row=0, column=0, columnspan=2, padx=0, pady=(10, 5))
+
         label_saisir = Label(self.frame_client, text='Adresse IP :', font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte)
         label_saisir.grid(row=1, column=0, padx=20, pady=10, sticky='e')
+
         self.entry_ip = Entry(self.frame_client, font=('Helvetica', 12), bg="#ffffff", fg=self.couleur_texte, relief='flat', bd=2, highlightthickness=1, highlightbackground=self.couleur_accent, highlightcolor=self.couleur_accent, width=25)
         self.entry_ip.grid(row=1, column=1, padx=20, pady=10, sticky='w')
+
         """self.entry_ip.bind("<FocusIn>", lambda e: self.desactiver_boutons())
         self.entry_ip.bind("<FocusOut>", lambda e: self.activer_boutons())"""
         """self.bouton_se_connecter = Button(self.frame_client, text='Se connecter', command=lambda: self.jouer_bouton_bleu(), font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
@@ -988,22 +1039,27 @@ class UI_menu:
         self.bouton_se_connecter.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol) if e.widget['state'] == 'normal' else None)
         self.bouton_se_connecter.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent) if e.widget['state'] == 'normal' else None)"""
         
+        # Bouton pour valider et lancer la partie en réseau
         bouton_valider = Button(self.fenetre_menu, text='Valider', command=lambda: (self.jouer_bouton_bleu(), self.jouer_contre_joueur_socket(self.mode_reseau.get(), self.entry_ip.get())), font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
         bouton_valider.grid(row=6, column=0, columnspan=2, padx=50, pady=15, sticky='ew')
         bouton_valider.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
         bouton_valider.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
         self.widgets.append(bouton_valider)
         
+        # Bouton retour au menu précédent
         bouton_retour = Button(self.fenetre_menu, text='Retour', command=lambda: [self.jouer_bouton_gris(), self.afficher_mode_jeu()], font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
         bouton_retour.grid(row=7, column=0, columnspan=2, padx=50, pady=(20, 15), sticky='ew')
         bouton_retour.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
         bouton_retour.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
         self.widgets.append(bouton_retour)
+
+        # Configuration des colonnes de la grille
         self.fenetre_menu.grid_columnconfigure(0, weight=1)
         self.fenetre_menu.grid_columnconfigure(1, weight=1)
         self.frame_client.grid_remove()
 
     def basculer_mode_reseau(self):
+        # Change l'affichage en fonction du mode sélectionné (serveur ou client)
         if self.mode_reseau.get() == "client":
             self.jouer_bouton_gris()
             self.frame_client.grid()
@@ -1018,6 +1074,7 @@ class UI_menu:
         self.bouton_se_connecter.config(state='normal', bg=self.couleur_accent, cursor='hand2')"""
 
     def update_icon_voix(self):
+        # Met à jour l'icône du volume de la voix en fonction de la valeur du scale
         volume = self.volume_voix.get()
         if volume == 0:
             self.label_hp_voix.config(image=self.img_hp_0)
@@ -1029,6 +1086,7 @@ class UI_menu:
             self.label_hp_voix.config(image=self.img_hp_3)
 
     def update_icon_musique(self):
+        # Met à jour l'icône du volume de la musique en fonction de la valeur du scale
         volume = self.volume_musique.get()
         if volume == 0:
             self.label_hp_musique.config(image=self.img_hp_0)
@@ -1040,6 +1098,7 @@ class UI_menu:
             self.label_hp_musique.config(image=self.img_hp_3)
 
     def update_icon_ui(self):
+        # Met à jour l'icône du volume du menu en fonction de la valeur du scale
         volume = self.volume_ui.get()
         if volume == 0:
             self.label_hp_ui.config(image=self.img_hp_0)
@@ -1051,6 +1110,7 @@ class UI_menu:
             self.label_hp_ui.config(image=self.img_hp_3)
 
     def toggle_mute_voix(self):
+        # Bascule le mode muet pour la voix
         if self.volume_voix.get() == 0:
             self.volume_voix.set(UI_menu.volume_voix_avant_mute_global)
             UI_menu.volume_voix_global = UI_menu.volume_voix_avant_mute_global
@@ -1063,6 +1123,7 @@ class UI_menu:
         self.update_icon_voix()
 
     def toggle_mute_musique(self):
+        # Bascule le mode muet pour la musique
         if self.volume_musique.get() == 0:
             self.volume_musique.set(UI_menu.volume_musique_avant_mute_global)
             UI_menu.volume_musique_global = UI_menu.volume_musique_avant_mute_global
@@ -1079,6 +1140,7 @@ class UI_menu:
         self.update_icon_musique()
 
     def toggle_mute_ui(self):
+        # Bascule le mode muet pour le menu
         if self.volume_ui.get() == 0:
             self.volume_ui.set(UI_menu.volume_ui_avant_mute_global)
             UI_menu.volume_ui_global = UI_menu.volume_ui_avant_mute_global
@@ -1091,10 +1153,16 @@ class UI_menu:
         self.update_icon_ui()
 
     def afficher_mode_jeu(self):
+        #Affiche la fenêtre de choix du mode de jeu
         self.clear_widgets()
+
+        # Texte principal
         label_text_principal_mode = Label(self.fenetre_menu, text='Mode de jeu', font=('Helvetica', 32, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=40)
         label_text_principal_mode.grid(row=0, column=0, padx=50, pady=(30, 20))
         self.widgets.append(label_text_principal_mode)
+
+
+        # Boutons de choix du mode de jeu
         bouton_joueur = Button(self.fenetre_menu, text='Jouer contre un joueur', command=lambda: (self.jouer_bouton_bleu(), self.jouer_contre_joueur()), font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
         bouton_joueur.grid(row=1, column=0, padx=50, pady=15, sticky='ew')
         bouton_joueur.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
@@ -1107,12 +1175,14 @@ class UI_menu:
         bouton_ia.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
         self.widgets.append(bouton_ia)
 
-        bouton_jouer_contre_joueur = Button(self.fenetre_menu, text='Jouer contre un joueur à distance', command=lambda: (self.jouer_bouton_bleu(), self.afficher_ip()), font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_jouer_contre_joueur = Button(self.fenetre_menu, text='Jouer contre un joueur à distance', command=lambda: (self.jouer_bouton_bleu(), self.afficher_mode_socket()), font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
         bouton_jouer_contre_joueur.grid(row=3, column=0, padx=50, pady=15, sticky='ew')
         bouton_jouer_contre_joueur.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
         bouton_jouer_contre_joueur.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
         self.widgets.append(bouton_jouer_contre_joueur)
 
+
+        # Bouton retour au menu principal
         bouton_retour = Button(self.fenetre_menu, text='Retour', command=lambda: (self.jouer_bouton_gris(), self.afficher_menu_principal()), font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
         bouton_retour.grid(row=4, column=0, padx=50, pady=15, sticky='ew')
         bouton_retour.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
@@ -1121,6 +1191,7 @@ class UI_menu:
         self.fenetre_menu.grid_columnconfigure(0, weight=1)
 
     def afficher_credits(self):
+        #Affiche la fenêtre des crédits
         self.clear_widgets()
         label_text_principal_credits = Label(self.fenetre_menu, text='Crédits', font=('Helvetica', 32, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=40)
         label_text_principal_credits.grid(row=0, column=0, padx=50, pady=(30, 20))
@@ -1150,14 +1221,17 @@ class UI_menu:
         self.fenetre_menu.grid_columnconfigure(0, weight=1)
 
     def valider_et_quitter(self):
+        #Récupère les nouvelles valeurs des paramètres et retourne au menu principal
         self.dico_bateaux_a_poser = self.recuperer_taille_bateaux()
         self.afficher_menu_principal()
 
     def quitter_fenetre(self):
+        #Quitte complètement le menu et arrête la musique
         self.musique_menu.stop()
         self.fenetre_menu.destroy()
       
     def recuperer_taille_bateaux(self):
+        #Récupère le nombre de bateaux de chaque taille à poser
         try:
             nb_bateaux_1 = int(self.form_nb_bateaux[0].get())
             nb_bateaux_2 = int(self.form_nb_bateaux[1].get())
@@ -1179,6 +1253,7 @@ class UI_menu:
         return {1 : nb_bateaux_1, 2 : nb_bateaux_2, 3 : nb_bateaux_3, 4 : nb_bateaux_4, 5 : nb_bateaux_5}
     
     def verifier_modifications(self):
+        #Vérifie si des modifications ont été apportées aux paramètres des bateaux
         modifications = False
         for i, entry in enumerate(self.form_nb_bateaux):
             if entry.get() != self.valeurs_initiales[i]:
@@ -1189,6 +1264,7 @@ class UI_menu:
             self.afficher_parametres()
 
     def afficher_popup_confirmation(self):
+        #Affiche une popup demandant si l'utilisateur veut enregistrer les modifications
         overlay = Frame(self.fenetre_menu, bg="#00233e")
         overlay.place(x=0, y=0, relwidth=1, relheight=1)
         self.widgets.append(overlay)
@@ -1208,57 +1284,68 @@ class UI_menu:
         bouton_non.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
 
     def jouer_contre_ia(self):
+        #Lance une partie contre l'IA
         self.mode_jeu = 'IA'
         self.musique_menu.stop()
         self.fenetre_menu.destroy()
 
     def jouer_contre_joueur(self):
+        #Lance une partie contre un autre joueur en local
         self.mode_jeu = '2_j'
         self.musique_menu.stop()
         self.fenetre_menu.destroy()
 
     def jouer_contre_joueur_socket(self, mode_reseau, ip_adresse):
+        #Lance une partie contre un autre joueur en réseau via une connexion socket
         self.mode_jeu = 'socket_' + str(mode_reseau)
         self.ip_adresse_serveur = ip_adresse
         self.musique_menu.stop()
         self.fenetre_menu.destroy()
 
     def jouer_bouton_bleu(self):
+        #Joue le son d'un bouton bleu
         bouton_bleu = pygame.mixer.Sound("Sons/ui/par_defaut_bleu.mp3")
         bouton_bleu.set_volume(self.volume_ui.get()*0.01)
         bouton_bleu.play()
 
     def jouer_bouton_gris(self):
+        #Joue le son d'un bouton gris
         bouton_gris = pygame.mixer.Sound("Sons/ui/par_defaut_gris.mp3")
         bouton_gris.set_volume(self.volume_ui.get()*0.01)
         bouton_gris.play()
 
     def jouer_clic(self):
+        #Joue le son d'un clic
         clic = pygame.mixer.Sound("Sons/ui/clic.mp3")
         clic.set_volume(self.volume_ui.get()*0.01)
         clic.play()
 
     def actuliser_musique_menu(self):
+        # Actualise le volume de la musique du menu
         self.musique_menu.set_volume(self.volume_musique.get()*0.01)
 
     def jouer_checkbutton_cibles(self):
+        # Joue le bon son en fonction de si on coche ou pas la case checkbutton_cibles
         if self.voir_cibles_adverses.get():
             self.jouer_bouton_bleu()
         else:
             self.jouer_bouton_gris()
 
     def jouer_checkbutton_touch(self):
+        # Joue le bon son en fonction de si on coche ou pas la case checkbutton_touch
         if self.can_touch.get():
             self.jouer_bouton_bleu()
         else:
             self.jouer_bouton_gris()
 
     def changer_volume_voix(self):
+        # Change le volume global de la voix
         UI_menu.volume_voix_global = self.volume_voix.get()
         self.update_icon_voix()
         self.jouer_clic()
 
     def changer_volume_musique(self):
+        # Change le volume global de la musique
         UI_menu.volume_musique_global = self.volume_musique.get()
         self.update_icon_musique()
         self.actuliser_musique_menu()
@@ -1267,25 +1354,30 @@ class UI_menu:
         self.jouer_clic()
 
     def changer_volume_ui(self):
+        # Change le volume global du menu
         UI_menu.volume_ui_global = self.volume_ui.get()
         self.update_icon_ui()
         self.jouer_clic()
 
     def copier(self, texte):
+        # Copie le texte donné dans le presse-papiers
         self.fenetre_menu.clipboard_clear()
         self.fenetre_menu.clipboard_append(str(texte))
         self.fenetre_menu.update()
 
 def on_mouvement(event, fenetre, plateau, orientation, taille, position_canva, can_touch):
+    #Affiche la prévisualisation du bateau à la position de la souris
     x_case, y_case = fenetre.click_to_case(event.x, event.y)
     fenetre.afficher_previsualisation(plateau, x_case, y_case, orientation, taille, position_canva, can_touch)
 
 def on_molette(event, fenetre, plateau, orientation, taille, position_canva, can_touch):
+    #Change l'orientation du bateau et affiche la prévisualisation à la position de la souris
     orientation[0] = 1 - orientation[0]  # alterne entre 0 et 1
     x_case, y_case = fenetre.click_to_case(event.x, event.y)
     fenetre.afficher_previsualisation(plateau, x_case, y_case, orientation[0], taille, position_canva, can_touch)
 
 def on_clique_droit(event, plateau, fenetre, canva_placement, text_ids, afficher_croix):
+    #Enlève un bateau déjà placé sur le plateau
     x_case, y_case = fenetre.click_to_case(event.x, event.y)    #Converti les coordonnée de px en coordonnée de cases
     if plateau.plateau[x_case][y_case].type == 2:   #On regarde si la case cliquée est bien un bateau
         bateau_touche = [0,[0,0]]
@@ -1360,6 +1452,8 @@ fenetre1.titre_information(fenetre1.fenetre,"Click droit pour enlever un bateau"
 fenetre2.titre_information(fenetre2.fenetre,"C'est à l'adversaire de poser ces bateaux",1,22,15)
 fenetre2.titre_information(fenetre2.fenetre,"Click droit pour enlever un bateau",3,22,12)
 fenetre2.bloc_canva(fenetre2.fenetre, "Vos bateaux à poser", '× ', plateau_joueur2.nb_bateau_restant_a_pose_par_taille(), 2, 22, "bleu")
+
+#Définition des listes de joueurs en fonction du mode de jeu
 if mode_jeu == '2_j':
     liste_joueur_humain = [1,2]
     liste_joueur_ia = []
@@ -1411,18 +1505,21 @@ else:# mode_jeu == 'socket_client':
     option_voir_cibles_adverses = params["option_voir_cibles_adverses"]
     dico_bateaux_a_poser = params["dico_bateaux_a_poser"]
 
+#Création des listes de bateaux à poser pour chaque joueur
 liste_bateaux_a_poser = []
 for clef in dico_bateaux_a_poser:
     for i in range(dico_bateaux_a_poser[clef]):
         plateau_joueur1.liste_bateaux_a_poser.append(int(clef))
         plateau_joueur2.liste_bateaux_a_poser.append(int(clef))
        
-afficher_croix = False if option_can_touch == True else True
+afficher_croix = False if option_can_touch == True else True #On définit si on affiche les croix de non-contact ou pas
 
 fenetre1.canva_bind = 'droite'
 fenetre2.canva_bind = 'droite'
-#Boucle qui demande aux deux joueurs de donner la position de leurs bateau à poser sur leur plateau
+
+#Boucle de placement des bateaux
 for joueur in [1,2]:
+    #Placement des bateaux pour les joueurs humains
     if joueur in liste_joueur_humain:
         if joueur == 1:
             #plateau_joueur1.afficher_plateau(True, True)
@@ -1515,11 +1612,15 @@ for joueur in [1,2]:
                 conn.sendall(data.encode() + b'\n')
             else:
                 server.sendall(data.encode() + b'\n')
+    
+    #Placement des bateaux pour les joueurs IA
     elif joueur in liste_joueur_ia:
         if joueur == 1:
             plateau_joueur1.pose_bateaux_aleatoire(option_can_touch)
         else:
             plateau_joueur2.pose_bateaux_aleatoire(option_can_touch)
+    
+    #Placement des bateaux pour les joueurs en réseau (reception des données)
     else:#joueur in liste_joueur_socket
         if joueur == 1:
             fenetre1.titres[0].configure(text="C'est à vous de poser les bateaux")
@@ -1532,6 +1633,8 @@ for joueur in [1,2]:
             
             fenetre1.fenetre.update()
             fenetre2.fenetre.update()
+        
+        # Réception des données
         buffer = ""
         continue_receiving = True
         while continue_receiving:
@@ -1543,6 +1646,8 @@ for joueur in [1,2]:
                 data, buffer = buffer.split('\n', 1)
                 matrice = json.loads(data)
                 continue_receiving = False
+        
+        # Traitement des données reçues
         payload = json.loads(data)
         matrice = payload["matrice"]
         liste_bateau_restant = payload["liste_bateau_restant"]
@@ -1550,6 +1655,8 @@ for joueur in [1,2]:
             plateau_joueur1.liste_bateau_restant = liste_bateau_restant
         else:   
             plateau_joueur2.liste_bateau_restant = liste_bateau_restant
+        
+        # Mise à jour du plateau avec les données reçues
         for i, ligne in enumerate(matrice):
             for j, case_dict in enumerate(ligne):
                 if joueur == 1:
@@ -1560,9 +1667,12 @@ for joueur in [1,2]:
                 case.taille_bateau = case_dict["taille_bateau"]
                 case.position_sur_bateau = case_dict["position_sur_bateau"]
                 case.orientation_bateau = case_dict["orientation_bateau"]
+
+#Préparation du début de la partie
 plateau_joueur1.liste_bateau_total = copy.deepcopy(plateau_joueur1.liste_bateau_restant)
 plateau_joueur2.liste_bateau_total = copy.deepcopy(plateau_joueur2.liste_bateau_restant)
 
+# Nettoyage des fenêtres pour le début de la partie
 for i in range(2):
     fenetre1.titres[i].destroy()
     fenetre2.titres[i].destroy()
@@ -1573,6 +1683,7 @@ for widget in fenetre2.canva_ids:
 fenetre1.vider_ids()
 fenetre2.vider_ids()
 
+# Affichage des informations de début de partie
 fenetre1.titre_information(fenetre1.fenetre,"C'est à vous de jouer",1,22,15)
 fenetre2.titre_information(fenetre2.fenetre,"C'est à l'adversaire de jouer",1,22,15)
 
@@ -1587,6 +1698,8 @@ fin_du_jeux = False
 coordonnee_case_x, coordonnee_case_y = 0,0
 fenetre1.canva_bind = 'gauche'
 fenetre2.canva_bind = 'gauche'
+
+#Boucle principale du jeu
 while not fin_du_jeux:
     # affiche les plateaux
     #print("\n","Ton propre plateau qui sert à viser l'adversaire")
@@ -1617,12 +1730,13 @@ while not fin_du_jeux:
 
     #print(f"C'est au joueur du joueur {joueur} de jouer")
 
-    # demande la case à ciblé
+    # Demande la case à ciblé
     bonne_position_cible = False
     while not bonne_position_cible:
         #coordonner_case_x = int(input("Dans quel numero de ligne veux tu cibler ?"))
         #coordonner_case_y = int(input("Dans quel numero de colonne veux tu cibler ? "))
 
+        # Obtention des coordonnées de la case à cibler
         if joueur == 1:
             if 1 in liste_joueur_humain:
                 fenetre1.canva_gauche.config(cursor="none")
@@ -1645,6 +1759,8 @@ while not fin_du_jeux:
                 fenetre2.canva_gauche.unbind("<Leave>")
             elif 1 in liste_joueur_ia :
                 coordonnee_case = plateau_joueur1.coup_IA(option_can_touch)
+        
+        # réception des coordonnées si joueur en socket
         if joueur in liste_joueur_socket:
             if mode_jeu == 'socket_serveur':
                 data = conn.recv(1024)
@@ -1656,16 +1772,20 @@ while not fin_du_jeux:
         coordonnee_case_x = coordonnee_case[0]
         coordonnee_case_y = coordonnee_case[1]
 
+        # vérification de la validité de la case ciblée
         if joueur == 1:
             bonne_position_cible = plateau_joueur2.is_possible_cible(coordonnee_case_x, coordonnee_case_y)
         else:
             bonne_position_cible = plateau_joueur1.is_possible_cible(coordonnee_case_x, coordonnee_case_y)
+    
+    # envoi des coordonnées si joueur humain en mode socket
     if joueur in liste_joueur_humain and (mode_jeu == 'socket_serveur' or mode_jeu == 'socket_client'):
         concactened_data = f"{coordonnee_case_x} {coordonnee_case_y}"
         if mode_jeu == 'socket_serveur':
             conn.send(concactened_data.encode())
         else:
             server.send(concactened_data.encode())
+
     # cible une case et gestion bateaux plus fin de game
     if joueur == 1:
         if plateau_joueur2.cible_case(coordonnee_case_x, coordonnee_case_y) == True: # si bateau présent
@@ -1760,12 +1880,16 @@ while not fin_du_jeux:
             #print("La case ne contient pas de bateaux")
             joueur = 1
 
+# Affichage des plateaux mis à jour
 fenetre1.afficher_plateau(plateau_joueur2.plateau, True, False, 'gauche', False)
 fenetre1.afficher_plateau(plateau_joueur1.plateau, option_voir_cibles_adverses, True, 'droite', False)
 fenetre2.afficher_plateau(plateau_joueur1.plateau, True, False, 'gauche', False)
 fenetre2.afficher_plateau(plateau_joueur2.plateau, option_voir_cibles_adverses, True, 'droite', False)
+
 vert = Image.new("RGBA", (480,480), (0, 255, 0, 120))
 rouge = Image.new("RGBA", (480,480), (255, 0, 0, 120))
+
+# Affichage de l'écran de fin
 if joueur_perdu == 2:
     tk_vert = ImageTk.PhotoImage(vert, master=fenetre1.fenetre)
     tk_rouge = ImageTk.PhotoImage(rouge, master=fenetre2.fenetre)
