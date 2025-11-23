@@ -969,7 +969,6 @@ class UI_menu:
     def afficher_mode_socket(self):
         #Affiche la fenêtre pour jouer en réseau via une connexion socket
         self.clear_widgets()
-        self.fenetre_menu.configure(bg=self.couleur_fond)
 
         label_text_principal_ip = Label(self.fenetre_menu, text='Jouer contre un joueur', font=('Helvetica', 32, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=30)
         label_text_principal_ip.grid(row=0, column=0, columnspan=2, padx=50, pady=(20, 10))
@@ -1004,7 +1003,6 @@ class UI_menu:
         frame_choix = Frame(self.fenetre_menu, bg=self.couleur_fond)
         frame_choix.grid(row=4, column=0, columnspan=2, padx=50, pady=(10, 20))
         self.widgets.append(frame_choix)
-        
 
         # Radio boutons pour choisir le mode
         radio_serveur = Radiobutton(frame_choix, text="Être le serveur", variable=self.mode_reseau, value="serveur", command=self.basculer_mode_reseau, font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte, selectcolor=self.couleur_fond, activebackground=self.couleur_fond, activeforeground=self.couleur_texte, cursor='hand2')
@@ -1015,12 +1013,10 @@ class UI_menu:
         radio_client.pack(side='left', padx=20)
         self.widgets.append(radio_client)
 
-
         # Cadre pour saisir l'adresse IP du serveur (visible uniquement si mode client)
         self.frame_client = Frame(self.fenetre_menu, bg=self.couleur_fond)
         self.frame_client.grid(row=5, column=0, columnspan=2, padx=50, pady=(10, 20))
         self.widgets.append(self.frame_client)
-
 
         # Texte et champ de saisie de l'adresse IP
         label_connect = Label(self.frame_client, text='Se connecter à un joueur', font=('Helvetica', 14, 'bold'), bg=self.couleur_fond, fg=self.couleur_texte, pady=10)
@@ -1031,20 +1027,25 @@ class UI_menu:
 
         self.entry_ip = Entry(self.frame_client, font=('Helvetica', 12), bg="#ffffff", fg=self.couleur_texte, relief='flat', bd=2, highlightthickness=1, highlightbackground=self.couleur_accent, highlightcolor=self.couleur_accent, width=25)
         self.entry_ip.grid(row=1, column=1, padx=20, pady=10, sticky='w')
-
-        """self.entry_ip.bind("<FocusIn>", lambda e: self.desactiver_boutons())
-        self.entry_ip.bind("<FocusOut>", lambda e: self.activer_boutons())"""
-        """self.bouton_se_connecter = Button(self.frame_client, text='Se connecter', command=lambda: self.jouer_bouton_bleu(), font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        
+        self.bouton_se_connecter = Button(self.frame_client, text='Se connecter', command=lambda: [self.jouer_bouton_bleu(), self.tester_connexion_client()], font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
         self.bouton_se_connecter.grid(row=2, column=0, columnspan=2, padx=0, pady=(10, 10), sticky='ew')
         self.bouton_se_connecter.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol) if e.widget['state'] == 'normal' else None)
-        self.bouton_se_connecter.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent) if e.widget['state'] == 'normal' else None)"""
+        self.bouton_se_connecter.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent) if e.widget['state'] == 'normal' else None)
+        
+        # Label pour afficher les messages d'erreur/succès
+        self.label_status_connexion = Label(self.frame_client, text='', font=('Helvetica', 11), bg=self.couleur_fond, fg='red')
+        self.label_status_connexion.grid(row=3, column=0, columnspan=2, padx=0, pady=(5, 0))
+        
+        # Variable pour indiquer si le client est connecté
+        self.client_connecte = False
         
         # Bouton pour valider et lancer la partie en réseau
-        bouton_valider = Button(self.fenetre_menu, text='Valider', command=lambda: (self.jouer_bouton_bleu(), self.jouer_contre_joueur_socket(self.mode_reseau.get(), self.entry_ip.get())), font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
-        bouton_valider.grid(row=6, column=0, columnspan=2, padx=50, pady=15, sticky='ew')
-        bouton_valider.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
-        bouton_valider.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
-        self.widgets.append(bouton_valider)
+        self.bouton_valider = Button(self.fenetre_menu, text='Valider', command=lambda: (self.jouer_bouton_bleu(), self.valider_connexion()), font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2', state='normal')
+        self.bouton_valider.grid(row=6, column=0, columnspan=2, padx=50, pady=15, sticky='ew')
+        self.bouton_valider.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol) if e.widget['state'] == 'normal' else None)
+        self.bouton_valider.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent) if e.widget['state'] == 'normal' else None)
+        self.widgets.append(self.bouton_valider)
         
         # Bouton retour au menu précédent
         bouton_retour = Button(self.fenetre_menu, text='Retour', command=lambda: [self.jouer_bouton_gris(), self.afficher_mode_jeu()], font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
@@ -1057,21 +1058,223 @@ class UI_menu:
         self.fenetre_menu.grid_columnconfigure(0, weight=1)
         self.fenetre_menu.grid_columnconfigure(1, weight=1)
         self.frame_client.grid_remove()
-
+    
     def basculer_mode_reseau(self):
-        # Change l'affichage en fonction du mode sélectionné (serveur ou client)
+        #Change l'affichage en fonction du mode sélectionné (serveur ou client)
         if self.mode_reseau.get() == "client":
-            self.jouer_bouton_gris()
-            self.frame_client.grid()
-        else:
             self.jouer_bouton_bleu()
+            self.frame_client.grid()
+            self.bouton_valider.config(state='disabled', bg="#90caf9", cursor='arrow')
+            self.client_connecte = False
+        else:
+            self.jouer_bouton_gris()
             self.frame_client.grid_remove()
+            self.bouton_valider.config(state='normal', bg=self.couleur_accent, cursor='hand2')
 
-    """def desactiver_boutons(self):
-        self.bouton_se_connecter.config(state='disabled', bg="#90caf9", cursor='arrow')
+    def tester_connexion_client(self):
+        #Teste la connexion au serveur en mode client
+        ip = self.entry_ip.get().strip()
+        
+        # Validation basique de l'IP
+        if not self.valider_ip(ip):
+            self.label_status_connexion.config(text='Adresse IP invalide', fg='red')
+            return
+        
+        # Tentative de connexion dans un thread séparé
+        self.label_status_connexion.config(text='Connexion en cours...', fg='orange')
+        self.bouton_se_connecter.config(state='disabled')
+        
+        thread = threading.Thread(target=self.connexion_client_thread, args=(ip,))
+        thread.daemon = True
+        thread.start()
+    
+    def connexion_client_thread(self, ip):
+        #Thread pour tester la connexion sans bloquer l'interface
+        try:
+            test_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            test_socket.settimeout(5)
+            test_socket.connect((ip, 5000))
+            test_socket.close()
+            
+            # Succès de la connexion
+            self.fenetre_menu.after(0, self.connexion_reussie)
+        except Exception as e:
+            # Échec de la connexion
+            self.fenetre_menu.after(0, self.connexion_echouee)
+    
+    def connexion_reussie(self):
+        #Appelé quand la connexion au serveur réussit
+        self.client_connecte = True
+        self.label_status_connexion.config(text='Joueur trouvé', fg='green')
+        self.entry_ip.config(state='disabled')
+        self.bouton_se_connecter.grid_remove()
+        self.bouton_valider.config(state='normal', bg=self.couleur_accent, cursor='hand2')
+    
+    def connexion_echouee(self):
+        #Appelé quand la connexion au serveur échoue
+        self.label_status_connexion.config(text='Joueur non trouvé', fg='red')
+        self.bouton_se_connecter.config(state='normal')
+        self.client_connecte = False
+    
+    def valider_ip(self, ip):
+        #Valide le format d'une adresse IP
+        parties = ip.split('.')
+        if len(parties) != 4:
+            return False
+        try:
+            return all(0 <= int(partie) <= 255 for partie in parties)
+        except ValueError:
+            return False
+    
+    def valider_connexion(self):
+        #Valide la connexion et affiche la fenêtre d'attente appropriée
+        if self.mode_reseau.get() == "serveur":
+            self.afficher_attente_serveur()
+        else:
+            if self.client_connecte:
+                self.afficher_attente_client()
+    
+    def afficher_attente_serveur(self):
+        #Affiche la fenêtre d'attente pour le serveur
+        self.clear_widgets()
+        
+        label_titre = Label(self.fenetre_menu, text='Attente d\'un joueur', font=('Helvetica', 32, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=30)
+        label_titre.grid(row=0, column=0, padx=50, pady=(30, 20))
+        self.widgets.append(label_titre)
+        
+        # Chargement et affichage du GIF animé
+        self.gif_frames = []
+        self.gif_index = 0
+        try:
+            gif = Image.open("Images/load.gif")
+            while True:
+                frame = gif.copy()
+                frame = frame.resize((200, 200), Image.Resampling.LANCZOS)
+                self.gif_frames.append(ImageTk.PhotoImage(frame))
+                gif.seek(len(self.gif_frames))
+        except EOFError:
+            pass
+        
+        self.label_gif = Label(self.fenetre_menu, bg=self.couleur_fond)
+        self.label_gif.grid(row=1, column=0, padx=50, pady=30)
+        self.widgets.append(self.label_gif)
+        
+        self.animer_gif()
+        
+        # Démarrer le serveur dans un thread
+        self.serveur_en_attente = True
+        thread = threading.Thread(target=self.demarrer_serveur_thread)
+        thread.daemon = True
+        thread.start()
+        
+        bouton_retour = Button(self.fenetre_menu, text='Annuler', command=lambda: [self.jouer_bouton_gris(), self.annuler_attente_serveur()], font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_retour.grid(row=2, column=0, padx=50, pady=15, sticky='ew')
+        bouton_retour.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
+        bouton_retour.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
+        self.widgets.append(bouton_retour)
+    
+    def demarrer_serveur_thread(self):
+        #Thread pour démarrer le serveur et attendre une connexion
+        try:
+            HOST = "0.0.0.0"
+            PORT = 5000
+            self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.server_socket.bind((HOST, PORT))
+            self.server_socket.listen(1)
+            self.server_socket.settimeout(1)  # Timeout pour permettre l'annulation
+            
+            while self.serveur_en_attente:
+                try:
+                    conn, addr = self.server_socket.accept()
+                    self.conn = conn
+                    self.fenetre_menu.after(0, self.joueur_connecte_serveur)
+                    break
+                except socket.timeout:
+                    continue
+        except Exception as e:
+            print(f"Erreur serveur: {e}")
+    
+    def joueur_connecte_serveur(self):
+        #Appelé quand un joueur se connecte au serveur
+        self.serveur_en_attente = False
+        self.label_gif.grid_remove()
+        
+        label_connecte = Label(self.fenetre_menu, text='Joueur connecté ✓', font=('Helvetica', 24, 'bold'), bg=self.couleur_fond, fg='green', pady=30)
+        label_connecte.grid(row=1, column=0, padx=50, pady=30)
+        self.widgets.append(label_connecte)
+        
+        for widget in self.widgets:
+            if isinstance(widget, Button) and widget.cget('text') == 'Annuler':
+                widget.destroy()
+                self.widgets.remove(widget)
+                break
+        
+        bouton_lancer = Button(self.fenetre_menu, text='Lancer', command=lambda: [self.jouer_bouton_bleu(), self.jouer_contre_joueur_socket('serveur', '')], font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_lancer.grid(row=2, column=0, padx=50, pady=15, sticky='ew')
+        bouton_lancer.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
+        bouton_lancer.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
+        self.widgets.append(bouton_lancer)
+    
+    def annuler_attente_serveur(self):
+        #Annule l'attente du serveur
+        self.serveur_en_attente = False
+        if hasattr(self, 'server_socket'):
+            try:
+                self.server_socket.close()
+            except:
+                pass
+        self.afficher_mode_socket()
+    
+    def afficher_attente_client(self):
+        #Affiche la fenêtre d'attente pour le client
+        self.clear_widgets()
+        
+        label_titre = Label(self.fenetre_menu, text='En attente du serveur', font=('Helvetica', 32, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=30)
+        label_titre.grid(row=0, column=0, padx=50, pady=(30, 20))
+        self.widgets.append(label_titre)
+        
+        # Chargement et affichage du GIF animé
+        self.gif_frames = []
+        self.gif_index = 0
+        try:
+            gif = Image.open("Images/load.gif")
+            while True:
+                frame = gif.copy()
+                frame = frame.resize((200, 200), Image.Resampling.LANCZOS)
+                self.gif_frames.append(ImageTk.PhotoImage(frame))
+                gif.seek(len(self.gif_frames))
+        except EOFError:
+            pass
+        
+        self.label_gif = Label(self.fenetre_menu, bg=self.couleur_fond)
+        self.label_gif.grid(row=1, column=0, padx=50, pady=30)
+        self.widgets.append(self.label_gif)
+        
+        self.animer_gif()
+        
+        # Démarrer la connexion dans un thread
+        thread = threading.Thread(target=self.attendre_serveur_thread)
+        thread.daemon = True
+        thread.start()
+    
+    def attendre_serveur_thread(self):
+        pass
+    
+    def animer_gif(self):
+        #Anime le GIF en changeant les frames
+        if self.gif_frames and hasattr(self, 'label_gif') and self.label_gif.winfo_exists():
+            self.label_gif.config(image=self.gif_frames[self.gif_index])
+            self.gif_index = (self.gif_index + 1) % len(self.gif_frames)
+            self.fenetre_menu.after(50, self.animer_gif)
+    
+    def jouer_contre_joueur_socket(self, mode_reseau, ip_adresse):
+        #Lance une partie contre un autre joueur en réseau via une connexion socket
+        self.mode_jeu = 'socket_' + str(mode_reseau)
+        self.ip_adresse_serveur = ip_adresse if mode_reseau == 'client' else ''
+        self.musique_menu.stop()
+        self.fenetre_menu.destroy()
 
-    def activer_boutons(self):
-        self.bouton_se_connecter.config(state='normal', bg=self.couleur_accent, cursor='hand2')"""
+        self.bouton_se_connecter.config(state='normal', bg=self.couleur_accent, cursor='hand2')
 
     def update_icon_voix(self):
         # Met à jour l'icône du volume de la voix en fonction de la valeur du scale
