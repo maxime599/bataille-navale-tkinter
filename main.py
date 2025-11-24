@@ -664,6 +664,10 @@ class UI_menu:
         for widget in self.widgets:
             widget.destroy()
         self.widgets = []
+        try:
+            self.fenetre_menu.after_cancel(self.after_id_gif)
+        except:
+            pass
 
     def afficher_menu_principal(self):
         #Affiche le menu principal
@@ -1075,26 +1079,23 @@ class UI_menu:
         #Teste la connexion au serveur en mode client
         ip = self.entry_ip.get().strip()
         
-        # Validation basique de l'IP
         if not self.valider_ip(ip):
             self.label_status_connexion.config(text='Adresse IP invalide', fg='red')
             return
         
-        # Tentative de connexion dans un thread séparé
         self.label_status_connexion.config(text='Connexion en cours...', fg='orange')
         self.bouton_se_connecter.config(state='disabled')
         
         thread = threading.Thread(target=self.connexion_client_thread, args=(ip,))
         thread.daemon = True
         thread.start()
-    
+
     def connexion_client_thread(self, ip):
-        #Thread pour tester la connexion sans bloquer l'interface
+    #Thread pour tester la connexion sans bloquer l'interface
         try:
-            test_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            test_socket.settimeout(5)
-            test_socket.connect((ip, 5000))
-            test_socket.close()
+            self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.client_socket.settimeout(5)
+            self.client_socket.connect((ip, 5051))  # Utiliser le bon port
             
             # Succès de la connexion
             self.fenetre_menu.after(0, self.connexion_reussie)
@@ -1252,20 +1253,91 @@ class UI_menu:
         
         self.animer_gif()
         
-        # Démarrer la connexion dans un thread
+        # Démarrer l'attente du signal du serveur dans un thread
+        self.client_en_attente = True
         thread = threading.Thread(target=self.attendre_serveur_thread)
         thread.daemon = True
         thread.start()
+        
+        # AJOUT : Bouton annuler pour le client
+        bouton_retour = Button(self.fenetre_menu, text='Annuler', command=lambda: [self.jouer_bouton_gris(), self.annuler_attente_client()], font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_retour.grid(row=2, column=0, padx=50, pady=15, sticky='ew')
+        bouton_retour.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
+        bouton_retour.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
+        self.widgets.append(bouton_retour)
     
     def attendre_serveur_thread(self):
-        pass
-    
+        #Thread pour attendre le signal de démarrage du serveur
+        try:
+            buffer = ""
+            while self.client_en_attente:
+                try:
+                    # Attendre le signal "START" du serveur
+                    data = server.recv(1024).decode()
+                    if not data:
+                        continue
+                    buffer += data
+                    if "START" in buffer:
+                        # Signal reçu, on peut démarrer
+                        self.fenetre_menu.after(0, self.serveur_pret)
+                        break
+                except socket.timeout:
+                    continue
+        except Exception as e:
+            print(f"Erreur client: {e}")
+
+    def serveur_pret(self):
+        """Appelé quand le serveur envoie le signal de démarrage"""
+        self.client_en_attente = False
+        self.label_gif.grid_remove()
+        
+        label_pret = Label(self.fenetre_menu, text='Le serveur est prêt !', font=('Helvetica', 24, 'bold'), bg=self.couleur_fond, fg='green', pady=30)
+        label_pret.grid(row=1, column=0, padx=50, pady=30)
+        self.widgets.append(label_pret)
+        
+        # Retirer le bouton Annuler
+        for widget in self.widgets:
+            if isinstance(widget, Button) and widget.cget('text') == 'Annuler':
+                widget.destroy()
+                self.widgets.remove(widget)
+                break
+        
+        # Lancer automatiquement la partie après 1 seconde
+        self.fenetre_menu.after(1000, lambda: self.jouer_contre_joueur_socket('client', self.entry_ip.get().strip()))
+
+    def joueur_connecte_serveur(self):
+        #Appelé quand un joueur se connecte au serveur
+        self.serveur_en_attente = False
+        self.label_gif.grid_remove()
+        
+        label_connecte = Label(self.fenetre_menu, text='Joueur connecté', font=('Helvetica', 24, 'bold'), bg=self.couleur_fond, fg='green', pady=30)
+        label_connecte.grid(row=1, column=0, padx=50, pady=30)
+        self.widgets.append(label_connecte)
+        
+        for widget in self.widgets:
+            if isinstance(widget, Button) and widget.cget('text') == 'Annuler':
+                widget.destroy()
+                self.widgets.remove(widget)
+                break
+        
+        bouton_lancer = Button(self.fenetre_menu, text='Lancer', command=lambda: [self.jouer_bouton_bleu(), self.lancer_partie_serveur()], font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_lancer.grid(row=2, column=0, padx=50, pady=15, sticky='ew')
+        bouton_lancer.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
+        bouton_lancer.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
+        self.widgets.append(bouton_lancer)
+
+    def lancer_partie_serveur(self):
+        #Lance la partie côté serveur et envoie le signal au client
+        conn.send("START".encode())
+        # Lancer la partie
+        self.jouer_contre_joueur_socket('serveur', '')
+
     def animer_gif(self):
         #Anime le GIF en changeant les frames
         if self.gif_frames and hasattr(self, 'label_gif') and self.label_gif.winfo_exists():
             self.label_gif.config(image=self.gif_frames[self.gif_index])
             self.gif_index = (self.gif_index + 1) % len(self.gif_frames)
-            self.fenetre_menu.after(50, self.animer_gif)
+            self.after_id_gif = self.fenetre_menu.after(50, self.animer_gif)
     
     def jouer_contre_joueur_socket(self, mode_reseau, ip_adresse):
         #Lance une partie contre un autre joueur en réseau via une connexion socket
@@ -1501,7 +1573,16 @@ class UI_menu:
     def jouer_contre_joueur_socket(self, mode_reseau, ip_adresse):
         #Lance une partie contre un autre joueur en réseau via une connexion socket
         self.mode_jeu = 'socket_' + str(mode_reseau)
-        self.ip_adresse_serveur = ip_adresse
+        self.ip_adresse_serveur = ip_adresse if mode_reseau == 'client' else ''
+        
+        # Stocker les références de connexion pour les réutiliser
+        if mode_reseau == 'serveur' and hasattr(self, 'server_socket'):
+            # Ne pas fermer le socket, juste le stocker
+            pass
+        elif mode_reseau == 'client' and hasattr(self, 'client_socket'):
+            # Stocker la référence
+            self.server = self.client_socket
+        
         self.musique_menu.stop()
         self.fenetre_menu.destroy()
 
@@ -1669,16 +1750,9 @@ elif mode_jeu == 'socket_serveur':
     liste_joueur_humain = [1]
     liste_joueur_ia = []
     liste_joueur_socket = [2]
-    HOST = "0.0.0.0"   # Pour écouter sur toutes les interfaces réseau
-    PORT = 5000        # Port d'écoute du serveur
-    # Création du socket TCP
-    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.bind((HOST, PORT))
-    server.listen(1)
-
-    # Accepter un client
-    conn, addr = server.accept()
-    print(f"[SERVEUR] Client connecté : {addr}")
+    # La connexion a déjà été établie dans le menu
+    # On récupère juste la connexion existante
+    conn = menu.conn  # Ajouter cette variable dans la classe UI_menu
     
     parametres = {
         "option_can_touch": option_can_touch,
@@ -1686,16 +1760,15 @@ elif mode_jeu == 'socket_serveur':
         "dico_bateaux_a_poser": dico_bateaux_a_poser
     }
     conn.sendall((json.dumps(parametres) + '\n').encode())
-else:# mode_jeu == 'socket_client':
+
+elif mode_jeu == 'socket_client':
     liste_joueur_humain = [2]
     liste_joueur_ia = []
     liste_joueur_socket = [1]
-    HOST = menu.ip_adresse_serveur   # Adresse du serveur (localhost)
-    PORT = 5000          # Port du serveur
-
-    # Création du socket TCP
-    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.connect((HOST, PORT))
+    # La connexion a déjà été établie dans le menu
+    # On récupère juste la connexion existante
+    server = menu.server  # Ajouter cette variable dans la classe UI_menu
+    
     buffer = ""
     continuer = True
     while continuer:
