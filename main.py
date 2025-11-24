@@ -1095,7 +1095,7 @@ class UI_menu:
         try:
             self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.client_socket.settimeout(5)
-            self.client_socket.connect((ip, 5051))  # Utiliser le bon port
+            self.client_socket.connect((ip, 5000))
             
             # Succès de la connexion
             self.fenetre_menu.after(0, self.connexion_reussie)
@@ -1216,16 +1216,16 @@ class UI_menu:
         bouton_lancer.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
         self.widgets.append(bouton_lancer)
     
-    def annuler_attente_serveur(self):
-        #Annule l'attente du serveur
-        self.serveur_en_attente = False
-        if hasattr(self, 'server_socket'):
+    def annuler_attente_client(self):
+        #Annule l'attente du client
+        self.client_en_attente = False
+        if hasattr(self, 'client_socket'):
             try:
-                self.server_socket.close()
+                self.client_socket.close()
             except:
                 pass
         self.afficher_mode_socket()
-    
+
     def afficher_attente_client(self):
         #Affiche la fenêtre d'attente pour le client
         self.clear_widgets()
@@ -1273,7 +1273,7 @@ class UI_menu:
             while self.client_en_attente:
                 try:
                     # Attendre le signal "START" du serveur
-                    data = server.recv(1024).decode()
+                    data = self.client_socket.recv(1024).decode()
                     if not data:
                         continue
                     buffer += data
@@ -1287,11 +1287,11 @@ class UI_menu:
             print(f"Erreur client: {e}")
 
     def serveur_pret(self):
-        """Appelé quand le serveur envoie le signal de démarrage"""
+        #Appelé quand le serveur envoie le signal de démarrage
         self.client_en_attente = False
         self.label_gif.grid_remove()
         
-        label_pret = Label(self.fenetre_menu, text='Le serveur est prêt !', font=('Helvetica', 24, 'bold'), bg=self.couleur_fond, fg='green', pady=30)
+        label_pret = Label(self.fenetre_menu, text='Le serveur est prêt', font=('Helvetica', 24, 'bold'), bg=self.couleur_fond, fg='green', pady=30)
         label_pret.grid(row=1, column=0, padx=50, pady=30)
         self.widgets.append(label_pret)
         
@@ -1301,6 +1301,9 @@ class UI_menu:
                 widget.destroy()
                 self.widgets.remove(widget)
                 break
+        
+        # Sauvegarder la connexion avant de lancer
+        self.server = self.client_socket 
         
         # Lancer automatiquement la partie après 1 seconde
         self.fenetre_menu.after(1000, lambda: self.jouer_contre_joueur_socket('client', self.entry_ip.get().strip()))
@@ -1328,8 +1331,7 @@ class UI_menu:
 
     def lancer_partie_serveur(self):
         #Lance la partie côté serveur et envoie le signal au client
-        conn.send("START".encode())
-        # Lancer la partie
+        self.conn.send("START".encode())  # ✅ Utiliser self.conn
         self.jouer_contre_joueur_socket('serveur', '')
 
     def animer_gif(self):
@@ -1750,9 +1752,7 @@ elif mode_jeu == 'socket_serveur':
     liste_joueur_humain = [1]
     liste_joueur_ia = []
     liste_joueur_socket = [2]
-    # La connexion a déjà été établie dans le menu
-    # On récupère juste la connexion existante
-    conn = menu.conn  # Ajouter cette variable dans la classe UI_menu
+    conn = menu.conn
     
     parametres = {
         "option_can_touch": option_can_touch,
@@ -1765,9 +1765,7 @@ elif mode_jeu == 'socket_client':
     liste_joueur_humain = [2]
     liste_joueur_ia = []
     liste_joueur_socket = [1]
-    # La connexion a déjà été établie dans le menu
-    # On récupère juste la connexion existante
-    server = menu.server  # Ajouter cette variable dans la classe UI_menu
+    server = menu.server 
     
     buffer = ""
     continuer = True
@@ -2193,4 +2191,11 @@ if joueur_perdu == 1:
     fenetre2.canva_gauche.create_text(238,238,text="GAGNÉ",font=('Helvetica', 100, 'bold'),fill="#ffffff",anchor='center')
     
 
+try:
+    if mode_jeu == 'socket_serveur' and 'conn' in locals():
+        conn.close()
+    elif mode_jeu == 'socket_client' and 'server' in locals():
+        server.close()
+except:
+    pass
 mainloop()
