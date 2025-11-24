@@ -1199,7 +1199,7 @@ class UI_menu:
         self.serveur_en_attente = False
         self.label_gif.grid_remove()
         
-        label_connecte = Label(self.fenetre_menu, text='Joueur connecté ✓', font=('Helvetica', 24, 'bold'), bg=self.couleur_fond, fg='green', pady=30)
+        label_connecte = Label(self.fenetre_menu, text='Joueur connecté', font=('Helvetica', 24, 'bold'), bg=self.couleur_fond, fg='green', pady=30)
         label_connecte.grid(row=1, column=0, padx=50, pady=30)
         self.widgets.append(label_connecte)
         
