@@ -1226,6 +1226,16 @@ class UI_menu:
                 pass
         self.afficher_mode_socket()
 
+    def annuler_attente_serveur(self):
+        #Annule l'attente du serveur
+        self.serveur_en_attente = False
+        if hasattr(self, 'server_socket'):
+            try:
+                self.server_socket.close()
+            except:
+                pass
+        self.afficher_mode_socket()
+
     def afficher_attente_client(self):
         #Affiche la fenêtre d'attente pour le client
         self.clear_widgets()
