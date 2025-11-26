@@ -1415,7 +1415,7 @@ class UI_menu:
 
     def lancer_partie_client(self):
         #Lance la partie côté client
-        self.jouer_contre_joueur_socket('client', self.entry_ip.get().strip())
+        self.jouer_contre_joueur_socket('client', self.ip_client_sauvegarde)
 
     def jouer_contre_joueur_socket(self, mode_reseau, ip_adresse):
         #Lance une partie contre un autre joueur en réseau via une connexion socket
@@ -1843,7 +1843,7 @@ elif mode_jeu == 'socket_serveur':
     liste_joueur_ia = []
     liste_joueur_socket = [2]
     HOST = "0.0.0.0"   # Pour écouter sur toutes les interfaces réseau
-    PORT = 5000        # Port d'écoute du serveur
+    PORT = 5500        # Port d'écoute du serveur
     # Création du socket TCP
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind((HOST, PORT))
@@ -1864,7 +1864,7 @@ else:# mode_jeu == 'socket_client':
     liste_joueur_ia = []
     liste_joueur_socket = [1]
     HOST = menu.ip_adresse_serveur   # Adresse du serveur (localhost)
-    PORT = 5000          # Port du serveur
+    PORT = 5500          # Port du serveur
 
     # Création du socket TCP
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
