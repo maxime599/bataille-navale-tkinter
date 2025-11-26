@@ -667,7 +667,7 @@ class UI_menu:
             self.musique_menu.play(loops=-1)
             self.fenetre_menu.mainloop()
         else:
-            self.afficher_volume()
+            self.afficher_volume(retour_menu = True)
 
     def clear_widgets(self):
         #Supprime tous les widgets de la fenêtre
@@ -693,7 +693,7 @@ class UI_menu:
         bouton_jouer.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
         self.widgets.append(bouton_jouer)
 
-        bouton_parametre = Button(self.fenetre_menu, text='Paramètres', command=lambda: (self.jouer_bouton_bleu(), self.afficher_parametres()), font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_parametre = Button(self.fenetre_menu, text='Paramètres', command=lambda: (self.jouer_bouton_bleu(), self.afficher_parametres(retour_menu = True)), font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
         bouton_parametre.grid(row=2, column=0, padx=50, pady=15, sticky='ew')
         bouton_parametre.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
         bouton_parametre.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
@@ -712,7 +712,7 @@ class UI_menu:
         self.widgets.append(bouton_quitter)
         self.fenetre_menu.grid_columnconfigure(0, weight=1)
 
-    def afficher_parametres(self):
+    def afficher_parametres(self, retour_menu=True):
         #Affiche la fenêtre des paramètres
         self.clear_widgets()
         self.fenetre_menu.configure(bg=self.couleur_fond)
@@ -735,20 +735,23 @@ class UI_menu:
         bouton_bateaux.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
         self.widgets.append(bouton_bateaux)
 
-        bouton_son = Button(self.fenetre_menu, text='Volume', command=lambda: (self.jouer_bouton_bleu(), self.afficher_volume()), font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_son = Button(self.fenetre_menu, text='Volume', command=lambda: (self.jouer_bouton_bleu(), self.afficher_volume(retour_menu)), font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
         bouton_son.grid(row=4, column=0, padx=50, pady=15, sticky='ew')
         bouton_son.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
         bouton_son.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
         self.widgets.append(bouton_son)
 
-        bouton_retour = Button(self.fenetre_menu, text='Retour', command=lambda: (self.jouer_bouton_gris(), self.afficher_menu_principal()), font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        if retour_menu:
+            bouton_retour = Button(self.fenetre_menu, text='Retour', command=lambda: (self.jouer_bouton_gris(), self.afficher_menu_principal()), font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        else:
+            bouton_retour = Button(self.fenetre_menu, text='Retour', command=lambda: (self.jouer_bouton_gris(), self.afficher_mode_socket()), font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
         bouton_retour.grid(row=5, column=0, padx=50, pady=15, sticky='ew')
         bouton_retour.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
         bouton_retour.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
         self.widgets.append(bouton_retour)
         self.fenetre_menu.grid_columnconfigure(0, weight=1)
 
-    def afficher_fenetre_nb_bateaux(self):
+    def afficher_fenetre_nb_bateaux(self, retour_menu=True):
         #Affiche la fenêtre pour définir le nombre de bateaux de chaque taille
         self.clear_widgets()
 
@@ -777,20 +780,20 @@ class UI_menu:
             self.form_nb_bateaux.append(entry)
 
         #Ajout des boutons Valider et Retour
-        bouton_valider = Button(self.fenetre_menu, text='Valider', command=lambda: (self.jouer_bouton_bleu(), self.valider_et_quitter()), font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_valider = Button(self.fenetre_menu, text='Valider', command=lambda: (self.jouer_bouton_bleu(), self.valider_et_quitter(retour_menu)), font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
         bouton_valider.grid(row=7, column=0, padx=20, pady=(30, 15), sticky='ew')
         bouton_valider.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
         bouton_valider.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
         self.widgets.append(bouton_valider)
 
-        bouton_retour = Button(self.fenetre_menu, text='Retour', command=lambda: (self.jouer_bouton_gris(), self.verifier_modifications()), font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_retour = Button(self.fenetre_menu, text='Retour', command=lambda: (self.jouer_bouton_gris(), self.verifier_modifications(retour_menu)), font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
         bouton_retour.grid(row=7, column=1, padx=20, pady=(30, 15), sticky='ew')
         bouton_retour.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
         bouton_retour.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
         self.widgets.append(bouton_retour)
         self.fenetre_menu.grid_columnconfigure(0, weight=1)
 
-    def afficher_volume(self):
+    def afficher_volume(self, retour_menu):
         #Affiche la fenêtre de réglage du volume
         self.clear_widgets()
         label_text_principal_volume = Label(self.fenetre_menu, text='Volume', font=('Helvetica', 32, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=30)
@@ -848,7 +851,7 @@ class UI_menu:
         scale_volume_ui.pack(padx=8, pady=8)
         self.widgets.append(scale_volume_ui)
 
-        bouton_choix_son = Button(self.fenetre_menu, text='Choix des sons', command=lambda: (self.jouer_bouton_bleu(), self.afficher_choix_volume()), font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_choix_son = Button(self.fenetre_menu, text='Choix des sons', command=lambda: (self.jouer_bouton_bleu(), self.afficher_choix_volume(retour_menu)), font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
         bouton_choix_son.grid(row=7, column=0, columnspan=2, padx=50, pady=(20, 15), sticky='ew')
         bouton_choix_son.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
         bouton_choix_son.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
@@ -856,7 +859,7 @@ class UI_menu:
         
         if not self.en_jeu:
             texte = "Retour"
-            fonction = self.afficher_parametres
+            fonction = lambda: self.afficher_parametres(retour_menu)
         else:
             texte = "Quitter"
             fonction = self.fenetre_menu.destroy
@@ -870,7 +873,7 @@ class UI_menu:
         self.update_icon_musique()
         self.update_icon_ui()
 
-    def afficher_choix_volume(self):
+    def afficher_choix_volume(self, retour_menu):
         #Affiche la fenêtre de choix des sons
         self.clear_widgets()
         label_text_principal_choix_volume = Label(self.fenetre_menu, text='Choix des sons', font=('Helvetica', 32, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=30)
@@ -969,7 +972,8 @@ class UI_menu:
         liste_bateau_touche = Listbox(frame_liste_bateau_touche, height=1, font=('Helvetica', 10), bg='#ffffff', fg=self.couleur_texte, relief='flat', bd=0, highlightthickness=0, cursor='hand2')
         liste_bateau_touche.pack(padx=8, pady=8)
         self.widgets.append(liste_bateau_touche)
-        bouton_retour = Button(self.fenetre_menu, text='Retour', command=lambda e: [self.afficher_volume(), self.jouer_bouton_gris()], font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        
+        bouton_retour = Button(self.fenetre_menu, text='Retour', command=lambda: [self.afficher_volume(retour_menu), self.jouer_bouton_gris()], font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
         bouton_retour.grid(row=11, column=0, columnspan=2, padx=50, pady=(20, 15), sticky='ew')
         bouton_retour.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
         bouton_retour.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
@@ -1050,19 +1054,36 @@ class UI_menu:
         # Variable pour indiquer si le client est connecté
         self.client_connecte = False
         
+
+        if self.mode_reseau.get() == "serveur":
+            self.bouton_parametre = Button(
+                self.fenetre_menu, text='Paramètres',
+                command=lambda: (self.jouer_bouton_bleu(), self.afficher_parametres(retour_menu=False)),
+                font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff",
+                activebackground=self.couleur_survol, activeforeground="#ffffff",
+                relief='flat', bd=0, padx=40, pady=15, cursor='hand2'
+            )
+            self.bouton_parametre.grid(row=6, column=0, columnspan=2, padx=50, pady=15, sticky='ew')
+            self.bouton_parametre.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
+            self.bouton_parametre.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
+            self.widgets.append(self.bouton_parametre)
+        else:
+            self.bouton_parametre = None
+
+
         # Bouton pour valider et lancer la partie en réseau
         self.bouton_valider = Button(self.fenetre_menu, text='Valider', command=lambda: (self.jouer_bouton_bleu(), self.valider_connexion()), font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2', state='normal')
-        self.bouton_valider.grid(row=6, column=0, columnspan=2, padx=50, pady=15, sticky='ew')
+        self.bouton_valider.grid(row=7, column=0, columnspan=2, padx=50, pady=15, sticky='ew')
         self.bouton_valider.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol) if e.widget['state'] == 'normal' else None)
         self.bouton_valider.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent) if e.widget['state'] == 'normal' else None)
         self.widgets.append(self.bouton_valider)
         
         # Bouton retour au menu précédent
-        bouton_retour = Button(self.fenetre_menu, text='Retour', command=lambda: [self.jouer_bouton_gris(), self.afficher_mode_jeu()], font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
-        bouton_retour.grid(row=7, column=0, columnspan=2, padx=50, pady=(20, 15), sticky='ew')
-        bouton_retour.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
-        bouton_retour.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
-        self.widgets.append(bouton_retour)
+        self.bouton_retour_socket = Button(self.fenetre_menu, text='Retour', command=lambda: [self.jouer_bouton_gris(), self.afficher_mode_jeu()], font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        self.bouton_retour_socket.grid(row=8, column=0, columnspan=2, padx=50, pady=(20, 15), sticky='ew')
+        self.bouton_retour_socket.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
+        self.bouton_retour_socket.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
+        self.widgets.append(self.bouton_retour_socket)
 
         # Configuration des colonnes de la grille
         self.fenetre_menu.grid_columnconfigure(0, weight=1)
@@ -1076,10 +1097,19 @@ class UI_menu:
             self.frame_client.grid()
             self.bouton_valider.config(state='disabled', bg="#90caf9", cursor='arrow')
             self.client_connecte = False
+            if hasattr(self, 'bouton_parametre') and self.bouton_parametre:
+                self.bouton_parametre.grid_remove()
+            self.bouton_valider.grid(row=6)
+            self.bouton_retour_socket.grid(row=7)
+
         else:
             self.jouer_bouton_gris()
             self.frame_client.grid_remove()
             self.bouton_valider.config(state='normal', bg=self.couleur_accent, cursor='hand2')
+            if hasattr(self, 'bouton_parametre') and self.bouton_parametre:
+                self.bouton_parametre.grid()
+            self.bouton_valider.grid(row=7)
+            self.bouton_retour_socket.grid(row=8)
 
     def tester_connexion_client(self):
         #Teste la connexion au serveur en mode client
@@ -1596,10 +1626,10 @@ class UI_menu:
         self.fenetre_menu.grid_rowconfigure(1, weight=1)
         self.fenetre_menu.grid_columnconfigure(0, weight=1)
 
-    def valider_et_quitter(self):
+    def valider_et_quitter(self, retour_menu):
         #Récupère les nouvelles valeurs des paramètres et retourne au menu principal
         self.dico_bateaux_a_poser = self.recuperer_taille_bateaux()
-        self.afficher_menu_principal()
+        self.afficher_parametres(retour_menu)
 
     def quitter_fenetre(self):
         #Quitte complètement le menu et arrête la musique
@@ -1628,18 +1658,18 @@ class UI_menu:
             nb_bateaux_5 = 1
         return {1 : nb_bateaux_1, 2 : nb_bateaux_2, 3 : nb_bateaux_3, 4 : nb_bateaux_4, 5 : nb_bateaux_5}
     
-    def verifier_modifications(self):
+    def verifier_modifications(self, retour_menu):
         #Vérifie si des modifications ont été apportées aux paramètres des bateaux
         modifications = False
         for i, entry in enumerate(self.form_nb_bateaux):
             if entry.get() != self.valeurs_initiales[i]:
                 modifications = True
         if modifications:
-            self.afficher_popup_confirmation()
+            self.afficher_popup_confirmation(retour_menu)
         else:
-            self.afficher_parametres()
+            self.afficher_parametres(retour_menu)
 
-    def afficher_popup_confirmation(self):
+    def afficher_popup_confirmation(self, retour_menu):
         #Affiche une popup demandant si l'utilisateur veut enregistrer les modifications
         overlay = Frame(self.fenetre_menu, bg="#00233e")
         overlay.place(x=0, y=0, relwidth=1, relheight=1)
@@ -1650,11 +1680,11 @@ class UI_menu:
         label_popup.pack()
         frame_boutons = Frame(popup_frame, bg="#ffffff")
         frame_boutons.pack(pady=10)
-        bouton_oui = Button(frame_boutons, text='Oui', command=lambda: [self.jouer_bouton_bleu(), overlay.destroy(), self.valider_et_quitter()], font=('Helvetica', 12, 'bold'), bg=self.couleur_accent, fg="#ffffff", relief='flat', bd=0, padx=30, pady=10, cursor='hand2')
+        bouton_oui = Button(frame_boutons, text='Oui', command=lambda: [self.jouer_bouton_bleu(), overlay.destroy(), self.valider_et_quitter(retour_menu)], font=('Helvetica', 12, 'bold'), bg=self.couleur_accent, fg="#ffffff", relief='flat', bd=0, padx=30, pady=10, cursor='hand2')
         bouton_oui.pack(side='left', padx=10)
         bouton_oui.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
         bouton_oui.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
-        bouton_non = Button(frame_boutons, text='Non', command=lambda: [self.jouer_bouton_gris(), overlay.destroy(), self.afficher_parametres()], font=('Helvetica', 12, 'bold'), bg="#b0bec5", fg=self.couleur_texte, relief='flat', bd=0, padx=30, pady=10, cursor='hand2')
+        bouton_non = Button(frame_boutons, text='Non', command=lambda: [self.jouer_bouton_gris(), overlay.destroy(), self.afficher_parametres(retour_menu)], font=('Helvetica', 12, 'bold'), bg="#b0bec5", fg=self.couleur_texte, relief='flat', bd=0, padx=30, pady=10, cursor='hand2')
         bouton_non.pack(side='left', padx=10)
         bouton_non.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
         bouton_non.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
