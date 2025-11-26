@@ -1945,9 +1945,9 @@ for joueur in [1,2]:
             fenetre1.fenetre.update()
             fenetre2.fenetre.update()
 
-        indice = 0
-        while indice < len(liste_bateaux_a_poser):
-            taille = liste_bateaux_a_poser[indice]
+
+        while len(liste_bateaux_a_poser) > 0:
+            taille = liste_bateaux_a_poser[0]
             bonne_position_bateau = False  
             bateau_supprime = False
             while not bonne_position_bateau:
