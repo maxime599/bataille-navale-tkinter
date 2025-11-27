@@ -2218,21 +2218,18 @@ while not fin_du_jeux:
                     coordonnee_case_x, coordonnee_case_y = splited_data
                     coordonnee_case = [coordonnee_case_x, coordonnee_case_y]
                     next_coordonnee_case = [None, None]
-                elif len(splited_data[0]) == 1 and len(splited_data[1]) == 2 and len(splited_data[2]) == 1:
-                    coordonnee_case = [splited_data[0], splited_data[1][0]]
-                    next_coordonnee_case = [splited_data[1][1], splited_data[2]]
+                    """elif len(splited_data[0]) == 1 and len(splited_data[1]) == 2 and len(splited_data[2]) == 1:
+                        coordonnee_case = [splited_data[0], splited_data[1][0]]
+                        next_coordonnee_case = [splited_data[1][1], splited_data[2]]"""
                 else:
                     coordonnee_case = [splited_data[0], splited_data[1][0]]
-                    next_coordonnee_case = [splited_data[1][1], splited_data[2], splited_data[3]]
+                    next_coordonnee_case = [splited_data[1][1]] + splited_data[2:]
             elif len(next_coordonnee_case) == 2:
                 coordonnee_case = [next_coordonnee_case[0], next_coordonnee_case[1]]
                 next_coordonnee_case = [None, None]
-            elif len(next_coordonnee_case) == 3:
-                coordonnee_case = next_coordonnee_case
-                next_coordonnee_case = [next_coordonnee_case[1][1], next_coordonnee_case[2]]
             else:
                 coordonnee_case = [next_coordonnee_case[0], next_coordonnee_case[1][0]]
-                next_coordonnee_case = [next_coordonnee_case[1][1], next_coordonnee_case[2], next_coordonnee_case[3]]
+                next_coordonnee_case = [next_coordonnee_case[1][1]] + next_coordonnee_case[2:]
         
         
         coordonnee_case_x = int(coordonnee_case[0])
@@ -2285,8 +2282,10 @@ while not fin_du_jeux:
                 if nb_bateaux_restant != 0: # s'il reste des bateaux
                     son_nb_bateaux_en_vie = pygame.mixer.Sound(f"Sons/Il reste n bateau(x) en vie/Il reste {nb_bateaux_restant} bateau(x) en vie.mp3")
                     son_nb_bateaux_en_vie.set_volume(UI_menu.volume_voix_global*0.01)
-                    channel.queue(son_nb_bateaux_en_vie)
-                    pass
+                    try:
+                        channel.queue(son_nb_bateaux_en_vie)
+                    except:
+                        pass
                 else: # s'il n'y a plus de bateau restant
                     son = pygame.mixer.Sound("Sons/Partie terminée, le joueur n°n gagne !/Partie terminée, le joueur n°1 gagne !.mp3")
                     son.set_volume(UI_menu.volume_voix_global*0.01)
@@ -2332,9 +2331,10 @@ while not fin_du_jeux:
                 if nb_bateaux_restant != 0: # s'il reste des bateaux
                     son_nb_bateaux_en_vie = pygame.mixer.Sound(f"Sons/Il reste n bateau(x) en vie/Il reste {nb_bateaux_restant} bateau(x) en vie.mp3")
                     son_nb_bateaux_en_vie.set_volume(UI_menu.volume_voix_global*0.01)
-                    channel.queue(son_nb_bateaux_en_vie)                   
-                    #print(f"Il reste {nb_bateaux_restant} bateau(x) en vie")
-                    pass
+                    try:
+                        channel.queue(son_nb_bateaux_en_vie)
+                    except:
+                        pass
                 else: # s'il n'y a plus de bateau restant
                     #print(f"Partie terminée, le joueur 2 a gagné")
                     son = pygame.mixer.Sound("Sons/Partie terminée, le joueur n°n gagne !/Partie terminée, le joueur n°2 gagne !.mp3")
