@@ -610,7 +610,6 @@ class Case:
         self.position_sur_bateau = position_sur_bateau
         self.orientation_bateau = orientation_bateau
 
-
 class UI_menu:
     volume_voix_global = 75
     volume_musique_global = 20
@@ -1142,7 +1141,7 @@ class UI_menu:
             self.fenetre_menu.after(0, self.connexion_echouee)
     
     def connexion_reussie(self):
-        """Appelé quand la connexion au serveur réussit"""
+        #"Appelé quand la connexion au serveur réussit"""
         self.client_connecte = True
         self.label_status_connexion.config(text='Joueur trouvé', fg='green')
         self.entry_ip.config(state='disabled')
@@ -1165,7 +1164,7 @@ class UI_menu:
         self.client_connecte = False
 
     def client_est_pret(self):
-        """Appelé quand le client est prêt"""
+        #Appelé quand le client est prêt
         # Utiliser uniquement les variables d'instance
         self.client_pret = True
         
@@ -1268,11 +1267,11 @@ class UI_menu:
             print(f"Erreur serveur: {e}")
     
     def joueur_connecte_serveur(self):
-        """Appelé quand un joueur se connecte au serveur"""
+        #Appelé quand un joueur se connecte au serveur
         self.serveur_en_attente = False
         self.label_gif.grid_remove()
         
-        label_connecte = Label(self.fenetre_menu, text='Joueur connecté ✓', 
+        label_connecte = Label(self.fenetre_menu, text='Joueur connecté', 
             font=('Helvetica', 24, 'bold'), bg=self.couleur_fond, fg='green', pady=30)
         label_connecte.grid(row=1, column=0, padx=50, pady=30)
         self.widgets.append(label_connecte)
@@ -1306,7 +1305,7 @@ class UI_menu:
         thread.start()
 
     def attendre_signal_serveur(self):
-        """Thread pour attendre le signal de lancement du serveur"""
+        #Thread pour attendre le signal de lancement du serveur
         try:
             # Créer un socket d'écoute sur le port 5002
             listen_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -1336,7 +1335,7 @@ class UI_menu:
         self.afficher_mode_socket()
     
     def afficher_attente_client(self):
-        """Affiche la fenêtre d'attente pour le client"""
+        #Affiche la fenêtre d'attente pour le client
         self.clear_widgets()
         
         label_titre = Label(self.fenetre_menu, text='En attente du serveur', 
@@ -1369,7 +1368,7 @@ class UI_menu:
         thread.start()
     
     def attendre_client_pret(self):
-        """Thread pour attendre que le client soit prêt"""
+        #Thread pour attendre que le client soit prêt
         try:
             # Créer un socket d'écoute sur le port 5001
             listen_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -1391,7 +1390,7 @@ class UI_menu:
             print(f"Erreur d'attente du client: {e}")
     
     def lancer_partie_client(self):
-        """Lance la partie côté client"""
+        #Lance la partie côté client
         # Utiliser l'IP sauvegardée au lieu de l'entry
         self.jouer_contre_joueur_socket('client', self.ip_client_sauvegarde)
 
@@ -1457,14 +1456,14 @@ class UI_menu:
         self.bouton_se_connecter.config(state='normal', bg=self.couleur_accent, cursor='hand2')
 
     def activer_bouton_lancer(self):
-        """Active le bouton Lancer quand le client est prêt"""
-        self.label_attente_client.config(text='Client prêt ✓', fg='green')
+        #Active le bouton Lancer quand le client est prêt
+        self.label_attente_client.config(text='Client prêt', fg='green')
         self.bouton_lancer.config(state='normal', bg=self.couleur_accent, cursor='hand2')
         self.bouton_lancer.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
         self.bouton_lancer.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
 
     def lancer_partie_serveur(self):
-        """Lance la partie côté serveur"""
+        #Lance la partie côté serveur
         # Envoyer un signal au client pour lancer la partie
         try:
             signal_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
