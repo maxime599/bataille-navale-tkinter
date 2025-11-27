@@ -1850,14 +1850,7 @@ fenetre2.fenetre.update()
 dico_bateaux_a_poser = menu.dico_bateaux_a_poser
 
 
-fenetre1.titre_information(fenetre1.fenetre,"C'est à vous de poser les bateaux",1,22,15)
-fenetre1.bloc_canva(fenetre1.fenetre, "Vos bateaux à poser", '× ', plateau_joueur1.nb_bateau_restant_a_pose_par_taille(), 2, 22, "bleu")
-fenetre1.titre_information(fenetre1.fenetre,"Click droit pour enlever un bateau",3,22,12)
 
-
-fenetre2.titre_information(fenetre2.fenetre,"C'est à l'adversaire de poser ces bateaux",1,22,15)
-fenetre2.titre_information(fenetre2.fenetre,"Click droit pour enlever un bateau",3,22,12)
-fenetre2.bloc_canva(fenetre2.fenetre, "Vos bateaux à poser", '× ', plateau_joueur2.nb_bateau_restant_a_pose_par_taille(), 2, 22, "bleu")
 
 #Définition des listes de joueurs en fonction du mode de jeu
 if mode_jeu == '2_j':
@@ -1919,6 +1912,15 @@ for clef in dico_bateaux_a_poser:
         plateau_joueur2.liste_bateaux_a_poser.append(int(clef))
        
 afficher_croix = False if option_can_touch == True else True #On définit si on affiche les croix de non-contact ou pas
+
+fenetre1.titre_information(fenetre1.fenetre,"C'est à vous de poser les bateaux",1,22,15)
+fenetre1.bloc_canva(fenetre1.fenetre, "Vos bateaux à poser", '× ', plateau_joueur1.nb_bateau_restant_a_pose_par_taille(), 2, 22, "bleu")
+fenetre1.titre_information(fenetre1.fenetre,"Click droit pour enlever un bateau",3,22,12)
+
+
+fenetre2.titre_information(fenetre2.fenetre,"C'est à l'adversaire de poser ces bateaux",1,22,15)
+fenetre2.titre_information(fenetre2.fenetre,"Click droit pour enlever un bateau",3,22,12)
+fenetre2.bloc_canva(fenetre2.fenetre, "Vos bateaux à poser", '× ', plateau_joueur2.nb_bateau_restant_a_pose_par_taille(), 2, 22, "bleu")
 
 fenetre1.canva_bind = 'droite'
 fenetre2.canva_bind = 'droite'
