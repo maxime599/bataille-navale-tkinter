@@ -2173,6 +2173,7 @@ coordonnee_case_x, coordonnee_case_y = 0,0
 fenetre1.canva_bind = 'gauche'
 fenetre2.canva_bind = 'gauche'
 
+next_coordonnee_case = [None, None]
 #Boucle principale du jeu
 while not fin_du_jeux:
     # affiche les plateaux
@@ -2236,15 +2237,34 @@ while not fin_du_jeux:
         
         # réception des coordonnées si joueur en socket
         if joueur in liste_joueur_socket:
-            if mode_jeu == 'socket_serveur':
-                data = conn.recv(1024)
+            if next_coordonnee_case == [None, None]:
+                if mode_jeu == 'socket_serveur':
+                    data = conn.recv(1024)
+                else:
+                    data = server.recv(1024)
+                
+                splited_data = data.decode().split()
+                print(splited_data)
+                if len(splited_data) == 2:
+                    coordonnee_case_x, coordonnee_case_y = splited_data
+                    coordonnee_case = [coordonnee_case_x, coordonnee_case_y]
+                    next_coordonnee_case = [None, None]
+                    """elif len(splited_data[0]) == 1 and len(splited_data[1]) == 2 and len(splited_data[2]) == 1:
+                        coordonnee_case = [splited_data[0], splited_data[1][0]]
+                        next_coordonnee_case = [splited_data[1][1], splited_data[2]]"""
+                else:
+                    coordonnee_case = [splited_data[0], splited_data[1][0]]
+                    next_coordonnee_case = [splited_data[1][1]] + splited_data[2:]
+            elif len(next_coordonnee_case) == 2:
+                coordonnee_case = [next_coordonnee_case[0], next_coordonnee_case[1]]
+                next_coordonnee_case = [None, None]
             else:
-                data = server.recv(1024)
-            splited_data = data.decode().split()
-            coordonnee_case_x, coordonnee_case_y = map(int, splited_data)
-            coordonnee_case = [coordonnee_case_x, coordonnee_case_y]
-        coordonnee_case_x = coordonnee_case[0]
-        coordonnee_case_y = coordonnee_case[1]
+                coordonnee_case = [next_coordonnee_case[0], next_coordonnee_case[1][0]]
+                next_coordonnee_case = [next_coordonnee_case[1][1]] + next_coordonnee_case[2:]
+        
+        
+        coordonnee_case_x = int(coordonnee_case[0])
+        coordonnee_case_y = int(coordonnee_case[1])
 
         # vérification de la validité de la case ciblée
         if joueur == 1:
@@ -2293,8 +2313,10 @@ while not fin_du_jeux:
                 if nb_bateaux_restant != 0: # s'il reste des bateaux
                     son_nb_bateaux_en_vie = pygame.mixer.Sound(son_helper.get_son_path("reste_bateau", nb_bateaux_restant))
                     son_nb_bateaux_en_vie.set_volume(UI_menu.volume_voix_global*0.01)
-                    channel.queue(son_nb_bateaux_en_vie)
-                    pass
+                    try:
+                        channel.queue(son_nb_bateaux_en_vie)
+                    except:
+                        pass
                 else: # s'il n'y a plus de bateau restant
                     son = pygame.mixer.Sound(son_helper.get_son_path("partie_terminee", 1))
                     son.set_volume(UI_menu.volume_voix_global*0.01)
@@ -2305,7 +2327,8 @@ while not fin_du_jeux:
         else: # une case vide
             plateau_joueur2.modifier_case(coordonnee_case_x, coordonnee_case_y, 1)
             #print("La case ne contient pas de bateaux")
-            joueur = 2
+            if next_coordonnee_case == [None, None]:
+                joueur = 2
 
     elif joueur == 2:
         if plateau_joueur1.cible_case(coordonnee_case_x, coordonnee_case_y) == True: # si bateau présent
@@ -2339,9 +2362,10 @@ while not fin_du_jeux:
                 if nb_bateaux_restant != 0: # s'il reste des bateaux
                     son_nb_bateaux_en_vie = pygame.mixer.Sound(son_helper.get_son_path("reste_bateau", nb_bateaux_restant))
                     son_nb_bateaux_en_vie.set_volume(UI_menu.volume_voix_global*0.01)
-                    channel.queue(son_nb_bateaux_en_vie)                   
-                    #print(f"Il reste {nb_bateaux_restant} bateau(x) en vie")
-                    pass
+                    try:
+                        channel.queue(son_nb_bateaux_en_vie)
+                    except:
+                        pass
                 else: # s'il n'y a plus de bateau restant
                     #print(f"Partie terminée, le joueur 2 a gagné")
                     son = pygame.mixer.Sound(son_helper.get_son_path("partie_terminee", 2))
@@ -2352,7 +2376,8 @@ while not fin_du_jeux:
         else: # une case vide
             plateau_joueur1.modifier_case(coordonnee_case_x, coordonnee_case_y, 1)
             #print("La case ne contient pas de bateaux")
-            joueur = 1
+            if next_coordonnee_case == [None, None]:
+                joueur = 1
 
 # Affichage des plateaux mis à jour
 fenetre1.afficher_plateau(plateau_joueur2.plateau, True, False, 'gauche', False)
