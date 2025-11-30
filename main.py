@@ -17,7 +17,7 @@ import webbrowser
 #pip install tkhtmlview
 
 GITHUB_REPO = "maxime599/bataille-navale-tkinter"
-VERSION_ACTUELLE = "2.1.2"
+VERSION_ACTUELLE = "3.0.0"
 
 #viens d'un code git hub juste plus pratique pour mettre à jour
 class GithubUpdateChecker:
@@ -81,7 +81,10 @@ class GithubUpdateChecker:
         except:
             return False
 
-
+def on_close():
+    musique_en_jeu.stop()
+    fenetre1.fenetre.destroy()
+    fenetre2.fenetre.destroy()
         
 root_created = False
 pygame.mixer.init()
@@ -2107,6 +2110,8 @@ fenetre2.canva_bind = 'droite'
 
 #Boucle de placement des bateaux
 for joueur in [1,2]:
+    fenetre1.fenetre.protocol("WM_DELETE_WINDOW", on_close)
+    fenetre2.fenetre.protocol("WM_DELETE_WINDOW", on_close)  
     #Placement des bateaux pour les joueurs humains
     if joueur in liste_joueur_humain:
         if joueur == 1:
@@ -2129,6 +2134,8 @@ for joueur in [1,2]:
 
 
         while len(liste_bateaux_a_poser) > 0:
+            fenetre1.fenetre.protocol("WM_DELETE_WINDOW", on_close)
+            fenetre2.fenetre.protocol("WM_DELETE_WINDOW", on_close)  
             taille = liste_bateaux_a_poser[0]
             bonne_position_bateau = False  
             bateau_supprime = False
@@ -2290,6 +2297,8 @@ fenetre2.canva_bind = 'gauche'
 next_coordonnee_case = [None, None]
 #Boucle principale du jeu
 while not fin_du_jeux:
+    fenetre1.fenetre.protocol("WM_DELETE_WINDOW", on_close)
+    fenetre2.fenetre.protocol("WM_DELETE_WINDOW", on_close)  
     # affiche les plateaux
     #print("\n","Ton propre plateau qui sert à viser l'adversaire")
     if joueur == 1:
@@ -2528,6 +2537,8 @@ if joueur_perdu == 1:
     fenetre1.canva_gauche.create_text(238,238,text="PERDU",font=('Helvetica', 100, 'bold'),fill="#ffffff",anchor='center')
     fenetre2.canva_droite.create_text(238,238,text="GAGNÉ",font=('Helvetica', 100, 'bold'),fill="#ffffff",anchor='center')
     fenetre2.canva_gauche.create_text(238,238,text="GAGNÉ",font=('Helvetica', 100, 'bold'),fill="#ffffff",anchor='center')
-    
 
-mainloop() 
+
+fenetre1.fenetre.protocol("WM_DELETE_WINDOW", on_close)
+fenetre2.fenetre.protocol("WM_DELETE_WINDOW", on_close)   
+mainloop()
