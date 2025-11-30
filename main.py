@@ -8,6 +8,7 @@ from tkhtmlview import HTMLLabel
 import threading
 import socket
 import json
+from tkinter import filedialog
 
 #pip install pygame
 #pip install tkhtmlview
@@ -15,6 +16,27 @@ import json
 root_created = False
 pygame.mixer.init()
 
+class SonHelper:
+    #Classe pour accéder aux sons depuis n'importe où dans le code
+    def __init__(self):
+        pass
+    
+    def get_son_path(self, type_son, n=None):
+        #Retourne le chemin du fichier son en fonction du type
+        if type_son in UI_menu.sons_personnalises:
+            chemin = UI_menu.sons_personnalises[type_son]
+        else:
+            pack_actuel = UI_menu.pack_actuel
+            if pack_actuel == "personnalise":
+                pack_actuel = "principal"
+            chemin = UI_menu.packs_sons[pack_actuel]["sons"].get(type_son, "")
+        
+        if n is not None:
+            chemin = chemin.replace("{n}", str(n))
+        
+        return chemin
+
+son_helper = SonHelper()
 class Plateau:
     """
     0 = vide                            blanc
@@ -620,10 +642,45 @@ class UI_menu:
     musique_en_jeu_ref = None
     client_pret = False
     serveur_pret = False
+    pack_actuel = "principal"
+    sons_personnalises = {}
+    packs_sons = {
+        "principal": {
+            "nom_affichage": "Par défaut",
+            "sons": {
+                "bouton_bleu": "Sons/par_defaut/ui/par_defaut_bleu.mp3",
+                "bouton_gris": "Sons/par_defaut/ui/par_defaut_gris.mp3",
+                "clic": "Sons/par_defaut/ui/clic.mp3",
+                "musique_menu": "Sons/par_defaut/musics/ui/musique_dascenseur.mp3",
+                "musique_jeu": "Sons/par_defaut/musics/jeu/DEAF KEV - Invincible [NCS Release].mp3",
+                "poser_bateaux": "Sons/par_defaut/C'est au joueur n de poser ses bateaux !/C'est au joueur {n} de poser ses bateaux !.mp3",
+                "reste_bateau": "Sons/par_defaut/Il reste n bateau(x) en vie/Il reste {n} bateau(x) en vie.mp3",
+                "bateau_coule": "Sons/par_defaut/Le bateau de taille n a été coulé !/Le bateau de taille {n} a été coulé !.mp3",
+                "partie_terminee": "Sons/par_defaut/Partie terminée, le joueur n°n gagne !/Partie terminée, le joueur n°{n} gagne !.mp3",
+                "navires_prets": "Sons/par_defaut/navires_prets.mp3",
+                "bateau_touche": "Sons/par_defaut/Un bateau à été touché !.mp3"
+            }
+        },
+        "joyeux": {
+            "nom_affichage": "Joyeux",
+            "sons": {
+                "bouton_bleu": "Sons/joyeux/ui/par_defaut_bleu.mp3",
+                "bouton_gris": "Sons/joyeux/ui/par_defaut_gris.mp3",
+                "clic": "Sons/joyeux/ui/clic.mp3",
+                "musique_menu": "Sons/joyeux/musics/ui/musique_dascenseur.mp3",
+                "musique_jeu": "Sons/joyeux/musics/jeu/DEAF KEV - Invincible [NCS Release].mp3",
+                "poser_bateaux": "Sons/joyeux/C'est au joueur n de poser ses bateaux !/C'est au joueur {n} de poser ses bateaux !.mp3",
+                "reste_bateau": "Sons/joyeux/Il reste n bateau(x) en vie/Il reste {n} bateau(x) en vie.mp3",
+                "bateau_coule": "Sons/joyeux/Le bateau de taille n a été coulé !/Le bateau de taille {n} a été coulé !.mp3",
+                "partie_terminee": "Sons/joyeux/Partie terminée, le joueur n°n gagne !/Partie terminée, le joueur n°{n} gagne !.mp3",
+                "navires_prets": "Sons/joyeux/navires_prets.mp3",
+                "bateau_touche": "Sons/joyeux/Un bateau à été touché !.mp3"
+            }
+        }
+    }
     
     def __init__(self, nom, en_jeu):        
         self.dico_bateaux_a_poser = {1:0, 2:1, 3:2, 4:1, 5:1} #dictionnaire qui indique le nombre de bateau à poser par taille
-        
         if en_jeu:
             self.fenetre_menu = Toplevel()
         else:
@@ -647,7 +704,7 @@ class UI_menu:
         self.couleur_texte = "#01579b"
         self.couleur_survol = "#90caf9"
         self.fenetre_menu.configure(bg=self.couleur_fond)
-        self.musique_menu = pygame.mixer.Sound("sons/musics/ui/musique_dascenseur.mp3")
+        self.musique_menu = pygame.mixer.Sound(self.get_son_path("musique_menu"))
         self.musique_menu.set_volume(self.volume_musique.get()*0.01)
         self.volume_voix_avant_mute = self.volume_voix.get()
         self.volume_musique_avant_mute = self.volume_musique.get()
@@ -662,7 +719,7 @@ class UI_menu:
         self.ip_client_sauvegarde = None
         self.mode_jeu = None
         self.retour_menu = False
-        self.liste_son = [["bouton_bleu"]]
+        
         if not self.en_jeu:
             self.afficher_menu_principal()
             self.musique_menu.play(loops=-1)
@@ -876,137 +933,63 @@ class UI_menu:
         self.update_icon_musique()
         self.update_icon_ui()
 
-    def afficher_choix_volume(self):
-        #Affiche la fenêtre de choix des sons
-        self.clear_widgets()
-        label_text_principal_choix_volume = Label(self.fenetre_menu, text='Choix des sons', font=('Helvetica', 32, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=30)
-        label_text_principal_choix_volume.grid(row=0, column=0, columnspan=2, padx=50, pady=(20, 10))
-        self.widgets.append(label_text_principal_choix_volume)
-        label_bouton_bleu = Label(self.fenetre_menu, text='Son bouton bleu', font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte)
-        label_bouton_bleu.grid(row=1, column=0, padx=10, pady=(10, 2), sticky='e')
-        self.widgets.append(label_bouton_bleu)
-        frame_liste_bouton_bleu = Frame(self.fenetre_menu, bg='#ffffff', relief='flat', bd=2, highlightbackground=self.couleur_accent, highlightthickness=1)
-        frame_liste_bouton_bleu.grid(row=1, column=1, padx=(10, 50), pady=5, sticky='w')
-        self.widgets.append(frame_liste_bouton_bleu)
-        liste_bouton_bleu = Listbox(frame_liste_bouton_bleu, height=1, font=('Helvetica', 10), bg='#ffffff', fg=self.couleur_texte, relief='flat', bd=0, highlightthickness=0, cursor='hand2')
-        liste_bouton_bleu.pack(padx=8, pady=8)
-        self.widgets.append(liste_bouton_bleu)
-        label_bouton_gris = Label(self.fenetre_menu, text='Son bouton gris', font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte)
-        label_bouton_gris.grid(row=2, column=0, padx=10, pady=(10, 2), sticky='e')
-        self.widgets.append(label_bouton_gris)
-        frame_liste_bouton_gris = Frame(self.fenetre_menu, bg='#ffffff', relief='flat', bd=2, highlightbackground=self.couleur_accent, highlightthickness=1)
-        frame_liste_bouton_gris.grid(row=2, column=1, padx=(10, 50), pady=5, sticky='w')
-        self.widgets.append(frame_liste_bouton_gris)
-        liste_bouton_gris = Listbox(frame_liste_bouton_gris, height=1, font=('Helvetica', 10), bg='#ffffff', fg=self.couleur_texte, relief='flat', bd=0, highlightthickness=0, cursor='hand2')
-        liste_bouton_gris.pack(padx=8, pady=8)
-        self.widgets.append(liste_bouton_gris)
-        label_musique_menu = Label(self.fenetre_menu, text='Musique du menu', font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte)
-        label_musique_menu.grid(row=3, column=0, padx=10, pady=(10, 2), sticky='e')
-        self.widgets.append(label_musique_menu)
-        frame_liste_musique_menu = Frame(self.fenetre_menu, bg='#ffffff', relief='flat', bd=2, highlightbackground=self.couleur_accent, highlightthickness=1)
-        frame_liste_musique_menu.grid(row=3, column=1, padx=(10, 50), pady=5, sticky='w')
-        self.widgets.append(frame_liste_musique_menu)
-        liste_musique_menu = Listbox(frame_liste_musique_menu, height=1, font=('Helvetica', 10), bg='#ffffff', fg=self.couleur_texte, relief='flat', bd=0, highlightthickness=0, cursor='hand2')
-        liste_musique_menu.pack(padx=8, pady=8)
-        self.widgets.append(liste_musique_menu)
-        label_musique_jeu = Label(self.fenetre_menu, text='Musique en jeu', font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte)
-        label_musique_jeu.grid(row=4, column=0, padx=10, pady=(10, 2), sticky='e')
-        self.widgets.append(label_musique_jeu)
-        frame_liste_musique_jeu = Frame(self.fenetre_menu, bg='#ffffff', relief='flat', bd=2, highlightbackground=self.couleur_accent, highlightthickness=1)
-        frame_liste_musique_jeu.grid(row=4, column=1, padx=(10, 50), pady=5, sticky='w')
-        self.widgets.append(frame_liste_musique_jeu)
-        liste_musique_jeu = Listbox(frame_liste_musique_jeu, height=1, font=('Helvetica', 10), bg='#ffffff', fg=self.couleur_texte, relief='flat', bd=0, highlightthickness=0, cursor='hand2')
-        liste_musique_jeu.pack(padx=8, pady=8)
-        self.widgets.append(liste_musique_jeu)
-        label_poser_bateaux = Label(self.fenetre_menu, text="C'est au joueur n de poser ses bateaux !", font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte)
-        label_poser_bateaux.grid(row=5, column=0, padx=10, pady=(10, 2), sticky='e')
-        self.widgets.append(label_poser_bateaux)
-        frame_liste_poser_bateaux = Frame(self.fenetre_menu, bg='#ffffff', relief='flat', bd=2, highlightbackground=self.couleur_accent, highlightthickness=1)
-        frame_liste_poser_bateaux.grid(row=5, column=1, padx=(10, 50), pady=5, sticky='w')
-        self.widgets.append(frame_liste_poser_bateaux)
-        liste_poser_bateaux = Listbox(frame_liste_poser_bateaux, height=1, font=('Helvetica', 10), bg='#ffffff', fg=self.couleur_texte, relief='flat', bd=0, highlightthickness=0, cursor='hand2')
-        liste_poser_bateaux.pack(padx=8, pady=8)
-        self.widgets.append(liste_poser_bateaux)
-        label_reste_bateau = Label(self.fenetre_menu, text='Il reste n bateau(x) en vie', font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte)
-        label_reste_bateau.grid(row=6, column=0, padx=10, pady=(10, 2), sticky='e')
-        self.widgets.append(label_reste_bateau)
-        frame_liste_reste_bateau = Frame(self.fenetre_menu, bg='#ffffff', relief='flat', bd=2, highlightbackground=self.couleur_accent, highlightthickness=1)
-        frame_liste_reste_bateau.grid(row=6, column=1, padx=(10, 50), pady=5, sticky='w')
-        self.widgets.append(frame_liste_reste_bateau)
-        liste_reste_bateau = Listbox(frame_liste_reste_bateau, height=1, font=('Helvetica', 10), bg='#ffffff', fg=self.couleur_texte, relief='flat', bd=0, highlightthickness=0, cursor='hand2')
-        liste_reste_bateau.pack(padx=8, pady=8)
-        self.widgets.append(liste_reste_bateau)
-        label_bateau_coule = Label(self.fenetre_menu, text='Le bateau de taille n a été coulé !', font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte)
-        label_bateau_coule.grid(row=7, column=0, padx=10, pady=(10, 2), sticky='e')
-        self.widgets.append(label_bateau_coule)
-        frame_liste_bateau_coule = Frame(self.fenetre_menu, bg='#ffffff', relief='flat', bd=2, highlightbackground=self.couleur_accent, highlightthickness=1)
-        frame_liste_bateau_coule.grid(row=7, column=1, padx=(10, 50), pady=5, sticky='w')
-        self.widgets.append(frame_liste_bateau_coule)
-        liste_bateau_coule = Listbox(frame_liste_bateau_coule, height=1, font=('Helvetica', 10), bg='#ffffff', fg=self.couleur_texte, relief='flat', bd=0, highlightthickness=0, cursor='hand2')
-        liste_bateau_coule.pack(padx=8, pady=8)
-        self.widgets.append(liste_bateau_coule)
-        label_partie_terminee = Label(self.fenetre_menu, text='Partie terminée, le joueur n°n gagne !', font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte)
-        label_partie_terminee.grid(row=8, column=0, padx=10, pady=(10, 2), sticky='e')
-        self.widgets.append(label_partie_terminee)
-        frame_liste_partie_terminee = Frame(self.fenetre_menu, bg='#ffffff', relief='flat', bd=2, highlightbackground=self.couleur_accent, highlightthickness=1)
-        frame_liste_partie_terminee.grid(row=8, column=1, padx=(10, 50), pady=5, sticky='w')
-        self.widgets.append(frame_liste_partie_terminee)
-        liste_partie_terminee = Listbox(frame_liste_partie_terminee, height=1, font=('Helvetica', 10), bg='#ffffff', fg=self.couleur_texte, relief='flat', bd=0, highlightthickness=0, cursor='hand2')
-        liste_partie_terminee.pack(padx=8, pady=8)
-        self.widgets.append(liste_partie_terminee)
-        label_navires_prets = Label(self.fenetre_menu, text='Les navires sont prêts au combat !', font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte)
-        label_navires_prets.grid(row=9, column=0, padx=10, pady=(10, 2), sticky='e')
-        self.widgets.append(label_navires_prets)
-        frame_liste_navires_prets = Frame(self.fenetre_menu, bg='#ffffff', relief='flat', bd=2, highlightbackground=self.couleur_accent, highlightthickness=1)
-        frame_liste_navires_prets.grid(row=9, column=1, padx=(10, 50), pady=5, sticky='w')
-        self.widgets.append(frame_liste_navires_prets)
-        liste_navires_prets = Listbox(frame_liste_navires_prets, height=1, font=('Helvetica', 10), bg='#ffffff', fg=self.couleur_texte, relief='flat', bd=0, highlightthickness=0, cursor='hand2')
-        liste_navires_prets.pack(padx=8, pady=8)
-        self.widgets.append(liste_navires_prets)
-        label_bateau_touche = Label(self.fenetre_menu, text='Un bateau à été touché !', font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte)
-        label_bateau_touche.grid(row=10, column=0, padx=10, pady=(10, 2), sticky='e')
-        self.widgets.append(label_bateau_touche)
-        frame_liste_bateau_touche = Frame(self.fenetre_menu, bg='#ffffff', relief='flat', bd=2, highlightbackground=self.couleur_accent, highlightthickness=1)
-        frame_liste_bateau_touche.grid(row=10, column=1, padx=(10, 50), pady=5, sticky='w')
-        self.widgets.append(frame_liste_bateau_touche)
-        liste_bateau_touche = Listbox(frame_liste_bateau_touche, height=1, font=('Helvetica', 10), bg='#ffffff', fg=self.couleur_texte, relief='flat', bd=0, highlightthickness=0, cursor='hand2')
-        liste_bateau_touche.pack(padx=8, pady=8)
-        self.widgets.append(liste_bateau_touche)
-        
-        bouton_retour = Button(self.fenetre_menu, text='Retour', command=lambda: [self.afficher_volume(), self.jouer_bouton_gris()], font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
-        bouton_retour.grid(row=11, column=0, columnspan=2, padx=50, pady=(20, 15), sticky='ew')
-        bouton_retour.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
-        bouton_retour.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
-        self.widgets.append(bouton_retour)
-        self.fenetre_menu.grid_columnconfigure(1, weight=1)
-
     def afficher_choix_pack_volume(self):
-        #Affiche la fenêtre de choix des sons
+        #Affiche la fenêtre de choix des packs de sons
         self.clear_widgets()
-        label_text_principal_choix_volume = Label(self.fenetre_menu, text='Choix des pack de sons', font=('Helvetica', 32, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=30)
-        label_text_principal_choix_volume.grid(row=0, column=0, columnspan=2, padx=50, pady=(20, 10))
-        self.widgets.append(label_text_principal_choix_volume)
-        label_bouton_bleu = Label(self.fenetre_menu, text='Choisir le pack : ', font=('Helvetica', 12), bg=self.couleur_fond, fg=self.couleur_texte)
-        label_bouton_bleu.grid(row=1, column=0, padx=10, pady=(10, 2), sticky='e')
-        self.widgets.append(label_bouton_bleu)
-        frame_liste_bouton_bleu = Frame(self.fenetre_menu, bg='#ffffff', relief='flat', bd=2, highlightbackground=self.couleur_accent, highlightthickness=1)
-        frame_liste_bouton_bleu.grid(row=1, column=1, padx=(10, 50), pady=5, sticky='w')
-        self.widgets.append(frame_liste_bouton_bleu)
-        liste_bouton_bleu = Listbox(frame_liste_bouton_bleu, height=1, font=('Helvetica', 10), bg='#ffffff', fg=self.couleur_texte, relief='flat', bd=0, highlightthickness=0, cursor='hand2')
-        liste_bouton_bleu.pack(padx=8, pady=8)
-        self.widgets.append(liste_bouton_bleu)
         
-        bouton_copier = Button(self.fenetre_menu, text='Personnaliser son pack', command=lambda: [self.jouer_bouton_bleu(), self.afficher_choix_volume()], font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
-        bouton_copier.grid(row=2, column=0, columnspan=2, padx=50, pady=(20, 15), sticky='ew')
-        bouton_copier.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
-        bouton_copier.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
-        self.widgets.append(bouton_copier)
-
-        bouton_retour = Button(self.fenetre_menu, text='Retour', command=lambda: [self.afficher_volume(), self.jouer_bouton_gris()], font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
-        bouton_retour.grid(row=3, column=0, columnspan=2, padx=50, pady=15, sticky='ew')
+        label_titre = Label(self.fenetre_menu, text='Choix des packs de sons', 
+                        font=('Helvetica', 32, 'bold'), bg=self.couleur_fond, 
+                        fg="#0277bd", pady=30)
+        label_titre.grid(row=0, column=0, columnspan=2, padx=50, pady=(20, 10))
+        self.widgets.append(label_titre)
+        
+        label_pack = Label(self.fenetre_menu, text='Pack de sons : ', 
+                        font=('Helvetica', 12), bg=self.couleur_fond, 
+                        fg=self.couleur_texte)
+        label_pack.grid(row=1, column=0, padx=10, pady=(10, 2), sticky='e')
+        self.widgets.append(label_pack)
+        
+        frame_liste = Frame(self.fenetre_menu, bg='#ffffff', relief='flat', 
+                        bd=2, highlightbackground=self.couleur_accent, 
+                        highlightthickness=1)
+        frame_liste.grid(row=1, column=1, padx=(10, 50), pady=5, sticky='ew')
+        self.widgets.append(frame_liste)
+        
+        self.listbox_packs = Listbox(frame_liste, height=5, font=('Helvetica', 11), 
+                                    bg='#ffffff', fg=self.couleur_texte, 
+                                    relief='flat', bd=0, highlightthickness=0, 
+                                    cursor='hand2', selectmode=SINGLE)
+        self.listbox_packs.pack(padx=8, pady=8, fill='both', expand=True)
+        self.widgets.append(self.listbox_packs)
+        
+        # Remplir la listbox avec les packs disponibles
+        pack_ids_list = []
+        for pack_id, pack_data in UI_menu.packs_sons.items():
+            if pack_id == "personnalise":
+                self.listbox_packs.insert(END, pack_data["nom_affichage"])
+                pack_ids_list.append(pack_id)
+            else:
+                self.listbox_packs.insert(END, pack_data["nom_affichage"])
+                pack_ids_list.append(pack_id)
+        
+        if UI_menu.pack_actuel in pack_ids_list:
+            self.listbox_packs.selection_set(pack_ids_list.index(UI_menu.pack_actuel))
+        
+        self.pack_ids_list = pack_ids_list
+        
+        self.listbox_packs.bind('<<ListboxSelect>>', lambda e: [self.appliquer_pack_auto()])
+        
+        bouton_retour = Button(self.fenetre_menu, text='Retour', 
+                            command=lambda: [self.afficher_volume(), self.jouer_bouton_gris()], 
+                            font=('Helvetica', 14, 'bold'), bg="#b0bec5", 
+                            fg=self.couleur_texte, activebackground="#cfd8dc", 
+                            activeforeground=self.couleur_texte, relief='flat', 
+                            bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_retour.grid(row=3, column=0, columnspan=2, padx=50, pady=(20, 15), sticky='ew')
         bouton_retour.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
         bouton_retour.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
         self.widgets.append(bouton_retour)
+        
         self.fenetre_menu.grid_columnconfigure(1, weight=1)
 
     def afficher_mode_socket(self):
@@ -1745,19 +1728,19 @@ class UI_menu:
 
     def jouer_bouton_bleu(self):
         #Joue le son d'un bouton bleu
-        bouton_bleu = pygame.mixer.Sound("Sons/ui/par_defaut_bleu.mp3")
+        bouton_bleu = pygame.mixer.Sound(self.get_son_path("bouton_bleu"))
         bouton_bleu.set_volume(self.volume_ui.get()*0.01)
         bouton_bleu.play()
 
     def jouer_bouton_gris(self):
         #Joue le son d'un bouton gris
-        bouton_gris = pygame.mixer.Sound("Sons/ui/par_defaut_gris.mp3")
+        bouton_gris = pygame.mixer.Sound(self.get_son_path("bouton_gris"))
         bouton_gris.set_volume(self.volume_ui.get()*0.01)
         bouton_gris.play()
 
     def jouer_clic(self):
         #Joue le son d'un clic
-        clic = pygame.mixer.Sound("Sons/ui/clic.mp3")
+        clic = pygame.mixer.Sound(self.get_son_path("clic"))
         clic.set_volume(self.volume_ui.get()*0.01)
         clic.play()
 
@@ -1806,6 +1789,54 @@ class UI_menu:
         self.fenetre_menu.clipboard_append(str(texte))
         self.fenetre_menu.update()
 
+    def get_son_path(self, type_son, n=None):
+        #Retourne le chemin du fichier son en fonction du type
+        # Récupérer le chemin (personnalisé ou du pack actuel)
+        if type_son in UI_menu.sons_personnalises:
+            chemin = UI_menu.sons_personnalises[type_son]
+        else:
+            pack_actuel = UI_menu.pack_actuel
+            if pack_actuel == "personnalise":
+                pack_actuel = "principal"
+            chemin = UI_menu.packs_sons[pack_actuel]["sons"].get(type_son, "")
+
+        if n is not None:
+            chemin = chemin.replace("{n}", str(n))
+        
+        return chemin
+
+    def appliquer_pack_auto(self):
+        #Applique automatiquement le pack sélectionne
+        selection = self.listbox_packs.curselection()
+        if not selection:
+            return
+        
+        self.jouer_clic()
+        
+        pack_id = self.pack_ids_list[selection[0]]
+        
+        if pack_id == "personnalise":
+            UI_menu.pack_actuel = "personnalise"
+        else:
+            UI_menu.pack_actuel = pack_id
+
+            UI_menu.sons_personnalises = {}
+            
+            if not self.en_jeu:
+                self.musique_menu.stop()
+                son_path = UI_menu.packs_sons[pack_id]["sons"]["musique_menu"]
+                self.musique_menu = pygame.mixer.Sound(son_path)
+                self.musique_menu.set_volume(self.volume_musique.get()*0.01)
+                self.musique_menu.play(loops=-1)
+            
+            if UI_menu.musique_en_jeu_ref is not None:
+                UI_menu.musique_en_jeu_ref.stop()
+                son_path = UI_menu.packs_sons[pack_id]["sons"]["musique_jeu"]
+                UI_menu.musique_en_jeu_ref = pygame.mixer.Sound(son_path)
+                UI_menu.musique_en_jeu_ref.set_volume(self.volume_musique.get()*0.01)
+                UI_menu.musique_en_jeu_ref.play(loops=-1)
+
+
 def on_mouvement(event, fenetre, plateau, orientation, taille, position_canva, can_touch):
     #Affiche la prévisualisation du bateau à la position de la souris
     x_case, y_case = fenetre.click_to_case(event.x, event.y)
@@ -1848,7 +1879,7 @@ def on_clique_droit(event, plateau, fenetre, canva_placement, text_ids, afficher
 
 menu = UI_menu("Bataille navale", False)
 
-musique_en_jeu = pygame.mixer.Sound("Sons/musics/jeu/DEAF KEV - Invincible [NCS Release].mp3")
+musique_en_jeu = pygame.mixer.Sound(son_helper.get_son_path("musique_jeu"))
 musique_en_jeu.set_volume(UI_menu.volume_musique_global*0.01)
 musique_en_jeu.play(loops=-1)
 UI_menu.musique_en_jeu_ref = musique_en_jeu
@@ -2236,12 +2267,12 @@ while not fin_du_jeux:
             plateau_joueur2.modifier_case(coordonnee_case_x, coordonnee_case_y, 3)
             if taille_bateau_restant[1] != 0: # s'il reste des parties non découvertes du bateau trouvé
                 #print(f"Le bateau de taille {taille_bateau_restant[0]} a été touché il lui reste {taille_bateau_restant[1]} vie(s)")
-                son = pygame.mixer.Sound("Sons/Un bateau à été touché !.mp3")
+                son = pygame.mixer.Sound(son_helper.get_son_path("bateau_touche"))
                 son.set_volume(UI_menu.volume_voix_global*0.01)
                 son.play()
             else: # si tout le bateau a été découvert
                 nb_bateaux_restant = plateau_joueur2.nb_bateau_restant()
-                son_bateaux_coule = pygame.mixer.Sound(f"Sons/Le bateau de taille n a été coulé !/Le bateau de taille {taille_bateau_restant[0]} a été coulé !.mp3")
+                son_bateaux_coule = pygame.mixer.Sound(son_helper.get_son_path("bateau_coule", taille_bateau_restant[0]))
                 son_bateaux_coule.set_volume(UI_menu.volume_voix_global*0.01)
                 channel = son_bateaux_coule.play()
                 #print(f"Le bateau de taille {taille_bateau_restant[0]} a été coulé")
@@ -2260,12 +2291,12 @@ while not fin_du_jeux:
                                       
 
                 if nb_bateaux_restant != 0: # s'il reste des bateaux
-                    son_nb_bateaux_en_vie = pygame.mixer.Sound(f"Sons/Il reste n bateau(x) en vie/Il reste {nb_bateaux_restant} bateau(x) en vie.mp3")
+                    son_nb_bateaux_en_vie = pygame.mixer.Sound(son_helper.get_son_path("reste_bateau", nb_bateaux_restant))
                     son_nb_bateaux_en_vie.set_volume(UI_menu.volume_voix_global*0.01)
                     channel.queue(son_nb_bateaux_en_vie)
                     pass
                 else: # s'il n'y a plus de bateau restant
-                    son = pygame.mixer.Sound("Sons/Partie terminée, le joueur n°n gagne !/Partie terminée, le joueur n°1 gagne !.mp3")
+                    son = pygame.mixer.Sound(son_helper.get_son_path("partie_terminee", 1))
                     son.set_volume(UI_menu.volume_voix_global*0.01)
                     son.play()                    
                     #print("Partie terminée, le joueur 1 a gagné")
@@ -2282,12 +2313,12 @@ while not fin_du_jeux:
             plateau_joueur1.modifier_case(coordonnee_case_x, coordonnee_case_y, 3)
             if taille_bateau_restant[1] != 0: # s'il reste des parties non découvertes du bateau trouvé
                 #print(f"Le bateau de taille {taille_bateau_restant[0]} a été touché il lui reste {taille_bateau_restant[1]} vie(s)")
-                son = pygame.mixer.Sound("Sons/Un bateau à été touché !.mp3")
+                son = pygame.mixer.Sound(son_helper.get_son_path("bateau_touche"))
                 son.set_volume(UI_menu.volume_voix_global*0.01)
                 son.play()
             else: # si tout le bateau a été découvert
                 nb_bateaux_restant = plateau_joueur1.nb_bateau_restant()
-                son_bateaux_coule = pygame.mixer.Sound(f"Sons/Le bateau de taille n a été coulé !/Le bateau de taille {taille_bateau_restant[0]} a été coulé !.mp3")
+                son_bateaux_coule = pygame.mixer.Sound(son_helper.get_son_path("bateau_coule", taille_bateau_restant[0]))
                 son_bateaux_coule.set_volume(UI_menu.volume_voix_global*0.01)
                 channel = son_bateaux_coule.play()
                 idx = taille_bateau_restant[0] - 1
@@ -2306,14 +2337,14 @@ while not fin_du_jeux:
 
 
                 if nb_bateaux_restant != 0: # s'il reste des bateaux
-                    son_nb_bateaux_en_vie = pygame.mixer.Sound(f"Sons/Il reste n bateau(x) en vie/Il reste {nb_bateaux_restant} bateau(x) en vie.mp3")
+                    son_nb_bateaux_en_vie = pygame.mixer.Sound(son_helper.get_son_path("reste_bateau", nb_bateaux_restant))
                     son_nb_bateaux_en_vie.set_volume(UI_menu.volume_voix_global*0.01)
                     channel.queue(son_nb_bateaux_en_vie)                   
                     #print(f"Il reste {nb_bateaux_restant} bateau(x) en vie")
                     pass
                 else: # s'il n'y a plus de bateau restant
                     #print(f"Partie terminée, le joueur 2 a gagné")
-                    son = pygame.mixer.Sound("Sons/Partie terminée, le joueur n°n gagne !/Partie terminée, le joueur n°2 gagne !.mp3")
+                    son = pygame.mixer.Sound(son_helper.get_son_path("partie_terminee", 2))
                     son.set_volume(UI_menu.volume_voix_global*0.01)
                     son.play() 
                     joueur_perdu = 1
