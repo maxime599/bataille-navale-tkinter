@@ -8,11 +8,81 @@ from tkhtmlview import HTMLLabel
 import threading
 import socket
 import json
-from tkinter import filedialog
+import requests
+import tkinter as tk
+from tkinter import messagebox
+import webbrowser
 
 #pip install pygame
 #pip install tkhtmlview
 
+GITHUB_REPO = "maxime599/bataille-navale-tkinter"
+VERSION_ACTUELLE = "2.1.2"
+
+#viens d'un code git hub juste plus pratique pour mettre à jour
+class GithubUpdateChecker:
+    #Classe pour vérifier les mises à jour depuis GitHub
+    
+    def __init__(self, repo, version_actuelle):
+        self.repo = repo
+        self.version_actuelle = version_actuelle
+        self.url_releases = f"https://api.github.com/repos/{repo}/releases/latest"
+    
+    def verifier_mise_a_jour(self):
+        """Vérifie si une mise à jour est disponible"""
+        try:
+            #print(f"[DEBUG] URL appelée: {self.url_releases}")
+            #print(f"[DEBUG] Version actuelle: {self.version_actuelle}")
+            
+            response = requests.get(self.url_releases, timeout=5)
+            #print(f"[DEBUG] Status code: {response.status_code}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                version_github = data['tag_name'].lstrip('v')
+                url_telechargement = data['html_url']
+                description = data.get('body', 'Aucune description disponible')
+                
+                #print(f"[DEBUG] Version GitHub trouvée: {version_github}")
+                #print(f"[DEBUG] Comparaison: {version_github} > {self.version_actuelle} = {self.comparer_versions(version_github, self.version_actuelle)}")
+                
+                return {
+                    'disponible': self.comparer_versions(version_github, self.version_actuelle),
+                    'version': version_github,
+                    'url': url_telechargement,
+                    'description': description
+                }
+            elif response.status_code == 404:
+                return {'erreur': 'Aucune release trouvée sur GitHub.\n\nPour corriger:\n1. Allez sur votre dépôt GitHub\n2. Cliquez sur "Releases"\n3. Créez une nouvelle release avec un tag (ex: v1.0.0)'}
+            else:
+                return {'erreur': f'Erreur HTTP {response.status_code}\n\nVérifiez que le dépôt existe: https://github.com/{self.repo}'}
+                
+        except requests.exceptions.Timeout:
+            return {'erreur': 'Délai d\'attente dépassé'}
+        except requests.exceptions.ConnectionError:
+            return {'erreur': 'Impossible de se connecter à GitHub'}
+        except Exception as e:
+            #print(f"[DEBUG] Exception: {str(e)}")
+            return {'erreur': f'Erreur: {str(e)}'}
+    
+    def comparer_versions(self, v1, v2):
+        """Compare deux versions (format: x.y.z)"""
+        try:
+            parts1 = [int(x) for x in v1.split('.')]
+            parts2 = [int(x) for x in v2.split('.')]
+            
+            # Assure que les deux listes ont la même longueur
+            while len(parts1) < len(parts2):
+                parts1.append(0)
+            while len(parts2) < len(parts1):
+                parts2.append(0)
+            
+            return parts1 > parts2
+        except:
+            return False
+
+
+        
 root_created = False
 pygame.mixer.init()
 
@@ -735,40 +805,84 @@ class UI_menu:
 
     def afficher_menu_principal(self):
         #Affiche le menu principal
-
-        self.clear_widgets() #Supprime tous les widgets de la fenêtre
-
-        #Ajout des boutons du menu principal
-
+        
+        self.clear_widgets()
+        
         label_text_principal_menu = Label(self.fenetre_menu, text='Bataille navale', font=('Helvetica', 32, 'bold'), bg=self.couleur_fond, fg="#0277bd", pady=40)
         label_text_principal_menu.grid(row=0, column=0, padx=50, pady=(30, 20))
         self.widgets.append(label_text_principal_menu)
-        
         
         bouton_jouer = Button(self.fenetre_menu, text='Jouer', command=lambda: (self.jouer_bouton_bleu(), self.afficher_mode_jeu()), font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
         bouton_jouer.grid(row=1, column=0, padx=50, pady=15, sticky='ew')
         bouton_jouer.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
         bouton_jouer.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
         self.widgets.append(bouton_jouer)
-
+        
         bouton_parametre = Button(self.fenetre_menu, text='Paramètres', command=lambda: (self.jouer_bouton_bleu(), self.afficher_parametres()), font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
         bouton_parametre.grid(row=2, column=0, padx=50, pady=15, sticky='ew')
         bouton_parametre.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
         bouton_parametre.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
         self.widgets.append(bouton_parametre)
-
-        bouton_credits = Button(self.fenetre_menu, text='Crédits', command=lambda: (self.jouer_bouton_bleu(), self.afficher_credits()), font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        
+        bouton_credits = Button(self.fenetre_menu, text='Crédits',command=lambda: (self.jouer_bouton_bleu(), self.afficher_credits()), font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
         bouton_credits.grid(row=3, column=0, padx=50, pady=15, sticky='ew')
         bouton_credits.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
         bouton_credits.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
         self.widgets.append(bouton_credits)
-
-        bouton_quitter = Button(self.fenetre_menu, text='Quitter', command=lambda: (self.jouer_bouton_gris() ,self.quitter_fenetre()), font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
-        bouton_quitter.grid(row=4, column=0, padx=50, pady=15, sticky='ew')
+        
+        bouton_maj = Button(self.fenetre_menu, text='Vérifier mise à jour', command=lambda: (self.jouer_bouton_bleu(), self.verifier_mise_a_jour_github()), font=('Helvetica', 14, 'bold'), bg=self.couleur_accent, fg="#ffffff", activebackground=self.couleur_survol, activeforeground="#ffffff", relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_maj.grid(row=4, column=0, padx=50, pady=15, sticky='ew')
+        bouton_maj.bind("<Enter>", lambda e: e.widget.config(bg=self.couleur_survol))
+        bouton_maj.bind("<Leave>", lambda e: e.widget.config(bg=self.couleur_accent))
+        self.widgets.append(bouton_maj)
+        
+        bouton_quitter = Button(self.fenetre_menu, text='Quitter', command=lambda: (self.jouer_bouton_gris(), self.quitter_fenetre()), font=('Helvetica', 14, 'bold'), bg="#b0bec5", fg=self.couleur_texte, activebackground="#cfd8dc", activeforeground=self.couleur_texte, relief='flat', bd=0, padx=40, pady=15, cursor='hand2')
+        bouton_quitter.grid(row=5, column=0, padx=50, pady=15, sticky='ew')
         bouton_quitter.bind("<Enter>", lambda e: e.widget.config(bg="#cfd8dc"))
         bouton_quitter.bind("<Leave>", lambda e: e.widget.config(bg="#b0bec5"))
         self.widgets.append(bouton_quitter)
+        
         self.fenetre_menu.grid_columnconfigure(0, weight=1)
+
+    def verifier_mise_a_jour_github(self):
+        #Vérifie les mises à jour sur GitHub et affiche le résultat
+        #code git hub !!!!
+        # Créer une fenêtre de chargement
+        fenetre_chargement = tk.Toplevel(self.fenetre_menu)
+        fenetre_chargement.title("Vérification...")
+        fenetre_chargement.geometry("300x100")
+        fenetre_chargement.transient(self.fenetre_menu)
+        fenetre_chargement.grab_set()
+        
+        label = tk.Label(fenetre_chargement, text="Vérification des mises à jour...", 
+                        font=('Helvetica', 12), pady=30)
+        label.pack()
+        
+        fenetre_chargement.update()
+        
+        # Vérifier la mise à jour
+        checker = GithubUpdateChecker(GITHUB_REPO, VERSION_ACTUELLE)
+        resultat = checker.verifier_mise_a_jour()
+        
+        fenetre_chargement.destroy()
+        
+        # Afficher le résultat
+        if 'erreur' in resultat:
+            messagebox.showerror("Erreur", 
+                            f"Impossible de vérifier les mises à jour:\n{resultat['erreur']}")
+        elif resultat['disponible']:
+            reponse = messagebox.askyesno(
+                "Mise à jour disponible",
+                f"Une nouvelle version est disponible!\n\n"
+                f"Version actuelle: {VERSION_ACTUELLE}\n"
+                f"Nouvelle version: {resultat['version']}\n\n"
+                f"Voulez-vous ouvrir la page de téléchargement?"
+            )
+            if reponse:
+                webbrowser.open(resultat['url'])
+        else:
+            messagebox.showinfo("À jour", 
+                            f"Vous utilisez la dernière version ({VERSION_ACTUELLE})")
 
     def afficher_parametres(self):
         #Affiche la fenêtre des paramètres
