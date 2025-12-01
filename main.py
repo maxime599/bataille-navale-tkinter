@@ -17,7 +17,7 @@ import webbrowser
 #pip install tkhtmlview
 
 GITHUB_REPO = "maxime599/bataille-navale-tkinter"
-VERSION_ACTUELLE = "3.0.0"
+VERSION_ACTUELLE = "3.0.1"
 
 #viens d'un code git hub juste plus pratique pour mettre à jour
 class GithubUpdateChecker:
