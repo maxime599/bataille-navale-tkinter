@@ -2355,7 +2355,7 @@ while not fin_du_jeux:
                 fenetre2.canva_gauche.config(cursor="arrow")
                 fenetre2.canva_gauche.unbind("<Motion>")
                 fenetre2.canva_gauche.unbind("<Leave>")
-            elif 1 in liste_joueur_ia :
+            elif 2 in liste_joueur_ia :
                 coordonnee_case = plateau_joueur1.coup_IA(option_can_touch)
         
         # réception des coordonnées si joueur en socket
